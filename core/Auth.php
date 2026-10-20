@@ -31,10 +31,35 @@ class Auth {
     }
 
     /**
-     * Lấy thông tin user hiện tại
+     * Lấy thông tin user hiện tại (Tự động đồng bộ với CSDL)
      */
     public static function user(): ?array {
         self::initSession();
+        if (empty($_SESSION['user_id'])) {
+            return null;
+        }
+
+        // Tự động làm mới thông tin từ CSDL để luôn hiển thị đúng họ tên tiếng Việt mới nhất
+        if (empty($_SESSION['user']) || str_contains($_SESSION['user']['fullname'] ?? '', '?')) {
+            try {
+                $db = Database::getConnection();
+                $stmt = $db->prepare("SELECT id, username, fullname, email, role FROM users WHERE id = :id LIMIT 1");
+                $stmt->execute(['id' => (int)$_SESSION['user_id']]);
+                $freshUser = $stmt->fetch();
+                if ($freshUser) {
+                    $_SESSION['user'] = [
+                        'id'       => (int)$freshUser['id'],
+                        'username' => $freshUser['username'],
+                        'fullname' => $freshUser['fullname'],
+                        'email'    => $freshUser['email'] ?? '',
+                        'role'     => $freshUser['role']
+                    ];
+                }
+            } catch (Exception $e) {
+                // Giữ session hiện tại nếu lỗi kết nối
+            }
+        }
+
         return $_SESSION['user'] ?? null;
     }
 
