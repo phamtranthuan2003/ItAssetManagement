@@ -41,7 +41,7 @@
         <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
-                    <th style="width: 120px;">Mã NV</th>
+                    <th style="width: 60px;">STT</th>
                     <th>Họ và tên</th>
                     <th>Phòng ban</th>
                     <th>Chức vụ</th>
@@ -57,13 +57,9 @@
                     <td colspan="8" class="text-center py-4 text-muted">Chưa có nhân viên nào phù hợp.</td>
                 </tr>
                 <?php else: ?>
-                    <?php foreach ($employees as $e): ?>
+                    <?php foreach ($employees as $index => $e): ?>
                     <tr class="<?= $e['status'] === 'resigned' ? 'table-light text-muted' : '' ?>">
-                        <td>
-                            <a href="<?= url('employees/' . $e['id']) ?>" class="fw-bold text-decoration-none">
-                                <?= e($e['code']) ?>
-                            </a>
-                        </td>
+                        <td><?= $index + 1 ?></td>
                         <td>
                             <div class="fw-semibold text-dark"><?= e($e['fullname']) ?></div>
                         </td>
@@ -120,7 +116,7 @@
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body">
-                                                Bạn có chắc chắn muốn xóa nhân viên <strong><?= e($e['fullname']) ?></strong> (Mã: <?= e($e['code']) ?>)?
+                                                Bạn có chắc chắn muốn xóa nhân viên <strong><?= e($e['fullname']) ?></strong>?
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
@@ -152,8 +148,9 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Mã nhân viên <span class="text-danger">*</span></label>
-                        <input type="text" name="code" class="form-control" placeholder="VD: NV-IT03, NV-KD05..." required>
+                        <label class="form-label fw-semibold">STT</label>
+                        <input type="text" class="form-control" value="Tự động" readonly>
+                        <div class="form-text">STT sẽ được đánh số tự động trong danh sách sau khi thêm.</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Họ và tên <span class="text-danger">*</span></label>

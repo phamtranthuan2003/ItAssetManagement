@@ -65,10 +65,14 @@ class Employee extends Model {
      * Thêm mới nhân viên
      */
     public function create(array $data): int {
+        do {
+            $code = 'NV' . strtoupper(bin2hex(random_bytes(9)));
+        } while ($this->isCodeExists($code));
+
         $sql = "INSERT INTO {$this->table} (code, fullname, email, phone, department_id, position, status)
                 VALUES (:code, :fullname, :email, :phone, :department_id, :position, :status)";
         $this->query($sql, [
-            'code'          => strtoupper(trim($data['code'])),
+            'code'          => $code,
             'fullname'      => trim($data['fullname']),
             'email'         => trim($data['email'] ?? ''),
             'phone'         => trim($data['phone'] ?? ''),

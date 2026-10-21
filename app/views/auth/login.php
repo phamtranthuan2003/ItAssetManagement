@@ -74,11 +74,6 @@
         </button>
     </form>
 
-    <div class="mt-4 pt-3 border-top text-center">
-        <div class="small text-muted mb-2">Tài khoản mẫu để trải nghiệm:</div>
-        <span class="badge bg-danger-subtle text-danger border border-danger-subtle me-1">Admin: <code>admin</code> / <code>password123</code></span>
-        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Thủ kho: <code>thukho</code> / <code>password123</code></span>
-    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

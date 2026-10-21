@@ -47,7 +47,6 @@ class EmployeeController extends Controller {
     public function store(): void {
         $this->validateCsrf();
 
-        $code = strtoupper($this->post('code', ''));
         $fullname = $this->post('fullname', '');
         $email = $this->post('email', '');
         $phone = $this->post('phone', '');
@@ -55,16 +54,11 @@ class EmployeeController extends Controller {
         $position = $this->post('position', '');
         $status = $this->post('status', 'working');
 
-        if (empty($code) || empty($fullname) || $deptId <= 0) {
-            redirect('employees', 'Vui lòng điền mã nhân viên, họ tên và chọn phòng ban!', 'danger');
-        }
-
-        if ($this->empModel->isCodeExists($code)) {
-            redirect('employees', "Mã nhân viên [{$code}] đã tồn tại!", 'danger');
+        if (empty($fullname) || $deptId <= 0) {
+            redirect('employees', 'Vui lòng điền họ tên và chọn phòng ban!', 'danger');
         }
 
         $this->empModel->create([
-            'code'          => $code,
             'fullname'      => $fullname,
             'email'         => $email,
             'phone'         => $phone,
