@@ -13,8 +13,8 @@
                     <?= csrf_field() ?>
 
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">Mã nhân viên</label>
-                        <input type="text" name="code" class="form-control" value="<?= e($employee['code']) ?>" required>
+                        <label class="form-label small fw-semibold">STT</label>
+                        <input type="text" class="form-control" value="<?= (int)$employee['id'] ?>" readonly>
                     </div>
 
                     <div class="mb-3">
@@ -107,7 +107,7 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Mã máy</th>
+                            <th>STT</th>
                             <th>Loại & Tên model</th>
                             <th>Cấu hình</th>
                             <th>Hình thức</th>
@@ -128,12 +128,12 @@
                             <tr>
                                 <td>
                                     <a href="<?= url('devices/' . $hd['id']) ?>" class="fw-bold text-decoration-none">
-                                        <?= e($hd['device_code']) ?>
+                                        <?= (int)$hd['id'] ?>
                                     </a>
                                 </td>
                                 <td>
                                     <span class="badge bg-secondary-subtle text-secondary border me-1"><?= e($hd['type']) ?></span>
-                                    <strong><?= e($hd['brand']) ?> <?= e($hd['model']) ?></strong>
+                                    <strong><?= e(trim($hd['brand'] . ' ' . $hd['model']) ?: '—') ?></strong>
                                 </td>
                                 <td>
                                     <small class="text-muted d-block"><?= e($hd['cpu']) ?></small>
@@ -195,7 +195,7 @@
                     <ul class="list-group mb-3">
                         <?php foreach ($heldDevices as $hd): ?>
                         <li class="list-group-item d-flex justify-content-between align-items-center small py-2">
-                            <span><strong><?= e($hd['device_code']) ?></strong> - <?= e($hd['brand']) ?> <?= e($hd['model']) ?></span>
+                            <span><strong>STT <?= (int)$hd['id'] ?></strong> - <?= e(trim($hd['brand'] . ' ' . $hd['model']) ?: '—') ?></span>
                             <span class="badge bg-secondary"><?= e($hd['type']) ?></span>
                         </li>
                         <?php endforeach; ?>

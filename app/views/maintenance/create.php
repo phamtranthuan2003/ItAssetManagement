@@ -15,7 +15,7 @@
                             <option value="">-- Chọn thiết bị cần bảo trì / nâng cấp --</option>
                             <?php foreach ($devices as $dev): ?>
                                 <option value="<?= $dev['id'] ?>" <?= $defaultDeviceId == $dev['id'] ? 'selected' : '' ?>>
-                                    [<?= e($dev['device_code']) ?>] <?= e($dev['type']) ?> <?= e($dev['brand']) ?> <?= e($dev['model']) ?> (Hiện trạng: <?= e($dev['status']) ?>)
+                                    STT <?= (int)$dev['id'] ?> - <?= e($dev['type']) ?> <?= e(trim(($dev['brand'] ?? '') . ' ' . ($dev['model'] ?? ''))) ?> (Hiện trạng: <?= e($dev['status']) ?>)
                                 </option>
                             <?php endforeach; ?>
                         </select>

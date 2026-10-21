@@ -190,13 +190,13 @@
                                             <?php if ($type === 'allocation'): ?>
                                                 <?php foreach ($inStockDevices as $dev): ?>
                                                     <option value="<?= $dev['id'] ?>">
-                                                        [<?= e($dev['device_code']) ?>] <?= e($dev['type']) ?> <?= e($dev['brand']) ?> <?= e($dev['model']) ?> (RAM <?= $dev['ram_gb'] ?>GB)
+                                                        STT <?= (int)$dev['id'] ?> - <?= e($dev['type']) ?><?= trim(($dev['brand'] ?? '') . ' ' . ($dev['model'] ?? '')) !== '' ? ' ' . e(trim($dev['brand'] . ' ' . $dev['model'])) : '' ?><?= !empty($dev['ram_gb']) ? ' (RAM ' . (int)$dev['ram_gb'] . 'GB)' : '' ?>
                                                     </option>
                                                 <?php endforeach; ?>
                                             <?php else: ?>
                                                 <?php foreach ($allocatedDevices as $dev): ?>
                                                     <option value="<?= $dev['id'] ?>">
-                                                        [<?= e($dev['device_code']) ?>] <?= e($dev['type']) ?> <?= e($dev['brand']) ?> <?= e($dev['model']) ?> - Đang cấp: <?= e($dev['employee_name'] ?? 'Chưa rõ') ?>
+                                                        STT <?= (int)$dev['id'] ?> - <?= e($dev['type']) ?><?= trim(($dev['brand'] ?? '') . ' ' . ($dev['model'] ?? '')) !== '' ? ' ' . e(trim($dev['brand'] . ' ' . $dev['model'])) : '' ?> - Đang cấp: <?= e($dev['employee_name'] ?? 'Chưa rõ') ?>
                                                     </option>
                                                 <?php endforeach; ?>
                                             <?php endif; ?>

@@ -1,7 +1,7 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <h4 class="fw-bold mb-1 d-flex align-items-center gap-2">
-            <span><?= e($device['device_code']) ?></span>
+            <span>STT <?= (int)$device['id'] ?></span>
             <?= renderStatusBadge($device['status']) ?>
             <?= renderConditionBadge($device['condition_state']) ?>
         </h4>
@@ -35,7 +35,7 @@
                         </div>
                     </div>
 
-                    <?php if ($device['type'] === 'PC' && !empty($device['mainboard'])): ?>
+                    <?php if (!empty($device['mainboard'])): ?>
                     <div class="col-sm-6">
                         <div class="p-2 bg-light rounded">
                             <span class="text-muted small d-block">Bo mạch chủ (Mainboard)</span>
@@ -44,40 +44,54 @@
                     </div>
                     <?php endif; ?>
 
-                    <?php if ($device['type'] === 'Laptop' && !empty($device['screen_size'])): ?>
+                    <?php if (!empty($device['screen_size'])): ?>
                     <div class="col-sm-6">
                         <div class="p-2 bg-light rounded">
-                            <span class="text-muted small d-block">Màn hình</span>
+                            <span class="text-muted small d-block">Màn hình tích hợp</span>
                             <strong class="text-dark"><i class="bi bi-display me-1 text-primary"></i><?= e($device['screen_size']) ?></strong>
                         </div>
                     </div>
                     <?php endif; ?>
 
+                    <?php foreach (($device['monitors'] ?? []) as $index => $monitor): ?>
+                    <div class="col-sm-6">
+                        <div class="p-2 bg-light rounded">
+                            <span class="text-muted small d-block">Màn hình đi kèm #<?= $index + 1 ?></span>
+                            <strong class="text-dark">
+                                <i class="bi bi-display me-1 text-primary"></i>
+                                <?= e($monitor['brand']) ?>
+                                <?= !empty($monitor['model']) ? ' ' . e($monitor['model']) : '' ?>
+                                <?= !empty($monitor['size']) ? ' · ' . e($monitor['size']) . ' inch' : '' ?>
+                            </strong>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+
                     <div class="col-sm-6">
                         <div class="p-2 bg-light rounded">
                             <span class="text-muted small d-block">Bộ nhớ RAM</span>
-                            <strong class="text-dark"><i class="bi bi-memory me-1 text-success"></i><?= e($device['ram_gb'] ?? 0) ?> GB (<?= e($device['ram_type'] ?? '') ?>)</strong>
+                            <strong class="text-dark"><i class="bi bi-memory me-1 text-success"></i><?= !empty($device['ram_gb']) ? e($device['ram_gb']) . ' GB' : '—' ?><?= !empty($device['ram_type']) ? ' (' . e($device['ram_type']) . ')' : '' ?></strong>
                         </div>
                     </div>
 
                     <div class="col-sm-6">
                         <div class="p-2 bg-light rounded">
                             <span class="text-muted small d-block">Ổ cứng thể rắn (SSD)</span>
-                            <strong class="text-dark"><i class="bi bi-hdd me-1 text-warning"></i><?= e($device['ssd_capacity'] ?? 'Không') ?></strong>
+                            <strong class="text-dark"><i class="bi bi-hdd me-1 text-warning"></i><?= e($device['ssd_capacity'] ?? '—') ?></strong>
                         </div>
                     </div>
 
                     <div class="col-sm-6">
                         <div class="p-2 bg-light rounded">
                             <span class="text-muted small d-block">Ổ cứng cơ (HDD)</span>
-                            <strong class="text-dark"><?= e($device['hdd_capacity'] ?? 'Không có') ?></strong>
+                            <strong class="text-dark"><?= e($device['hdd_capacity'] ?? '—') ?></strong>
                         </div>
                     </div>
 
                     <div class="col-sm-6">
                         <div class="p-2 bg-light rounded">
                             <span class="text-muted small d-block">Card đồ họa (GPU)</span>
-                            <strong class="text-dark"><i class="bi bi-gpu-card me-1 text-danger"></i><?= e($device['gpu'] ?? 'Onboard') ?></strong>
+                            <strong class="text-dark"><i class="bi bi-gpu-card me-1 text-danger"></i><?= e($device['gpu'] ?? '—') ?></strong>
                         </div>
                     </div>
 

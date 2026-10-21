@@ -194,7 +194,7 @@
                             <div class="small text-secondary mt-1"><?= e($act['description']) ?></div>
                             <div class="mt-1">
                                 <span class="badge bg-light text-dark border">
-                                    <i class="bi bi-tag me-1"></i><?= e($act['device_code']) ?> (<?= e($act['model']) ?>)
+                                    <i class="bi bi-tag me-1"></i>STT <?= (int)$act['device_id'] ?> (<?= e($act['model'] ?: $act['type']) ?>)
                                 </span>
                             </div>
                         </div>

@@ -49,7 +49,7 @@
                     <tr>
                         <td>
                             <a href="<?= url('devices/' . $r['device_id']) ?>" class="fw-bold text-decoration-none">
-                                <?= e($r['device_code']) ?>
+                                STT <?= (int)$r['device_id'] ?>
                             </a>
                             <div class="small text-muted"><?= e($r['model']) ?> (<?= e($r['type']) ?>)</div>
                         </td>
@@ -97,7 +97,7 @@
                                         <form action="<?= url('maintenance/' . $r['id'] . '/status') ?>" method="POST">
                                             <?= csrf_field() ?>
                                             <div class="modal-header">
-                                                <h5 class="modal-title"><i class="bi bi-tools me-2 text-primary"></i>Hoàn tất bảo trì [<?= e($r['device_code']) ?>]</h5>
+                                                <h5 class="modal-title"><i class="bi bi-tools me-2 text-primary"></i>Hoàn tất bảo trì thiết bị STT <?= (int)$r['device_id'] ?></h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body">

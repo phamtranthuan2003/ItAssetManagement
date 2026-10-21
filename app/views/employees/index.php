@@ -57,9 +57,9 @@
                     <td colspan="8" class="text-center py-4 text-muted">Chưa có nhân viên nào phù hợp.</td>
                 </tr>
                 <?php else: ?>
-                    <?php foreach ($employees as $index => $e): ?>
+                    <?php foreach ($employees as $e): ?>
                     <tr class="<?= $e['status'] === 'resigned' ? 'table-light text-muted' : '' ?>">
-                        <td><?= $index + 1 ?></td>
+                        <td><?= (int)$e['id'] ?></td>
                         <td>
                             <div class="fw-semibold text-dark"><?= e($e['fullname']) ?></div>
                         </td>
@@ -134,6 +134,26 @@
             </tbody>
         </table>
     </div>
+    <?php if ($totalPages > 1): ?>
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+        <small class="text-muted">Hiển thị <?= count($employees) ?> / <?= number_format($totalEmployees) ?> nhân viên · Trang <?= $page ?> / <?= $totalPages ?></small>
+        <nav aria-label="Phân trang nhân viên">
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
+                    <a class="page-link" href="<?= url('employees?' . http_build_query(array_merge($filters, ['page' => max(1, $page - 1)]))) ?>">Trước</a>
+                </li>
+                <?php for ($pageNumber = 1; $pageNumber <= $totalPages; $pageNumber++): ?>
+                    <li class="page-item <?= $pageNumber === $page ? 'active' : '' ?>">
+                        <a class="page-link" href="<?= url('employees?' . http_build_query(array_merge($filters, ['page' => $pageNumber]))) ?>"><?= $pageNumber ?></a>
+                    </li>
+                <?php endfor; ?>
+                <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
+                    <a class="page-link" href="<?= url('employees?' . http_build_query(array_merge($filters, ['page' => min($totalPages, $page + 1)]))) ?>">Sau</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <?php endif; ?>
 </div>
 
 <!-- Modal Thêm mới nhân viên -->

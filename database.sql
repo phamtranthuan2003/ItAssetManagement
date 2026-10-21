@@ -15,6 +15,7 @@ DROP TABLE IF EXISTS `maintenances`;
 DROP TABLE IF EXISTS `device_history`;
 DROP TABLE IF EXISTS `ticket_details`;
 DROP TABLE IF EXISTS `tickets`;
+DROP TABLE IF EXISTS `device_monitors`;
 DROP TABLE IF EXISTS `device_specs`;
 DROP TABLE IF EXISTS `devices`;
 DROP TABLE IF EXISTS `employees`;
@@ -59,9 +60,9 @@ CREATE TABLE `employees` (
 CREATE TABLE `devices` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `device_code` VARCHAR(50) NOT NULL UNIQUE COMMENT 'Mã thiết bị duy nhất',
-    `type` ENUM('PC', 'Laptop') NOT NULL COMMENT 'Loại thiết bị',
-    `brand` VARCHAR(50) NOT NULL COMMENT 'Hãng sản xuất: Dell, HP, Lenovo...',
-    `model` VARCHAR(100) NOT NULL COMMENT 'Tên model',
+    `type` VARCHAR(50) NOT NULL COMMENT 'Loại thiết bị: Laptop, PC, máy in, máy CNC...',
+    `brand` VARCHAR(50) NOT NULL DEFAULT '' COMMENT 'Hãng sản xuất',
+    `model` VARCHAR(100) NOT NULL DEFAULT '' COMMENT 'Tên model',
     `serial_number` VARCHAR(100) DEFAULT NULL COMMENT 'Số serial',
     `import_date` DATE NOT NULL COMMENT 'Ngày nhập kho',
     `warranty_expiry` DATE DEFAULT NULL COMMENT 'Ngày hết hạn bảo hành',
@@ -82,16 +83,27 @@ CREATE TABLE `devices` (
 CREATE TABLE `device_specs` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `device_id` INT NOT NULL UNIQUE,
-    `cpu` VARCHAR(100) NOT NULL COMMENT 'Bộ vi xử lý CPU',
+    `cpu` VARCHAR(100) DEFAULT NULL COMMENT 'Bộ vi xử lý CPU',
     `mainboard` VARCHAR(100) DEFAULT NULL COMMENT 'Chỉ áp dụng cho PC',
-    `ram_gb` INT NOT NULL COMMENT 'Dung lượng RAM tính bằng GB',
-    `ram_type` VARCHAR(50) NOT NULL COMMENT 'Loại RAM: DDR4, DDR5...',
+    `ram_gb` INT DEFAULT NULL COMMENT 'Dung lượng RAM tính bằng GB',
+    `ram_type` VARCHAR(50) DEFAULT NULL COMMENT 'Loại RAM: DDR4, DDR5...',
     `ssd_capacity` VARCHAR(50) DEFAULT NULL COMMENT 'Dung lượng SSD: 256GB, 512GB...',
     `hdd_capacity` VARCHAR(50) DEFAULT NULL COMMENT 'Dung lượng HDD: 1TB, Không...',
     `gpu` VARCHAR(100) DEFAULT NULL COMMENT 'Card đồ họa rời hoặc Onboard',
     `screen_size` VARCHAR(50) DEFAULT NULL COMMENT 'Kích thước màn hình (cho Laptop)',
     `notes` TEXT DEFAULT NULL,
     CONSTRAINT `fk_spec_device` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `device_monitors` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `device_id` INT NOT NULL,
+    `monitor_no` INT NOT NULL,
+    `brand` VARCHAR(100) NOT NULL COMMENT 'Hãng màn hình',
+    `model` VARCHAR(100) DEFAULT NULL COMMENT 'Model màn hình',
+    `size` DECIMAL(4,1) NOT NULL COMMENT 'Kích thước màn hình tính bằng inch',
+    UNIQUE KEY `uq_device_monitor_no` (`device_id`, `monitor_no`),
+    CONSTRAINT `fk_monitor_device` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 6. BẢNG PHIẾU CẤP PHÁT / CHUYỂN GIAO / THU HỒI (TICKETS)

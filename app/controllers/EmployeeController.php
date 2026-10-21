@@ -26,10 +26,19 @@ class EmployeeController extends Controller {
      * Danh sách nhân viên
      */
     public function index(): void {
+        $page = max(1, (int)$this->get('page', 1));
+        $perPage = 10;
         $status = $this->get('status', '');
         $deptId = $this->get('department_id', '');
 
-        $employees = $this->empModel->getAll($status ?: null, $deptId ? (int)$deptId : null);
+        $filters = [
+            'status' => $status,
+            'department_id' => $deptId
+        ];
+        $totalEmployees = $this->empModel->countFiltered($status ?: null, $deptId ? (int)$deptId : null);
+        $totalPages = (int)ceil($totalEmployees / $perPage);
+        $page = min($page, max(1, $totalPages));
+        $employees = $this->empModel->getAll($status ?: null, $deptId ? (int)$deptId : null, $page, $perPage);
         $departments = $this->deptModel->getAll();
 
         $this->render('employees/index', [
@@ -37,7 +46,11 @@ class EmployeeController extends Controller {
             'employees'   => $employees,
             'departments' => $departments,
             'status'      => $status,
-            'deptId'      => $deptId
+            'deptId'      => $deptId,
+            'filters'     => $filters,
+            'page'        => $page,
+            'totalPages'  => $totalPages,
+            'totalEmployees' => $totalEmployees
         ]);
     }
 
@@ -95,7 +108,6 @@ class EmployeeController extends Controller {
     public function update(int $id): void {
         $this->validateCsrf();
 
-        $code = strtoupper($this->post('code', ''));
         $fullname = $this->post('fullname', '');
         $email = $this->post('email', '');
         $phone = $this->post('phone', '');
@@ -103,16 +115,11 @@ class EmployeeController extends Controller {
         $position = $this->post('position', '');
         $status = $this->post('status', 'working');
 
-        if (empty($code) || empty($fullname) || $deptId <= 0) {
-            redirect("employees/{$id}", 'Vui lòng điền mã nhân viên, họ tên và chọn phòng ban!', 'danger');
-        }
-
-        if ($this->empModel->isCodeExists($code, $id)) {
-            redirect("employees/{$id}", "Mã nhân viên [{$code}] đã tồn tại!", 'danger');
+        if (empty($fullname) || $deptId <= 0) {
+            redirect("employees/{$id}", 'Vui lòng điền họ tên và chọn phòng ban!', 'danger');
         }
 
         $this->empModel->update($id, [
-            'code'          => $code,
             'fullname'      => $fullname,
             'email'         => $email,
             'phone'         => $phone,

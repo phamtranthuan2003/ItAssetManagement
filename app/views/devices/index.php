@@ -6,18 +6,14 @@
                 <label class="form-label small fw-semibold">Từ khóa tìm kiếm</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" name="keyword" class="form-control" placeholder="Mã máy, Model, Serial..." value="<?= e($filters['keyword']) ?>">
+                    <input type="text" name="keyword" class="form-control" placeholder="Loại, hãng, model, serial..." value="<?= e($filters['keyword']) ?>">
                 </div>
             </div>
 
             <!-- Loại thiết bị -->
             <div class="col-md-2">
                 <label class="form-label small fw-semibold">Loại thiết bị</label>
-                <select name="type" class="form-select">
-                    <option value="">-- Tất cả --</option>
-                    <option value="PC" <?= $filters['type'] === 'PC' ? 'selected' : '' ?>>Máy tính bàn (PC)</option>
-                    <option value="Laptop" <?= $filters['type'] === 'Laptop' ? 'selected' : '' ?>>Laptop</option>
-                </select>
+                <input type="text" name="type" class="form-control" placeholder="PC, Laptop, Máy CNC..." value="<?= e($filters['type']) ?>">
             </div>
 
             <!-- Trạng thái -->
@@ -122,8 +118,8 @@
         <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
-                    <th style="width: 140px;">Mã thiết bị</th>
-                    <th>Loại & Thương hiệu</th>
+                    <th style="width: 80px;">STT</th>
+                    <th>Loại thiết bị</th>
                     <th>Cấu hình chi tiết</th>
                     <th>Trạng thái</th>
                     <th>Tình trạng</th>
@@ -145,30 +141,36 @@
                     <tr>
                         <td>
                             <a href="<?= url('devices/' . $d['id']) ?>" class="fw-bold text-decoration-none">
-                                <?= e($d['device_code']) ?>
+                                <?= (int)$d['id'] ?>
                             </a>
                             <div class="small text-muted font-monospace">SN: <?= e($d['serial_number'] ?? '—') ?></div>
                         </td>
                         <td>
                             <div class="d-flex align-items-center gap-2">
                                 <span class="badge bg-secondary-subtle text-secondary border">
-                                    <i class="bi bi-<?= $d['type'] === 'PC' ? 'pc' : 'laptop' ?> me-1"></i><?= e($d['type']) ?>
+                                    <i class="bi bi-<?= $d['type'] === 'PC' ? 'pc' : ($d['type'] === 'Laptop' ? 'laptop' : 'box-seam') ?> me-1"></i><?= e($d['type']) ?>
                                 </span>
                                 <div>
-                                    <div class="fw-semibold text-dark"><?= e($d['model']) ?></div>
-                                    <small class="text-muted"><?= e($d['brand']) ?></small>
+                                    <div class="fw-semibold text-dark"><?= e($d['model'] ?: '—') ?></div>
+                                    <?php if (!empty($d['brand'])): ?>
+                                        <small class="text-muted"><?= e($d['brand']) ?></small>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </td>
                         <td>
-                            <div class="small">
-                                <span class="text-dark fw-semibold"><i class="bi bi-cpu me-1 text-primary"></i><?= e($d['cpu']) ?></span>
-                            </div>
                             <div class="small text-muted">
-                                <span>RAM: <?= e($d['ram_gb']) ?>GB <?= e($d['ram_type']) ?></span> |
-                                <span>SSD: <?= e($d['ssd_capacity'] ?? 'Không') ?></span>
-                                <?php if (!empty($d['gpu'])): ?>
-                                    | <span class="text-secondary"><?= e($d['gpu']) ?></span>
+                                <?php if (!empty($d['cpu'])): ?>
+                                    <span><?= e($d['cpu']) ?></span>
+                                <?php endif; ?>
+                                <?php if (!empty($d['ram_gb'])): ?>
+                                    <span><?= !empty($d['cpu']) ? ' | ' : '' ?>RAM <?= e($d['ram_gb']) ?>GB <?= e($d['ram_type'] ?? '') ?></span>
+                                <?php endif; ?>
+                                <?php if (!empty($d['ssd_capacity'])): ?>
+                                    <span><?= (!empty($d['cpu']) || !empty($d['ram_gb'])) ? ' | ' : '' ?>SSD <?= e($d['ssd_capacity']) ?></span>
+                                <?php endif; ?>
+                                <?php if (empty($d['cpu']) && empty($d['ram_gb']) && empty($d['ssd_capacity'])): ?>
+                                    <span>—</span>
                                 <?php endif; ?>
                             </div>
                         </td>
@@ -225,7 +227,7 @@
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body">
-                                                Bạn có chắc chắn muốn xóa thiết bị <strong><?= e($d['device_code']) ?></strong> (<?= e($d['model']) ?>) khỏi hệ thống? Thao tác này không thể hoàn tác.
+                                                Bạn có chắc chắn muốn xóa thiết bị STT <strong><?= (int)$d['id'] ?></strong> (<?= e($d['model'] ?: $d['type']) ?>) khỏi hệ thống? Thao tác này không thể hoàn tác.
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>

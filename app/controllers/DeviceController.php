@@ -1,7 +1,7 @@
 <?php
 /**
  * File: app/controllers/DeviceController.php
- * Controller quản lý thiết bị (PC, Laptop) và cấu hình chi tiết
+ * Controller quản lý thiết bị và cấu hình chi tiết
  */
 
 require_once __DIR__ . '/../../core/Controller.php';
@@ -46,14 +46,15 @@ class DeviceController extends Controller {
             'expiring_warranty' => $this->get('expiring_warranty', '')
         ];
 
-        $devices = $this->deviceModel->getList($filters, $page, $perPage);
         $totalDevices = $this->deviceModel->countFiltered($filters);
         $totalPages = (int)ceil($totalDevices / $perPage);
+        $page = min($page, max(1, $totalPages));
+        $devices = $this->deviceModel->getList($filters, $page, $perPage);
 
         $departments = $this->deptModel->getAll();
 
         $this->render('devices/index', [
-            'pageTitle'    => 'Quản lý thiết bị (PC / Laptop)',
+            'pageTitle'    => 'Quản lý thiết bị',
             'devices'      => $devices,
             'filters'      => $filters,
             'page'         => $page,
@@ -81,8 +82,7 @@ class DeviceController extends Controller {
     public function store(): void {
         $this->validateCsrf();
 
-        $deviceCode = strtoupper($this->post('device_code', ''));
-        $type = $this->post('type', 'Laptop');
+        $type = trim($this->post('type', ''));
         $brand = $this->post('brand', '');
         $model = $this->post('model', '');
         $serial = $this->post('serial_number', '');
@@ -94,26 +94,40 @@ class DeviceController extends Controller {
         // Specs
         $cpu = $this->post('cpu', '');
         $mainboard = $this->post('mainboard', '');
-        $ramGb = (int)$this->post('ram_gb', 8);
-        $ramType = $this->post('ram_type', 'DDR4');
+        $ramGb = $this->post('ram_gb', '');
+        $ramType = $this->post('ram_type', '');
         $ssdCapacity = $this->post('ssd_capacity', '');
         $hddCapacity = $this->post('hdd_capacity', '');
         $gpu = $this->post('gpu', '');
         $screenSize = $this->post('screen_size', '');
         $specNotes = $this->post('spec_notes', '');
+        $hasMonitors = $this->post('has_monitors', '') === '1';
+        $monitors = $this->post('monitors', []);
+        if (!is_array($monitors)) {
+            $monitors = [];
+        }
+        $monitors = array_values(array_filter($monitors, static function ($monitor): bool {
+            if (!is_array($monitor)) {
+                return false;
+            }
+            foreach (['brand', 'model', 'size'] as $field) {
+                if (isset($monitor[$field]) && is_scalar($monitor[$field]) && trim((string)$monitor[$field]) !== '') {
+                    return true;
+                }
+            }
+            return false;
+        }));
 
         // Validate cơ bản
-        if (empty($deviceCode) || empty($brand) || empty($model) || empty($cpu)) {
-            redirect('devices/create', 'Vui lòng điền đầy đủ các thông tin bắt buộc (*)', 'danger');
+        if ($type === '') {
+            redirect('devices/create', 'Vui lòng nhập loại thiết bị!', 'danger');
         }
-
-        if ($this->deviceModel->isCodeExists($deviceCode)) {
-            redirect('devices/create', "Mã thiết bị [{$deviceCode}] đã tồn tại trong hệ thống!", 'danger');
+        if ($hasMonitors && !$this->areMonitorDetailsValid($monitors)) {
+            redirect('devices/create', 'Vui lòng nhập hãng và kích thước hợp lệ cho từng màn hình đi kèm!', 'danger');
         }
 
         try {
             $deviceData = [
-                'device_code'     => $deviceCode,
                 'type'            => $type,
                 'brand'           => $brand,
                 'model'           => $model,
@@ -127,18 +141,19 @@ class DeviceController extends Controller {
 
             $specData = [
                 'cpu'          => $cpu,
-                'mainboard'    => $type === 'PC' ? $mainboard : null,
+                'mainboard'    => $mainboard,
                 'ram_gb'       => $ramGb,
                 'ram_type'     => $ramType,
                 'ssd_capacity' => $ssdCapacity,
                 'hdd_capacity' => $hddCapacity,
                 'gpu'          => $gpu,
-                'screen_size'  => $type === 'Laptop' ? $screenSize : null,
+                'screen_size'  => $screenSize,
+                'monitors'     => $hasMonitors ? $monitors : [],
                 'spec_notes'   => $specNotes
             ];
 
             $newId = $this->deviceModel->create($deviceData, $specData, Auth::id());
-            redirect("devices/{$newId}", "Thêm mới thiết bị {$deviceCode} thành công và lưu vào kho!", 'success');
+            redirect("devices/{$newId}", "Đã thêm thiết bị {$type} vào kho thành công!", 'success');
         } catch (Exception $e) {
             redirect('devices/create', 'Lỗi khi lưu thiết bị: ' . $e->getMessage(), 'danger');
         }
@@ -158,7 +173,7 @@ class DeviceController extends Controller {
         $maintenances = $this->maintModel->getByDeviceId($id);
 
         $this->render('devices/show', [
-            'pageTitle'    => 'Chi tiết thiết bị: ' . $device['device_code'],
+            'pageTitle'    => 'Chi tiết thiết bị STT ' . $device['id'],
             'device'       => $device,
             'timeline'     => $timeline,
             'maintenances' => $maintenances
@@ -176,7 +191,7 @@ class DeviceController extends Controller {
         }
 
         $this->render('devices/edit', [
-            'pageTitle' => 'Chỉnh sửa thiết bị: ' . $device['device_code'],
+            'pageTitle' => 'Chỉnh sửa thiết bị STT ' . $device['id'],
             'device'    => $device
         ]);
     }
@@ -192,8 +207,7 @@ class DeviceController extends Controller {
             redirect('devices', 'Không tìm thấy thiết bị yêu cầu!', 'danger');
         }
 
-        $deviceCode = strtoupper($this->post('device_code', ''));
-        $type = $this->post('type', 'Laptop');
+        $type = trim($this->post('type', ''));
         $brand = $this->post('brand', '');
         $model = $this->post('model', '');
         $serial = $this->post('serial_number', '');
@@ -206,25 +220,39 @@ class DeviceController extends Controller {
         // Specs
         $cpu = $this->post('cpu', '');
         $mainboard = $this->post('mainboard', '');
-        $ramGb = (int)$this->post('ram_gb', 8);
-        $ramType = $this->post('ram_type', 'DDR4');
+        $ramGb = $this->post('ram_gb', '');
+        $ramType = $this->post('ram_type', '');
         $ssdCapacity = $this->post('ssd_capacity', '');
         $hddCapacity = $this->post('hdd_capacity', '');
         $gpu = $this->post('gpu', '');
         $screenSize = $this->post('screen_size', '');
         $specNotes = $this->post('spec_notes', '');
-
-        if (empty($deviceCode) || empty($brand) || empty($model) || empty($cpu)) {
-            redirect("devices/{$id}/edit", 'Vui lòng điền đầy đủ các thông tin bắt buộc (*)', 'danger');
+        $hasMonitors = $this->post('has_monitors', '') === '1';
+        $monitors = $this->post('monitors', []);
+        if (!is_array($monitors)) {
+            $monitors = [];
         }
+        $monitors = array_values(array_filter($monitors, static function ($monitor): bool {
+            if (!is_array($monitor)) {
+                return false;
+            }
+            foreach (['brand', 'model', 'size'] as $field) {
+                if (isset($monitor[$field]) && is_scalar($monitor[$field]) && trim((string)$monitor[$field]) !== '') {
+                    return true;
+                }
+            }
+            return false;
+        }));
 
-        if ($this->deviceModel->isCodeExists($deviceCode, $id)) {
-            redirect("devices/{$id}/edit", "Mã thiết bị [{$deviceCode}] đã tồn tại ở thiết bị khác!", 'danger');
+        if ($type === '') {
+            redirect("devices/{$id}/edit", 'Vui lòng nhập loại thiết bị!', 'danger');
+        }
+        if ($hasMonitors && !$this->areMonitorDetailsValid($monitors)) {
+            redirect("devices/{$id}/edit", 'Vui lòng nhập hãng và kích thước hợp lệ cho từng màn hình đi kèm!', 'danger');
         }
 
         try {
             $deviceData = [
-                'device_code'     => $deviceCode,
                 'type'            => $type,
                 'brand'           => $brand,
                 'model'           => $model,
@@ -238,21 +266,39 @@ class DeviceController extends Controller {
 
             $specData = [
                 'cpu'          => $cpu,
-                'mainboard'    => $type === 'PC' ? $mainboard : null,
+                'mainboard'    => $mainboard,
                 'ram_gb'       => $ramGb,
                 'ram_type'     => $ramType,
                 'ssd_capacity' => $ssdCapacity,
                 'hdd_capacity' => $hddCapacity,
                 'gpu'          => $gpu,
-                'screen_size'  => $type === 'Laptop' ? $screenSize : null,
+                'screen_size'  => $screenSize,
+                'monitors'     => $hasMonitors ? $monitors : [],
                 'spec_notes'   => $specNotes
             ];
 
             $this->deviceModel->update($id, $deviceData, $specData);
-            redirect("devices/{$id}", "Cập nhật thiết bị {$deviceCode} thành công!", 'success');
+            redirect("devices/{$id}", "Cập nhật thiết bị STT {$id} thành công!", 'success');
         } catch (Exception $e) {
             redirect("devices/{$id}/edit", 'Lỗi cập nhật: ' . $e->getMessage(), 'danger');
         }
+
+    }
+
+    private function areMonitorDetailsValid(array $monitors): bool {
+        if (count($monitors) < 1) {
+            return false;
+        }
+
+        foreach ($monitors as $monitor) {
+            $brand = isset($monitor['brand']) && is_scalar($monitor['brand']) ? trim((string)$monitor['brand']) : '';
+            $size = $monitor['size'] ?? '';
+            if ($brand === '' || !is_scalar($size) || !is_numeric($size) || (float)$size < 1 || (float)$size > 100) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -271,7 +317,7 @@ class DeviceController extends Controller {
         }
 
         $this->deviceModel->delete($id);
-        redirect('devices', "Đã xóa thiết bị [{$device['device_code']}] thành công!", 'success');
+        redirect('devices', "Đã xóa thiết bị STT {$id} thành công!", 'success');
     }
 
     /**
@@ -307,7 +353,7 @@ class DeviceController extends Controller {
         // Tiêu đề cột
         fputcsv($output, [
             'STT',
-            'Mã Thiết Bị',
+            'STT',
             'Loại',
             'Hãng',
             'Model',
@@ -348,7 +394,7 @@ class DeviceController extends Controller {
 
             fputcsv($output, [
                 $stt++,
-                $d['device_code'],
+                $d['id'],
                 $d['type'],
                 $d['brand'],
                 $d['model'],

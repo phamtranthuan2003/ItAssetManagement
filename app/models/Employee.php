@@ -12,9 +12,12 @@ class Employee extends Model {
     /**
      * Lấy danh sách nhân viên kèm thông tin phòng ban và số lượng thiết bị đang giữ
      */
-    public function getAll(?string $status = null, ?int $departmentId = null): array {
+    public function getAll(?string $status = null, ?int $departmentId = null, int $page = 1, int $perPage = 10): array {
         $where = [];
         $params = [];
+        $page = max(1, $page);
+        $perPage = max(1, $perPage);
+        $offset = ($page - 1) * $perPage;
 
         if ($status !== null && $status !== '') {
             $where[] = "e.status = :status";
@@ -33,9 +36,28 @@ class Employee extends Model {
                 FROM {$this->table} e
                 JOIN departments d ON e.department_id = d.id
                 {$whereClause}
-                ORDER BY e.status ASC, e.id DESC";
+                ORDER BY e.id DESC
+                LIMIT {$perPage} OFFSET {$offset}";
 
         return $this->fetchAll($sql, $params);
+    }
+
+    public function countFiltered(?string $status = null, ?int $departmentId = null): int {
+        $where = [];
+        $params = [];
+
+        if ($status !== null && $status !== '') {
+            $where[] = "status = :status";
+            $params['status'] = $status;
+        }
+
+        if ($departmentId !== null && $departmentId > 0) {
+            $where[] = "department_id = :department_id";
+            $params['department_id'] = $departmentId;
+        }
+
+        $whereClause = !empty($where) ? "WHERE " . implode(' AND ', $where) : "";
+        return $this->count("SELECT COUNT(*) FROM {$this->table} {$whereClause}", $params);
     }
 
     /**
@@ -88,12 +110,12 @@ class Employee extends Model {
      */
     public function update(int $id, array $data): bool {
         $sql = "UPDATE {$this->table} 
-                SET code = :code, fullname = :fullname, email = :email, phone = :phone, 
+                SET code = COALESCE(:code, code), fullname = :fullname, email = :email, phone = :phone,
                     department_id = :department_id, position = :position, status = :status
                 WHERE id = :id";
         return (bool)$this->query($sql, [
             'id'            => $id,
-            'code'          => strtoupper(trim($data['code'])),
+            'code'          => isset($data['code']) ? strtoupper(trim($data['code'])) : null,
             'fullname'      => trim($data['fullname']),
             'email'         => trim($data['email'] ?? ''),
             'phone'         => trim($data['phone'] ?? ''),

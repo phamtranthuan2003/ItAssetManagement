@@ -107,7 +107,7 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Mã máy</th>
+                                    <th>STT</th>
                                     <th>Người mượn</th>
                                     <th>Hạn trả</th>
                                     <th class="text-end">Thao tác</th>
@@ -118,7 +118,7 @@
                                 <tr>
                                     <td>
                                         <a href="<?= url('devices/' . $ov['id']) ?>" class="fw-bold text-decoration-none">
-                                            <?= e($ov['device_code']) ?>
+                                            <?= (int)$ov['id'] ?>
                                         </a>
                                         <div class="small text-muted"><?= e($ov['model']) ?></div>
                                     </td>
@@ -155,7 +155,7 @@
         <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
-                    <th>Mã máy</th>
+                    <th>STT</th>
                     <th>Loại</th>
                     <th>Thương hiệu & Model</th>
                     <th>Số Serial</th>
@@ -177,7 +177,7 @@
                     <tr>
                         <td>
                             <a href="<?= url('devices/' . $ed['id']) ?>" class="fw-bold text-decoration-none">
-                                <?= e($ed['device_code']) ?>
+                                <?= (int)$ed['id'] ?>
                             </a>
                         </td>
                         <td><?= e($ed['type']) ?></td>

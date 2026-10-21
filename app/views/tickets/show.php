@@ -101,7 +101,7 @@
             <thead class="table-light">
                 <tr>
                     <th style="width: 50px;">STT</th>
-                    <th>Mã thiết bị</th>
+                    <th>STT thiết bị</th>
                     <th>Loại & Tên Model</th>
                     <th>Cấu hình tóm tắt</th>
                     <th>Phụ kiện đi kèm bàn giao</th>
@@ -120,7 +120,7 @@
                     <td><?= $stt++ ?></td>
                     <td>
                         <a href="<?= url('devices/' . $item['device_id']) ?>" class="fw-bold text-decoration-none">
-                            <?= e($item['device_code']) ?>
+                            <?= (int)$item['device_id'] ?>
                         </a>
                         <div class="small text-muted font-monospace">SN: <?= e($item['serial_number'] ?? '—') ?></div>
                     </td>

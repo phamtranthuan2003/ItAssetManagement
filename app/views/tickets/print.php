@@ -148,7 +148,7 @@
         <thead>
             <tr>
                 <th style="width: 5%;">STT</th>
-                <th style="width: 18%;">Mã thiết bị</th>
+                <th style="width: 18%;">STT thiết bị</th>
                 <th style="width: 25%;">Chủng loại / Model</th>
                 <th style="width: 18%;">Số Serial</th>
                 <th style="width: 34%;">Cấu hình & Phụ kiện đi kèm</th>
@@ -161,7 +161,7 @@
             ?>
             <tr>
                 <td class="text-center"><?= $i++ ?></td>
-                <td><strong><?= e($row['device_code']) ?></strong></td>
+                <td><strong><?= (int)$row['device_id'] ?></strong></td>
                 <td><?= e($row['brand']) ?> <?= e($row['model']) ?> (<?= e($row['type']) ?>)</td>
                 <td class="font-monospace text-center"><?= e($row['serial_number'] ?? '—') ?></td>
                 <td>

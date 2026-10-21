@@ -25,10 +25,10 @@ class DeviceSpec extends Model {
                 VALUES (:device_id, :cpu, :mainboard, :ram_gb, :ram_type, :ssd_capacity, :hdd_capacity, :gpu, :screen_size, :notes)";
         return (bool)$this->query($sql, [
             'device_id'    => $deviceId,
-            'cpu'          => trim($data['cpu'] ?? ''),
+            'cpu'          => !empty($data['cpu']) ? trim($data['cpu']) : null,
             'mainboard'    => !empty($data['mainboard']) ? trim($data['mainboard']) : null,
-            'ram_gb'       => (int)($data['ram_gb'] ?? 8),
-            'ram_type'     => trim($data['ram_type'] ?? 'DDR4'),
+            'ram_gb'       => isset($data['ram_gb']) && $data['ram_gb'] !== '' ? (int)$data['ram_gb'] : null,
+            'ram_type'     => !empty($data['ram_type']) ? trim($data['ram_type']) : null,
             'ssd_capacity' => !empty($data['ssd_capacity']) ? trim($data['ssd_capacity']) : null,
             'hdd_capacity' => !empty($data['hdd_capacity']) ? trim($data['hdd_capacity']) : null,
             'gpu'          => !empty($data['gpu']) ? trim($data['gpu']) : null,
@@ -60,10 +60,10 @@ class DeviceSpec extends Model {
 
         return (bool)$this->query($sql, [
             'device_id'    => $deviceId,
-            'cpu'          => trim($data['cpu'] ?? ''),
+            'cpu'          => !empty($data['cpu']) ? trim($data['cpu']) : null,
             'mainboard'    => !empty($data['mainboard']) ? trim($data['mainboard']) : null,
-            'ram_gb'       => (int)($data['ram_gb'] ?? 8),
-            'ram_type'     => trim($data['ram_type'] ?? 'DDR4'),
+            'ram_gb'       => isset($data['ram_gb']) && $data['ram_gb'] !== '' ? (int)$data['ram_gb'] : null,
+            'ram_type'     => !empty($data['ram_type']) ? trim($data['ram_type']) : null,
             'ssd_capacity' => !empty($data['ssd_capacity']) ? trim($data['ssd_capacity']) : null,
             'hdd_capacity' => !empty($data['hdd_capacity']) ? trim($data['hdd_capacity']) : null,
             'gpu'          => !empty($data['gpu']) ? trim($data['gpu']) : null,

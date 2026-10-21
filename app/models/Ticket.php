@@ -122,12 +122,12 @@ class Ticket extends Model {
                 if ($ticketType === 'allocation') {
                     // Ràng buộc: Cấp phát CHỈ cho thiết bị đang "Trong kho" (in_stock)
                     if ($device['status'] !== 'in_stock') {
-                        throw new Exception("Thiết bị [{$device['device_code']}] không ở trạng thái 'Trong kho' (hiện tại: {$device['status']}), không thể cấp phát!");
+                        throw new Exception("Thiết bị STT {$deviceId} không ở trạng thái 'Trong kho' (hiện tại: {$device['status']}), không thể cấp phát!");
                     }
                 } elseif ($ticketType === 'revocation') {
                     // Ràng buộc: Không thu hồi thiết bị đang ở kho
                     if ($device['status'] === 'in_stock') {
-                        throw new Exception("Thiết bị [{$device['device_code']}] đang ở 'Trong kho', không thể thực hiện thu hồi!");
+                        throw new Exception("Thiết bị STT {$deviceId} đang ở 'Trong kho', không thể thực hiện thu hồi!");
                     }
                 }
             }

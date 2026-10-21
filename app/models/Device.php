@@ -1,7 +1,7 @@
 <?php
 /**
  * File: app/models/Device.php
- * Model quản lý thiết bị trong kho (PC, Laptop)
+ * Model quản lý thiết bị trong kho
  */
 
 require_once __DIR__ . '/../../core/Model.php';
@@ -18,10 +18,10 @@ class Device extends Model {
         $where = [];
         $params = [];
 
-        // Tìm kiếm từ khóa chung (Mã thiết bị, Hãng, Model, Serial)
+        // Tìm kiếm theo loại, hãng, model và serial.
         if (!empty($filters['keyword'])) {
             $kw = '%' . trim($filters['keyword']) . '%';
-            $where[] = "(d.device_code LIKE :kw1 OR d.brand LIKE :kw2 OR d.model LIKE :kw3 OR d.serial_number LIKE :kw4)";
+            $where[] = "(d.type LIKE :kw1 OR d.brand LIKE :kw2 OR d.model LIKE :kw3 OR d.serial_number LIKE :kw4)";
             $params['kw1'] = $kw;
             $params['kw2'] = $kw;
             $params['kw3'] = $kw;
@@ -151,7 +151,8 @@ class Device extends Model {
      */
     public function findByIdWithSpec(int $id): ?array {
         $sql = "SELECT d.*, 
-                       s.cpu, s.mainboard, s.ram_gb, s.ram_type, s.ssd_capacity, s.hdd_capacity, s.gpu, s.screen_size, s.notes AS spec_notes,
+                       s.cpu, s.mainboard, s.ram_gb, s.ram_type, s.ssd_capacity, s.hdd_capacity, s.gpu, s.screen_size,
+                       s.notes AS spec_notes,
                        e.fullname AS employee_name, e.code AS employee_code, e.phone AS employee_phone, e.email AS employee_email,
                        dep.name AS department_name, dep.code AS department_code
                 FROM {$this->table} d
@@ -160,7 +161,14 @@ class Device extends Model {
                 LEFT JOIN departments dep ON d.current_department_id = dep.id
                 WHERE d.id = :id LIMIT 1";
 
-        return $this->fetch($sql, ['id' => $id]);
+        $device = $this->fetch($sql, ['id' => $id]);
+        if ($device) {
+            $device['monitors'] = $this->fetchAll(
+                "SELECT brand, model, size FROM device_monitors WHERE device_id = :device_id ORDER BY monitor_no ASC",
+                ['device_id' => $id]
+            );
+        }
+        return $device;
     }
 
     /**
@@ -169,13 +177,17 @@ class Device extends Model {
     public function create(array $deviceData, array $specData, int $userId): int {
         $this->beginTransaction();
         try {
+            do {
+                $deviceCode = 'TB' . strtoupper(bin2hex(random_bytes(12)));
+            } while ($this->isCodeExists($deviceCode));
+
             $sql = "INSERT INTO {$this->table} 
                     (device_code, type, brand, model, serial_number, import_date, warranty_expiry, condition_state, status, notes)
                     VALUES 
                     (:device_code, :type, :brand, :model, :serial_number, :import_date, :warranty_expiry, :condition_state, :status, :notes)";
 
             $this->query($sql, [
-                'device_code'     => strtoupper(trim($deviceData['device_code'])),
+                'device_code'     => $deviceCode,
                 'type'            => $deviceData['type'],
                 'brand'           => trim($deviceData['brand']),
                 'model'           => trim($deviceData['model']),
@@ -192,6 +204,7 @@ class Device extends Model {
             // Lưu cấu hình chi tiết
             $specModel = new DeviceSpec();
             $specModel->create($deviceId, $specData);
+            $this->replaceMonitors($deviceId, $specData['monitors'] ?? []);
 
             // Ghi nhật ký lịch sử nhập kho
             $historyModel = new DeviceHistory();
@@ -200,7 +213,7 @@ class Device extends Model {
                 'ticket_id'    => null,
                 'action_type'  => 'import',
                 'performed_by' => $userId,
-                'description'  => "Nhập kho thiết bị mới {$deviceData['type']} {$deviceData['brand']} {$deviceData['model']} (Mã: {$deviceData['device_code']})"
+                'description'  => "Nhập kho thiết bị mới STT {$deviceId}: {$deviceData['type']} {$deviceData['brand']} {$deviceData['model']}"
             ]);
 
             $this->commit();
@@ -218,7 +231,6 @@ class Device extends Model {
         $this->beginTransaction();
         try {
             $sql = "UPDATE {$this->table} SET 
-                        device_code = :device_code,
                         type = :type,
                         brand = :brand,
                         model = :model,
@@ -232,7 +244,6 @@ class Device extends Model {
 
             $this->query($sql, [
                 'id'              => $id,
-                'device_code'     => strtoupper(trim($deviceData['device_code'])),
                 'type'            => $deviceData['type'],
                 'brand'           => trim($deviceData['brand']),
                 'model'           => trim($deviceData['model']),
@@ -247,12 +258,32 @@ class Device extends Model {
             // Cập nhật cấu hình
             $specModel = new DeviceSpec();
             $specModel->update($id, $specData);
+            $this->replaceMonitors($id, $specData['monitors'] ?? []);
 
             $this->commit();
             return true;
         } catch (Exception $e) {
             $this->rollBack();
             throw $e;
+        }
+
+    }
+
+    private function replaceMonitors(int $deviceId, array $monitors): void {
+        $this->query("DELETE FROM device_monitors WHERE device_id = :device_id", ['device_id' => $deviceId]);
+        $sql = "INSERT INTO device_monitors (device_id, monitor_no, brand, model, size)
+                VALUES (:device_id, :monitor_no, :brand, :model, :size)";
+        foreach (array_values($monitors) as $index => $monitor) {
+            if (!is_array($monitor)) {
+                continue;
+            }
+            $this->query($sql, [
+                'device_id' => $deviceId,
+                'monitor_no' => $index + 1,
+                'brand' => trim((string)($monitor['brand'] ?? '')),
+                'model' => !empty($monitor['model']) ? trim((string)$monitor['model']) : null,
+                'size' => (float)($monitor['size'] ?? 0)
+            ]);
         }
     }
 
