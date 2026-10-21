@@ -10,10 +10,10 @@
         </div>
     </div>
     <div class="d-flex gap-2">
-        <a href="<?= url('devices/' . $device['id'] . '/edit') ?>" class="btn btn-outline-primary btn-sm">
+        <a href="<?= url('devices/' . $device['id'] . '/edit?' . http_build_query(['return_to' => $returnTo])) ?>" class="btn btn-outline-primary btn-sm">
             <i class="bi bi-pencil me-1"></i> Chỉnh sửa
         </a>
-        <a href="<?= url('devices') ?>" class="btn btn-outline-secondary btn-sm">
+        <a href="<?= url($returnTo) ?>" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-arrow-left me-1"></i> Danh sách
         </a>
     </div>

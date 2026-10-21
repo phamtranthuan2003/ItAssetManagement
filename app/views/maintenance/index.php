@@ -96,6 +96,7 @@
                                     <div class="modal-content">
                                         <form action="<?= url('maintenance/' . $r['id'] . '/status') ?>" method="POST">
                                             <?= csrf_field() ?>
+                                            <input type="hidden" name="return_to" value="<?= e('maintenance?' . http_build_query(['status' => $status])) ?>">
                                             <div class="modal-header">
                                                 <h5 class="modal-title"><i class="bi bi-tools me-2 text-primary"></i>Hoàn tất bảo trì thiết bị STT <?= (int)$r['device_id'] ?></h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>

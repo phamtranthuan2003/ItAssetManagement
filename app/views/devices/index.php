@@ -202,10 +202,10 @@
                         </td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
-                                <a href="<?= url('devices/' . $d['id']) ?>" class="btn btn-outline-secondary" title="Xem chi tiết">
+                                <a href="<?= url('devices/' . $d['id'] . '?' . http_build_query(['return_to' => $returnTo])) ?>" class="btn btn-outline-secondary" title="Xem chi tiết">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a href="<?= url('devices/' . $d['id'] . '/edit') ?>" class="btn btn-outline-primary" title="Sửa thông tin">
+                                <a href="<?= url('devices/' . $d['id'] . '/edit?' . http_build_query(['return_to' => $returnTo])) ?>" class="btn btn-outline-primary" title="Sửa thông tin">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                                 <?php if ($d['status'] !== 'allocated'): ?>
@@ -222,6 +222,7 @@
                                     <div class="modal-content">
                                         <form action="<?= url('devices/' . $d['id'] . '/delete') ?>" method="POST">
                                             <?= csrf_field() ?>
+                                            <input type="hidden" name="return_to" value="<?= e($returnTo) ?>">
                                             <div class="modal-header">
                                                 <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Xác nhận xóa thiết bị</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>

@@ -11,6 +11,7 @@
             <div class="card-body p-4">
                 <form action="<?= url('employees/' . $employee['id'] . '/update') ?>" method="POST">
                     <?= csrf_field() ?>
+                    <input type="hidden" name="return_to" value="<?= e($returnTo) ?>">
 
                     <div class="mb-3">
                         <label class="form-label small fw-semibold">STT</label>
@@ -167,7 +168,7 @@
         </div>
 
         <div class="d-flex justify-content-between">
-            <a href="<?= url('employees') ?>" class="btn btn-outline-secondary">
+            <a href="<?= url($returnTo) ?>" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i> Trở về danh sách nhân viên
             </a>
             <?php if ($employee['status'] === 'working'): ?>

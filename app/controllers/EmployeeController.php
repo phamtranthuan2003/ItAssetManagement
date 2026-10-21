@@ -50,7 +50,8 @@ class EmployeeController extends Controller {
             'filters'     => $filters,
             'page'        => $page,
             'totalPages'  => $totalPages,
-            'totalEmployees' => $totalEmployees
+            'totalEmployees' => $totalEmployees,
+            'returnTo'    => 'employees?' . http_build_query(array_merge($filters, ['page' => $page]))
         ]);
     }
 
@@ -98,7 +99,8 @@ class EmployeeController extends Controller {
         $this->render('employees/show', [
             'pageTitle'   => 'Hồ sơ nhân viên: ' . $employee['fullname'],
             'employee'    => $employee,
-            'heldDevices' => $heldDevices
+            'heldDevices' => $heldDevices,
+            'returnTo'    => $this->returnTo('employees', 'employees')
         ]);
     }
 
@@ -116,7 +118,7 @@ class EmployeeController extends Controller {
         $status = $this->post('status', 'working');
 
         if (empty($fullname) || $deptId <= 0) {
-            redirect("employees/{$id}", 'Vui lòng điền họ tên và chọn phòng ban!', 'danger');
+            redirect($this->returnTo("employees/{$id}", 'employees'), 'Vui lòng điền họ tên và chọn phòng ban!', 'danger');
         }
 
         $this->empModel->update($id, [
@@ -128,7 +130,7 @@ class EmployeeController extends Controller {
             'status'        => $status
         ]);
 
-        redirect("employees/{$id}", "Cập nhật thông tin nhân viên thành công!", 'success');
+        redirect($this->returnTo("employees/{$id}", 'employees'), "Cập nhật thông tin nhân viên thành công!", 'success');
     }
 
     /**
@@ -202,13 +204,14 @@ class EmployeeController extends Controller {
      */
     public function delete(int $id): void {
         $this->validateCsrf();
+        $returnTo = $this->returnTo('employees', 'employees');
 
         $heldDevices = $this->empModel->getHeldDevices($id);
         if (!empty($heldDevices)) {
-            redirect('employees', 'Không thể xóa nhân viên đang giữ thiết bị! Vui lòng thu hồi trước.', 'danger');
+            redirect($returnTo, 'Không thể xóa nhân viên đang giữ thiết bị! Vui lòng thu hồi trước.', 'danger');
         }
 
         $this->empModel->delete($id);
-        redirect('employees', 'Đã xóa nhân viên thành công!', 'success');
+        redirect($returnTo, 'Đã xóa nhân viên thành công!', 'success');
     }
 }

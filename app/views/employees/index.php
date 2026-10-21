@@ -82,7 +82,7 @@
                         </td>
                         <td class="text-center">
                             <?php if ($e['held_devices_count'] > 0): ?>
-                                <a href="<?= url('employees/' . $e['id']) ?>" class="badge <?= $e['status'] === 'resigned' ? 'bg-danger' : 'bg-primary' ?> text-decoration-none fs-6">
+                                <a href="<?= url('employees/' . $e['id'] . '?' . http_build_query(['return_to' => $returnTo])) ?>" class="badge <?= $e['status'] === 'resigned' ? 'bg-danger' : 'bg-primary' ?> text-decoration-none fs-6">
                                     <i class="bi bi-laptop me-1"></i><?= $e['held_devices_count'] ?> máy
                                     <?php if ($e['status'] === 'resigned'): ?>
                                         <i class="bi bi-exclamation-triangle ms-1" title="Cần thu hồi do nhân viên đã nghỉ việc"></i>
@@ -94,7 +94,7 @@
                         </td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
-                                <a href="<?= url('employees/' . $e['id']) ?>" class="btn btn-outline-secondary" title="Xem hồ sơ">
+                                <a href="<?= url('employees/' . $e['id'] . '?' . http_build_query(['return_to' => $returnTo])) ?>" class="btn btn-outline-secondary" title="Xem hồ sơ">
                                     <i class="bi bi-eye"></i>
                                 </a>
                                 <?php if ($e['held_devices_count'] == 0): ?>
@@ -111,6 +111,7 @@
                                     <div class="modal-content">
                                         <form action="<?= url('employees/' . $e['id'] . '/delete') ?>" method="POST">
                                             <?= csrf_field() ?>
+                                            <input type="hidden" name="return_to" value="<?= e($returnTo) ?>">
                                             <div class="modal-header">
                                                 <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Xác nhận xóa nhân viên</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>

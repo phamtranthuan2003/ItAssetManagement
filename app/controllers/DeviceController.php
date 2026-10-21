@@ -60,7 +60,8 @@ class DeviceController extends Controller {
             'page'         => $page,
             'totalPages'   => $totalPages,
             'totalDevices' => $totalDevices,
-            'departments'  => $departments
+            'departments'  => $departments,
+            'returnTo'     => 'devices?' . http_build_query(array_merge($filters, ['page' => $page]))
         ]);
     }
 
@@ -171,12 +172,14 @@ class DeviceController extends Controller {
 
         $timeline = $this->historyModel->getByDeviceId($id);
         $maintenances = $this->maintModel->getByDeviceId($id);
+        $returnTo = $this->returnTo('devices', 'devices');
 
         $this->render('devices/show', [
             'pageTitle'    => 'Chi tiết thiết bị STT ' . $device['id'],
             'device'       => $device,
             'timeline'     => $timeline,
-            'maintenances' => $maintenances
+            'maintenances' => $maintenances,
+            'returnTo'     => $returnTo
         ]);
     }
 
@@ -192,7 +195,8 @@ class DeviceController extends Controller {
 
         $this->render('devices/edit', [
             'pageTitle' => 'Chỉnh sửa thiết bị STT ' . $device['id'],
-            'device'    => $device
+            'device'    => $device,
+            'returnTo'  => $this->returnTo('devices', 'devices')
         ]);
     }
 
@@ -245,10 +249,10 @@ class DeviceController extends Controller {
         }));
 
         if ($type === '') {
-            redirect("devices/{$id}/edit", 'Vui lòng nhập loại thiết bị!', 'danger');
+            redirect($this->returnTo("devices/{$id}/edit", 'devices'), 'Vui lòng nhập loại thiết bị!', 'danger');
         }
         if ($hasMonitors && !$this->areMonitorDetailsValid($monitors)) {
-            redirect("devices/{$id}/edit", 'Vui lòng nhập hãng và kích thước hợp lệ cho từng màn hình đi kèm!', 'danger');
+            redirect($this->returnTo("devices/{$id}/edit", 'devices'), 'Vui lòng nhập hãng và kích thước hợp lệ cho từng màn hình đi kèm!', 'danger');
         }
 
         try {
@@ -278,9 +282,9 @@ class DeviceController extends Controller {
             ];
 
             $this->deviceModel->update($id, $deviceData, $specData);
-            redirect("devices/{$id}", "Cập nhật thiết bị STT {$id} thành công!", 'success');
+            redirect($this->returnTo("devices/{$id}", 'devices'), "Cập nhật thiết bị STT {$id} thành công!", 'success');
         } catch (Exception $e) {
-            redirect("devices/{$id}/edit", 'Lỗi cập nhật: ' . $e->getMessage(), 'danger');
+            redirect($this->returnTo("devices/{$id}/edit", 'devices'), 'Lỗi cập nhật: ' . $e->getMessage(), 'danger');
         }
 
     }
@@ -306,18 +310,19 @@ class DeviceController extends Controller {
      */
     public function delete(int $id): void {
         $this->validateCsrf();
+        $returnTo = $this->returnTo('devices', 'devices');
 
         $device = $this->deviceModel->findByIdWithSpec($id);
         if (!$device) {
-            redirect('devices', 'Không tìm thấy thiết bị!', 'danger');
+            redirect($returnTo, 'Không tìm thấy thiết bị!', 'danger');
         }
 
         if ($device['status'] === 'allocated') {
-            redirect("devices/{$id}", 'Không thể xóa thiết bị đang được cấp phát cho nhân viên! Vui lòng thu hồi trước.', 'danger');
+            redirect($returnTo, 'Không thể xóa thiết bị đang được cấp phát cho nhân viên! Vui lòng thu hồi trước.', 'danger');
         }
 
         $this->deviceModel->delete($id);
-        redirect('devices', "Đã xóa thiết bị STT {$id} thành công!", 'success');
+        redirect($returnTo, "Đã xóa thiết bị STT {$id} thành công!", 'success');
     }
 
     /**

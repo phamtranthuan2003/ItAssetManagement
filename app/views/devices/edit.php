@@ -3,11 +3,12 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span><i class="bi bi-pencil-square me-2 text-primary"></i>Chỉnh sửa thiết bị STT <strong><?= (int)$device['id'] ?></strong></span>
-                <a href="<?= url('devices/' . $device['id']) ?>" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i> Trở về chi tiết</a>
+                <a href="<?= url('devices/' . $device['id'] . '?' . http_build_query(['return_to' => $returnTo])) ?>" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i> Trở về chi tiết</a>
             </div>
             <div class="card-body p-4">
                 <form action="<?= url('devices/' . $device['id'] . '/update') ?>" method="POST">
                     <?= csrf_field() ?>
+                    <input type="hidden" name="return_to" value="<?= e($returnTo) ?>">
 
                     <!-- 1. THÔNG TIN CHUNG -->
                     <h6 class="text-primary fw-bold text-uppercase mb-3 pb-2 border-bottom">

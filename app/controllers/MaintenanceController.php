@@ -88,6 +88,7 @@ class MaintenanceController extends Controller {
      */
     public function updateStatus(int $id): void {
         $this->validateCsrf();
+        $returnTo = $this->returnTo('maintenance', 'maintenance');
 
         $status = $this->post('status', 'completed');
         $endDate = $this->post('end_date', date('Y-m-d'));
@@ -96,9 +97,9 @@ class MaintenanceController extends Controller {
 
         try {
             $this->maintModel->updateStatus($id, $status, $endDate, $cost, $notes, Auth::id());
-            redirect('maintenance', 'Đã cập nhật trạng thái hoàn tất bảo dưỡng thành công!', 'success');
+            redirect($returnTo, 'Đã cập nhật trạng thái hoàn tất bảo dưỡng thành công!', 'success');
         } catch (Exception $e) {
-            redirect('maintenance', 'Lỗi cập nhật: ' . $e->getMessage(), 'danger');
+            redirect($returnTo, 'Lỗi cập nhật: ' . $e->getMessage(), 'danger');
         }
     }
 }

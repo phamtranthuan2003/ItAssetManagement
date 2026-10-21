@@ -85,6 +85,22 @@ abstract class Controller {
         return is_string($val) ? trim($val) : $val;
     }
 
+    protected function returnTo(string $default, string $expectedPath): string {
+        $candidate = $this->post('return_to', $this->get('return_to', ''));
+        if (!is_string($candidate) || preg_match('/[\r\n]/', $candidate)) {
+            return $default;
+        }
+
+        $parts = parse_url($candidate);
+        if ($parts === false || isset($parts['scheme']) || isset($parts['host']) ||
+            isset($parts['user']) || isset($parts['pass']) ||
+            trim($parts['path'] ?? '', '/') !== trim($expectedPath, '/')) {
+            return $default;
+        }
+
+        return $expectedPath . (!empty($parts['query']) ? '?' . $parts['query'] : '');
+    }
+
     /**
      * Kiểm tra CSRF Token trong form POST
      */
