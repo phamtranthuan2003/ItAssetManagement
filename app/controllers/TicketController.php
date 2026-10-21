@@ -53,7 +53,7 @@ class TicketController extends Controller {
         $inStockDevices = $this->deviceModel->getAvailableInStock();
         $allocatedDevices = $this->deviceModel->getAllocatedDevices();
         $departments = $this->deptModel->getAll();
-        $employees = $this->empModel->getAll('working');
+        $employees = $this->empModel->getForSelect($type === 'revocation' ? null : 'working');
 
         $this->render('tickets/create', [
             'pageTitle'        => 'Lập phiếu mới',

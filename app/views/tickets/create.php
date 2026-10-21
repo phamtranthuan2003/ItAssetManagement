@@ -39,19 +39,21 @@
                         <?php if ($type === 'allocation'): ?>
                             <div class="col-md-4">
                                 <label class="form-label fw-semibold">Nhân viên nhận cấp phát <span class="text-danger">*</span></label>
-                                <select name="to_employee_id" id="toEmployeeSelect" class="form-select" required>
-                                    <option value="">-- Chọn nhân viên nhận --</option>
-                                    <?php foreach ($employees as $emp): ?>
-                                        <option value="<?= $emp['id'] ?>" data-department-id="<?= $emp['department_id'] ?>">
-                                            <?= e($emp['fullname']) ?> (<?= e($emp['code']) ?> - <?= e($emp['department_name']) ?>)
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <?php
+                                $employeeDepartmentSelectId = 'toDepartmentSelect';
+                                $employeeSelectId = 'toEmployeeSelect';
+                                $employeeSelectName = 'to_employee_id';
+                                $employeeSelectClass = 'form-select';
+                                $employeeSelectPlaceholder = '-- Chọn nhân viên nhận --';
+                                $employeeSelectOptions = $employees;
+                                $employeeSelectRequired = true;
+                                require __DIR__ . '/../components/employee_department_select.php';
+                                ?>
                             </div>
 
                             <div class="col-md-5">
                                 <label class="form-label fw-semibold">Phòng ban tiếp nhận <span class="text-danger">*</span></label>
-                                <select name="to_department_id" id="toDepartmentSelect" class="form-select" required>
+                                <select name="to_department_id" id="toDepartmentSelect" data-employee-department-filter class="form-select" required>
                                     <option value="">-- Chọn phòng ban --</option>
                                     <?php foreach ($departments as $dept): ?>
                                         <option value="<?= $dept['id'] ?>"><?= e($dept['name']) ?> (<?= e($dept['code']) ?>)</option>
@@ -83,16 +85,20 @@
                                     <h6 class="fw-bold text-secondary mb-2"><i class="bi bi-box-arrow-right me-1"></i>Bên bàn giao (Hiện tại)</h6>
                                     <div class="mb-2">
                                         <label class="form-label small fw-semibold">Nhân viên bàn giao</label>
-                                        <select name="from_employee_id" class="form-select form-select-sm">
-                                            <option value="">-- Chọn nhân viên đang giữ --</option>
-                                            <?php foreach ($employees as $emp): ?>
-                                                <option value="<?= $emp['id'] ?>"><?= e($emp['fullname']) ?> (<?= e($emp['code']) ?>)</option>
-                                            <?php endforeach; ?>
-                                        </select>
+                                        <?php
+                                        $employeeDepartmentSelectId = 'fromDepartmentSelect';
+                                        $employeeSelectId = 'fromEmployeeSelect';
+                                        $employeeSelectName = 'from_employee_id';
+                                        $employeeSelectClass = 'form-select form-select-sm';
+                                        $employeeSelectPlaceholder = '-- Chọn nhân viên đang giữ --';
+                                        $employeeSelectOptions = $employees;
+                                        $employeeSelectRequired = false;
+                                        require __DIR__ . '/../components/employee_department_select.php';
+                                        ?>
                                     </div>
                                     <div>
                                         <label class="form-label small fw-semibold">Phòng ban giao</label>
-                                        <select name="from_department_id" class="form-select form-select-sm">
+                                        <select name="from_department_id" id="fromDepartmentSelect" data-employee-department-filter class="form-select form-select-sm">
                                             <option value="">-- Chọn phòng ban --</option>
                                             <?php foreach ($departments as $dept): ?>
                                                 <option value="<?= $dept['id'] ?>"><?= e($dept['name']) ?></option>
@@ -107,18 +113,20 @@
                                     <h6 class="fw-bold text-primary mb-2"><i class="bi bi-box-arrow-in-right me-1"></i>Bên tiếp nhận mới</h6>
                                     <div class="mb-2">
                                         <label class="form-label small fw-semibold">Nhân viên tiếp nhận mới <span class="text-danger">*</span></label>
-                                        <select name="to_employee_id" id="toEmployeeSelect" class="form-select form-select-sm" required>
-                                            <option value="">-- Chọn nhân viên mới --</option>
-                                            <?php foreach ($employees as $emp): ?>
-                                                <option value="<?= $emp['id'] ?>" data-department-id="<?= $emp['department_id'] ?>">
-                                                    <?= e($emp['fullname']) ?> (<?= e($emp['code']) ?> - <?= e($emp['department_name']) ?>)
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
+                                        <?php
+                                        $employeeDepartmentSelectId = 'toDepartmentSelect';
+                                        $employeeSelectId = 'toEmployeeSelect';
+                                        $employeeSelectName = 'to_employee_id';
+                                        $employeeSelectClass = 'form-select form-select-sm';
+                                        $employeeSelectPlaceholder = '-- Chọn nhân viên mới --';
+                                        $employeeSelectOptions = $employees;
+                                        $employeeSelectRequired = true;
+                                        require __DIR__ . '/../components/employee_department_select.php';
+                                        ?>
                                     </div>
                                     <div>
                                         <label class="form-label small fw-semibold">Phòng ban mới <span class="text-danger">*</span></label>
-                                        <select name="to_department_id" id="toDepartmentSelect" class="form-select form-select-sm" required>
+                                        <select name="to_department_id" id="toDepartmentSelect" data-employee-department-filter class="form-select form-select-sm" required>
                                             <option value="">-- Chọn phòng ban --</option>
                                             <?php foreach ($departments as $dept): ?>
                                                 <option value="<?= $dept['id'] ?>"><?= e($dept['name']) ?></option>
@@ -132,19 +140,21 @@
                         <?php elseif ($type === 'revocation'): ?>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Nhân viên bàn giao lại thiết bị <span class="text-danger">*</span></label>
-                                <select name="from_employee_id" id="toEmployeeSelect" class="form-select" required>
-                                    <option value="">-- Chọn nhân viên hoàn trả --</option>
-                                    <?php foreach ($employees as $emp): ?>
-                                        <option value="<?= $emp['id'] ?>" data-department-id="<?= $emp['department_id'] ?>">
-                                            <?= e($emp['fullname']) ?> (<?= e($emp['code']) ?> - <?= e($emp['department_name']) ?>)
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
+                                <?php
+                                $employeeDepartmentSelectId = 'fromDepartmentSelect';
+                                $employeeSelectId = 'fromEmployeeSelect';
+                                $employeeSelectName = 'from_employee_id';
+                                $employeeSelectClass = 'form-select';
+                                $employeeSelectPlaceholder = '-- Chọn nhân viên hoàn trả --';
+                                $employeeSelectOptions = $employees;
+                                $employeeSelectRequired = true;
+                                require __DIR__ . '/../components/employee_department_select.php';
+                                ?>
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Phòng ban của nhân viên <span class="text-danger">*</span></label>
-                                <select name="from_department_id" id="toDepartmentSelect" class="form-select" required>
+                                <select name="from_department_id" id="fromDepartmentSelect" data-employee-department-filter class="form-select" required>
                                     <option value="">-- Chọn phòng ban --</option>
                                     <?php foreach ($departments as $dept): ?>
                                         <option value="<?= $dept['id'] ?>"><?= e($dept['name']) ?></option>

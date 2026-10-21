@@ -115,6 +115,11 @@ body {
     font-weight: 600;
 }
 
+.employee-select-options {
+    max-height: 16rem;
+    overflow-y: auto;
+}
+
 /* Stat Cards */
 .stat-card {
     border-radius: 10px;

@@ -60,6 +60,24 @@ class Employee extends Model {
         return $this->count("SELECT COUNT(*) FROM {$this->table} {$whereClause}", $params);
     }
 
+    public function getForSelect(?string $status = null): array {
+        $whereClause = '';
+        $params = [];
+        if ($status !== null && $status !== '') {
+            $whereClause = 'WHERE e.status = :status';
+            $params['status'] = $status;
+        }
+
+        $sql = "SELECT e.id, e.code, e.fullname, e.department_id, e.status,
+                       d.name AS department_name
+                FROM {$this->table} e
+                JOIN departments d ON e.department_id = d.id
+                {$whereClause}
+                ORDER BY e.fullname ASC, e.id ASC";
+
+        return $this->fetchAll($sql, $params);
+    }
+
     /**
      * Tìm nhân viên theo ID kèm tên phòng ban
      */

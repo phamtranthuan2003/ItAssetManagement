@@ -32,20 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
         toggleDeviceFields();
     }
 
-    // 3. Tự động điền phòng ban khi chọn nhân viên trong form cấp phát
-    const toEmployeeSelect = document.getElementById('toEmployeeSelect');
-    if (toEmployeeSelect) {
-        toEmployeeSelect.addEventListener('change', function () {
-            const selectedOption = this.options[this.selectedIndex];
-            const deptId = selectedOption.getAttribute('data-department-id');
-            const toDeptSelect = document.getElementById('toDepartmentSelect');
-            if (toDeptSelect && deptId) {
-                toDeptSelect.value = deptId;
-            }
-        });
-    }
-
-    // 4. Bật/tắt chọn hạn trả khi check Cấp phát tạm thời
+    // 3. Bật/tắt chọn hạn trả khi check Cấp phát tạm thời
     const isTemporaryCheck = document.getElementById('isTemporaryCheck');
     const returnDateField = document.getElementById('expectedReturnDateField');
     if (isTemporaryCheck && returnDateField) {

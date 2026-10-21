@@ -82,14 +82,14 @@
                         </td>
                         <td class="text-center">
                             <?php if ($e['held_devices_count'] > 0): ?>
-                                <a href="<?= url('employees/' . $e['id'] . '?' . http_build_query(['return_to' => $returnTo])) ?>" class="badge <?= $e['status'] === 'resigned' ? 'bg-danger' : 'bg-primary' ?> text-decoration-none fs-6">
+                                <a href="<?= url('employees/' . $e['id'] . '?' . http_build_query(['return_to' => $returnTo])) ?>" class="badge <?= $e['status'] === 'resigned' ? 'bg-danger-subtle text-danger' : 'bg-primary-subtle text-primary' ?> border text-decoration-none fs-6">
                                     <i class="bi bi-laptop me-1"></i><?= $e['held_devices_count'] ?> máy
                                     <?php if ($e['status'] === 'resigned'): ?>
                                         <i class="bi bi-exclamation-triangle ms-1" title="Cần thu hồi do nhân viên đã nghỉ việc"></i>
                                     <?php endif; ?>
                                 </a>
                             <?php else: ?>
-                                <span class="text-muted small">0 máy</span>
+                                <span class="badge bg-secondary-subtle text-secondary border fs-6">0 máy</span>
                             <?php endif; ?>
                         </td>
                         <td class="text-end">
