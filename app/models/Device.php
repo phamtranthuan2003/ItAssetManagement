@@ -134,6 +134,12 @@ class Device extends Model {
 
         $sql = "SELECT d.*, 
                        s.cpu, s.mainboard, s.ram_gb, s.ram_type, s.ssd_capacity, s.hdd_capacity, s.gpu, s.screen_size,
+                       (SELECT GROUP_CONCAT(
+                           CONCAT_WS(' ', NULLIF(TRIM(dm.brand), ''), NULLIF(TRIM(dm.model), ''), IF(dm.size IS NOT NULL, CONCAT(dm.size, ' inch'), NULL))
+                           ORDER BY dm.monitor_no SEPARATOR '; '
+                       )
+                        FROM device_monitors dm
+                        WHERE dm.device_id = d.id) AS monitor_details,
                        e.fullname AS employee_name, e.code AS employee_code,
                        dep.name AS department_name
                 FROM {$this->table} d

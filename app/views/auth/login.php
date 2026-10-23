@@ -8,7 +8,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
         body {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            background:
+                linear-gradient(rgba(15, 23, 42, 0.38), rgba(15, 23, 42, 0.38)),
+                url('<?= e(asset('img/anhnen.jpg')) ?>') center / cover no-repeat fixed;
             min-height: 100vh;
             display: flex;
             align-items: center;

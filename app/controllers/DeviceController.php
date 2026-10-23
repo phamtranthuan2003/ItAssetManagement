@@ -397,6 +397,14 @@ class DeviceController extends Controller {
                 default          => $d['condition_state']
             };
 
+            $screenDetails = [];
+            if (!empty($d['screen_size'])) {
+                $screenDetails[] = 'Màn hình tích hợp: ' . $d['screen_size'];
+            }
+            if (!empty($d['monitor_details'])) {
+                $screenDetails[] = 'Màn hình đi kèm: ' . $d['monitor_details'];
+            }
+
             fputcsv($output, [
                 $stt++,
                 $d['id'],
@@ -412,7 +420,7 @@ class DeviceController extends Controller {
                 $d['ssd_capacity'] ?? '',
                 $d['hdd_capacity'] ?? '',
                 $d['gpu'] ?? '',
-                $d['screen_size'] ?? '',
+                implode('; ', $screenDetails),
                 $d['employee_name'] ?? 'Trong kho',
                 $d['department_name'] ?? '',
                 $d['import_date'],

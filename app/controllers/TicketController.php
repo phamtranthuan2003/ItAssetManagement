@@ -93,6 +93,22 @@ class TicketController extends Controller {
             redirect('tickets/create?type=' . $ticketType, 'Vui lòng chọn ít nhất một thiết bị vào phiếu!', 'danger');
         }
 
+        if ($ticketType === 'revocation') {
+            if (empty($fromEmpId)) {
+                redirect('tickets/create?type=revocation', 'Vui lòng chọn nhân viên bàn giao thiết bị!', 'danger');
+            }
+
+            $employeeDeviceIds = array_map(
+                'intval',
+                array_column($this->deviceModel->getAllocatedDevices((int)$fromEmpId), 'id')
+            );
+            foreach ($deviceIds as $deviceId) {
+                if (!empty($deviceId) && !in_array((int)$deviceId, $employeeDeviceIds, true)) {
+                    redirect('tickets/create?type=revocation', 'Thiết bị được chọn không thuộc nhân viên đã chọn hoặc không còn được cấp phát!', 'danger');
+                }
+            }
+        }
+
         // Kiểm tra logic chọn người/phòng ban
         if ($ticketType === 'allocation') {
             if (empty($toEmpId) || empty($toDeptId)) {

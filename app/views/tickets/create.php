@@ -195,6 +195,26 @@
                                 <!-- Hàng mẫu 1 -->
                                 <tr>
                                     <td>
+                                        <?php if ($type === 'revocation'): ?>
+                                        <div class="dropdown position-relative" data-revocation-device-select>
+                                            <button type="button" class="form-select form-select-sm text-start" data-device-select-toggle aria-haspopup="listbox" aria-expanded="false">
+                                                -- Chọn thiết bị --
+                                            </button>
+                                            <select name="device_id[]" class="d-none" data-device-select tabindex="-1" aria-hidden="true">
+                                                <option value="">-- Chọn thiết bị --</option>
+                                                <?php foreach ($allocatedDevices as $dev): ?>
+                                                    <option value="<?= (int)$dev['id'] ?>" data-employee-id="<?= (int)$dev['current_employee_id'] ?>">
+                                                        STT <?= (int)$dev['id'] ?> - <?= e($dev['type']) ?><?= trim(($dev['brand'] ?? '') . ' ' . ($dev['model'] ?? '')) !== '' ? ' ' . e(trim($dev['brand'] . ' ' . $dev['model'])) : '' ?> - Đang cấp: <?= e($dev['employee_name'] ?? 'Chưa rõ') ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                            <div class="dropdown-menu w-100 p-2" data-device-select-menu>
+                                                <input type="search" class="form-control form-control-sm mb-2" data-device-search-input aria-label="Tìm thiết bị của nhân viên" placeholder="Tìm theo STT, loại, hãng hoặc model..." autocomplete="off">
+                                                <div data-device-select-options role="listbox"></div>
+                                                <div class="small text-muted px-2 py-1 d-none" data-device-no-results>Không có thiết bị đang cấp cho nhân viên này.</div>
+                                            </div>
+                                        </div>
+                                        <?php else: ?>
                                         <select name="device_id[]" class="form-select form-select-sm" required>
                                             <option value="">-- Chọn thiết bị --</option>
                                             <?php if ($type === 'allocation'): ?>
@@ -211,6 +231,7 @@
                                                 <?php endforeach; ?>
                                             <?php endif; ?>
                                         </select>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
                                         <input type="text" name="accessories[]" class="form-control form-control-sm" placeholder="VD: Chuột có dây, Củ sạc Type-C 65W, Màn hình 24 inch...">
@@ -267,7 +288,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (select) select.selectedIndex = 0;
                 const input = clone.querySelector('input[type="text"]');
                 if (input) input.value = '';
+                const searchInput = clone.querySelector('[data-device-search-input]');
+                if (searchInput) searchInput.value = '';
                 container.appendChild(clone);
+                container.dispatchEvent(new CustomEvent('revocation-device-row-added', { detail: clone }));
             }
         });
 
@@ -284,3 +308,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
+<?php if ($type === 'revocation'): ?>
+<script src="<?= asset('js/revocation-device-select.js') ?>"></script>
+<?php endif; ?>
