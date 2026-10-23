@@ -381,7 +381,7 @@ class Device extends Model {
      * Thống kê số thiết bị theo từng phòng ban
      */
     public function getDevicesByDepartment(): array {
-        $sql = "SELECT dep.name AS department_name, dep.code AS department_code, COUNT(dev.id) AS device_count
+        $sql = "SELECT dep.id AS department_id, dep.name AS department_name, dep.code AS department_code, COUNT(dev.id) AS device_count
                 FROM departments dep
                 LEFT JOIN devices dev ON dep.id = dev.current_department_id AND dev.status = 'allocated'
                 GROUP BY dep.id, dep.name, dep.code

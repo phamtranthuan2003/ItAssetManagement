@@ -150,8 +150,10 @@
                             ?>
                             <tr>
                                 <td>
-                                    <div class="fw-semibold"><?= e($dept['department_name']) ?></div>
-                                    <small class="text-muted"><?= e($dept['department_code']) ?></small>
+                                    <a href="<?= e(url('devices?department_id=' . (int)$dept['department_id'])) ?>" class="d-block text-decoration-none text-reset" style="cursor: pointer;" title="Xem toàn bộ thiết bị của phòng ban này">
+                                        <div class="fw-semibold"><?= e($dept['department_name']) ?></div>
+                                        <small class="text-muted"><?= e($dept['department_code']) ?></small>
+                                    </a>
                                 </td>
                                 <td class="text-center">
                                     <span class="badge bg-primary-subtle text-primary fs-6"><?= $dept['device_count'] ?></span>
