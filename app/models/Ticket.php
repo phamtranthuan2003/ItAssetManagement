@@ -15,7 +15,46 @@ class Ticket extends Model {
     /**
      * Lấy danh sách phiếu có lọc theo loại phiếu và trạng thái
      */
-    public function getAll(?string $type = null, ?string $status = null, array $filters = []): array {
+    public function getAll(
+        ?string $type = null,
+        ?string $status = null,
+        array $filters = [],
+        int $page = 1,
+        int $perPage = 10
+    ): array {
+        [$where, $params] = $this->buildFilterConditions($type, $status, $filters);
+        $whereClause = !empty($where) ? "WHERE " . implode(' AND ', $where) : "";
+        $page = max(1, $page);
+        $perPage = max(1, $perPage);
+        $offset = ($page - 1) * $perPage;
+
+        $sql = "SELECT t.*, u.fullname AS creator_name,
+                       fe.fullname AS from_employee_name, fe.code AS from_employee_code,
+                       te.fullname AS to_employee_name, te.code AS to_employee_code,
+                       fd.name AS from_department_name,
+                       td.name AS to_department_name,
+                       (SELECT COUNT(*) FROM ticket_details WHERE ticket_id = t.id) AS device_count
+                FROM {$this->table} t
+                JOIN users u ON t.created_by = u.id
+                LEFT JOIN employees fe ON t.from_employee_id = fe.id
+                LEFT JOIN employees te ON t.to_employee_id = te.id
+                LEFT JOIN departments fd ON t.from_department_id = fd.id
+                LEFT JOIN departments td ON t.to_department_id = td.id
+                {$whereClause}
+                ORDER BY t.ticket_date DESC, t.id DESC
+                LIMIT {$perPage} OFFSET {$offset}";
+
+        return $this->fetchAll($sql, $params);
+    }
+
+    public function countFiltered(?string $type = null, ?string $status = null, array $filters = []): int {
+        [$where, $params] = $this->buildFilterConditions($type, $status, $filters);
+        $whereClause = !empty($where) ? "WHERE " . implode(' AND ', $where) : "";
+
+        return $this->count("SELECT COUNT(*) FROM {$this->table} t {$whereClause}", $params);
+    }
+
+    private function buildFilterConditions(?string $type, ?string $status, array $filters): array {
         $where = [];
         $params = [];
 
@@ -39,24 +78,7 @@ class Ticket extends Model {
             $params['created_by'] = (int)$filters['created_by'];
         }
 
-        $whereClause = !empty($where) ? "WHERE " . implode(' AND ', $where) : "";
-
-        $sql = "SELECT t.*, u.fullname AS creator_name,
-                       fe.fullname AS from_employee_name, fe.code AS from_employee_code,
-                       te.fullname AS to_employee_name, te.code AS to_employee_code,
-                       fd.name AS from_department_name,
-                       td.name AS to_department_name,
-                       (SELECT COUNT(*) FROM ticket_details WHERE ticket_id = t.id) AS device_count
-                FROM {$this->table} t
-                JOIN users u ON t.created_by = u.id
-                LEFT JOIN employees fe ON t.from_employee_id = fe.id
-                LEFT JOIN employees te ON t.to_employee_id = te.id
-                LEFT JOIN departments fd ON t.from_department_id = fd.id
-                LEFT JOIN departments td ON t.to_department_id = td.id
-                {$whereClause}
-                ORDER BY t.ticket_date DESC, t.id DESC";
-
-        return $this->fetchAll($sql, $params);
+        return [$where, $params];
     }
 
     /**

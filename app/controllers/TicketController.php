@@ -35,6 +35,8 @@ class TicketController extends Controller {
      * Danh sách phiếu
      */
     public function index(): void {
+        $page = max(1, (int)$this->get('page', 1));
+        $perPage = 10;
         $type = $this->get('type', '');
         $status = $this->get('status', '');
         $filters = [
@@ -44,18 +46,24 @@ class TicketController extends Controller {
             'created_by' => $this->get('created_by', '')
         ];
 
-        $tickets = $this->ticketModel->getAll($type ?: null, $status ?: null, $filters);
+        $totalTickets = $this->ticketModel->countFiltered($type ?: null, $status ?: null, $filters);
+        $totalPages = (int)ceil($totalTickets / $perPage);
+        $page = min($page, max(1, $totalPages));
+        $tickets = $this->ticketModel->getAll($type ?: null, $status ?: null, $filters, $page, $perPage);
         $employees = $this->empModel->getForSelect();
         $users = $this->userModel->getAll();
 
         $this->render('tickets/index', [
-            'pageTitle' => 'Quản lý phiếu cấp phát / chuyển giao / thu hồi',
-            'tickets'   => $tickets,
-            'type'      => $type,
-            'status'    => $status,
-            'filters'   => $filters,
-            'employees' => $employees,
-            'users'     => $users
+            'pageTitle'   => 'Quản lý phiếu cấp phát / chuyển giao / thu hồi',
+            'tickets'     => $tickets,
+            'type'        => $type,
+            'status'      => $status,
+            'filters'     => $filters,
+            'employees'   => $employees,
+            'users'       => $users,
+            'page'        => $page,
+            'totalPages'  => $totalPages,
+            'totalTickets' => $totalTickets
         ]);
     }
 

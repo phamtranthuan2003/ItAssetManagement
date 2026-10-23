@@ -9,7 +9,7 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <!-- Custom Style -->
-    <link rel="stylesheet" href="<?= asset('css/style.css') ?>?v=<?= filemtime(__DIR__ . '/../../../public/assets/css/style.css') ?>">
+    <link rel="stylesheet" href="<?= asset('css/style.css') ?>">
 </head>
 <body>
 
@@ -38,7 +38,7 @@
         </li>
         <li class="nav-item">
             <a class="nav-link <?= str_contains($_SERVER['REQUEST_URI'], '/tickets') ? 'active' : '' ?>" href="<?= url('tickets') ?>">
-                <i class="bi bi-arrow-left-right"></i> Cấp phát & Thu hồi
+                <i class="bi bi-arrow-left-right"></i> Lịch sử cấp phát & Thu hồi
             </a>
         </li>
         <li class="nav-item">

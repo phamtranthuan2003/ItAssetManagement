@@ -152,4 +152,28 @@
             </tbody>
         </table>
     </div>
+    <?php if ($totalTickets > 0): ?>
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+        <small class="text-muted">
+            Hiển thị <?= count($tickets) ?> / <?= number_format($totalTickets) ?> phiếu · Trang <?= $page ?> / <?= max(1, $totalPages) ?>
+        </small>
+        <?php if ($totalPages > 1): ?>
+        <nav aria-label="Phân trang lịch sử cấp phát và thu hồi">
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
+                    <a class="page-link" href="<?= url('tickets?' . http_build_query(array_merge($filters, ['page' => max(1, $page - 1)]))) ?>">Trước</a>
+                </li>
+                <?php for ($pageNumber = 1; $pageNumber <= $totalPages; $pageNumber++): ?>
+                    <li class="page-item <?= $pageNumber === $page ? 'active' : '' ?>">
+                        <a class="page-link" href="<?= url('tickets?' . http_build_query(array_merge($filters, ['page' => $pageNumber]))) ?>"><?= $pageNumber ?></a>
+                    </li>
+                <?php endfor; ?>
+                <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
+                    <a class="page-link" href="<?= url('tickets?' . http_build_query(array_merge($filters, ['page' => min($totalPages, $page + 1)]))) ?>">Sau</a>
+                </li>
+            </ul>
+        </nav>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
 </div>
