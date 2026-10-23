@@ -26,15 +26,10 @@
             padding: 35px;
         }
         .login-logo {
-            width: 60px;
-            height: 60px;
-            background: #3b82f6;
-            color: #fff;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
+            display: block;
+            width: 190px;
+            max-width: 100%;
+            height: auto;
             margin: 0 auto 15px;
         }
     </style>
@@ -43,9 +38,7 @@
 
 <div class="login-card">
     <div class="text-center mb-4">
-        <div class="login-logo">
-            <i class="bi bi-cpu-fill"></i>
-        </div>
+        <img class="login-logo" src="<?= e(asset('img/everland-1668155348.png')) ?>" alt="Everland Group">
         <h4 class="fw-bold text-dark">Quản Lý Kho Thiết Bị</h4>
         <p class="text-muted small">Hệ thống theo dõi PC, Laptop, Cấp phát & Thu hồi</p>
     </div>

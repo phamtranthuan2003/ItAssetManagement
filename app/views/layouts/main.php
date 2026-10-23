@@ -9,15 +9,15 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <!-- Custom Style -->
-    <link rel="stylesheet" href="<?= asset('css/style.css') ?>">
+    <link rel="stylesheet" href="<?= asset('css/style.css') ?>?v=<?= filemtime(__DIR__ . '/../../../public/assets/css/style.css') ?>">
 </head>
 <body>
 
 <!-- SIDEBAR -->
 <nav id="sidebar">
     <a href="<?= url('dashboard') ?>" class="brand">
-        <i class="bi bi-cpu-fill text-primary fs-4"></i>
-        <span>Kho Thiết Bị</span>
+        <img src="<?= e(asset('img/everland-1668155348.png')) ?>" alt="Everland Group">
+        <span>Quản lý kho thiết bị</span>
     </a>
 
     <div class="nav-header">Tổng quan</div>
@@ -33,7 +33,7 @@
     <ul class="nav flex-column">
         <li class="nav-item">
             <a class="nav-link <?= str_contains($_SERVER['REQUEST_URI'], '/devices') ? 'active' : '' ?>" href="<?= url('devices') ?>">
-                <i class="bi bi-laptop"></i> Thiết bị (PC/Laptop)
+                <i class="bi bi-laptop"></i> Kho thiết bị
             </a>
         </li>
         <li class="nav-item">
