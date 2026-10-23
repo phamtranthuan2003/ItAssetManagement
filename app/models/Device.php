@@ -358,6 +358,7 @@ class Device extends Model {
         
         $pcCount = $this->count("SELECT COUNT(*) FROM {$this->table} WHERE type = 'PC'");
         $laptopCount = $this->count("SELECT COUNT(*) FROM {$this->table} WHERE type = 'Laptop'");
+        $otherCount = $this->count("SELECT COUNT(*) FROM {$this->table} WHERE type NOT IN ('PC', 'Laptop') OR type IS NULL");
 
         $overdueLoans = $this->count("SELECT COUNT(*) FROM {$this->table} WHERE is_temporary = 1 AND status = 'allocated' AND expected_return_date < CURDATE()");
         $expiringWarranty = $this->count("SELECT COUNT(*) FROM {$this->table} WHERE warranty_expiry IS NOT NULL AND warranty_expiry >= CURDATE() AND warranty_expiry <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)");
@@ -370,6 +371,7 @@ class Device extends Model {
             'liquidated'        => $liquidated,
             'pc_count'          => $pcCount,
             'laptop_count'      => $laptopCount,
+            'other_count'       => $otherCount,
             'overdue_loans'     => $overdueLoans,
             'expiring_warranty' => $expiringWarranty
         ];

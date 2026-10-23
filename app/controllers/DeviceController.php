@@ -352,7 +352,18 @@ class DeviceController extends Controller {
 
         $devices = $this->deviceModel->getAllForExport($filters);
 
-        $filename = "danh_sach_thiet_bi_" . date('Ymd_His') . ".csv";
+        $statusFilename = match ($filters['status']) {
+            'in_stock'    => 'trong_kho',
+            'allocated'   => 'dang_cap_phat',
+            'maintenance' => 'dang_bao_tri',
+            'liquidated'  => 'da_thanh_ly',
+            default       => ''
+        };
+        $filenamePrefix = 'danh_sach_thiet_bi';
+        if ($statusFilename !== '') {
+            $filenamePrefix .= '_' . $statusFilename;
+        }
+        $filename = $filenamePrefix . '_' . date('Ymd_His') . '.csv';
 
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename="' . $filename . '"');

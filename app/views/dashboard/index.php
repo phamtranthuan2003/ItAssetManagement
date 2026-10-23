@@ -40,7 +40,8 @@
                     <h3 class="fw-bold mb-0 text-dark"><?= number_format($stats['total']) ?></h3>
                     <div class="small text-muted mt-1">
                         <i class="bi bi-pc me-1"></i>PC: <strong><?= $stats['pc_count'] ?></strong> | 
-                        <i class="bi bi-laptop me-1"></i>Laptop: <strong><?= $stats['laptop_count'] ?></strong>
+                        <i class="bi bi-laptop me-1"></i>Laptop: <strong><?= $stats['laptop_count'] ?></strong> |
+                        <i class="bi bi-box me-1"></i>Khác: <strong><?= $stats['other_count'] ?></strong>
                     </div>
                 </div>
                 <div class="stat-icon bg-primary-subtle text-primary">
