@@ -15,7 +15,7 @@ class Ticket extends Model {
     /**
      * Lấy danh sách phiếu có lọc theo loại phiếu và trạng thái
      */
-    public function getAll(?string $type = null, ?string $status = null): array {
+    public function getAll(?string $type = null, ?string $status = null, array $filters = []): array {
         $where = [];
         $params = [];
 
@@ -27,6 +27,16 @@ class Ticket extends Model {
         if (!empty($status)) {
             $where[] = "t.status = :status";
             $params['status'] = $status;
+        }
+
+        if (!empty($filters['to_employee_id'])) {
+            $where[] = "t.to_employee_id = :to_employee_id";
+            $params['to_employee_id'] = (int)$filters['to_employee_id'];
+        }
+
+        if (!empty($filters['created_by'])) {
+            $where[] = "t.created_by = :created_by";
+            $params['created_by'] = (int)$filters['created_by'];
         }
 
         $whereClause = !empty($where) ? "WHERE " . implode(' AND ', $where) : "";

@@ -12,13 +12,22 @@ class Department extends Model {
     /**
      * Lấy toàn bộ danh sách phòng ban kèm số lượng nhân viên và số thiết bị đang sử dụng
      */
-    public function getAll(): array {
+    public function getAll(string $keyword = ''): array {
+        $where = '';
+        $params = [];
+        if (trim($keyword) !== '') {
+            $where = 'WHERE (d.name LIKE :name OR d.code LIKE :code)';
+            $searchTerm = '%' . trim($keyword) . '%';
+            $params = ['name' => $searchTerm, 'code' => $searchTerm];
+        }
+
         $sql = "SELECT d.*, 
                 (SELECT COUNT(*) FROM employees e WHERE e.department_id = d.id AND e.status = 'working') AS active_employees_count,
                 (SELECT COUNT(*) FROM devices dev WHERE dev.current_department_id = d.id AND dev.status = 'allocated') AS allocated_devices_count
                 FROM {$this->table} d
+                {$where}
                 ORDER BY d.id ASC";
-        return $this->fetchAll($sql);
+        return $this->fetchAll($sql, $params);
     }
 
     /**

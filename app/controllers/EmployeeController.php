@@ -30,15 +30,17 @@ class EmployeeController extends Controller {
         $perPage = 10;
         $status = $this->get('status', '');
         $deptId = $this->get('department_id', '');
+        $keyword = trim((string)$this->get('keyword', ''));
 
         $filters = [
             'status' => $status,
-            'department_id' => $deptId
+            'department_id' => $deptId,
+            'keyword' => $keyword
         ];
-        $totalEmployees = $this->empModel->countFiltered($status ?: null, $deptId ? (int)$deptId : null);
+        $totalEmployees = $this->empModel->countFiltered($status ?: null, $deptId ? (int)$deptId : null, $keyword);
         $totalPages = (int)ceil($totalEmployees / $perPage);
         $page = min($page, max(1, $totalPages));
-        $employees = $this->empModel->getAll($status ?: null, $deptId ? (int)$deptId : null, $page, $perPage);
+        $employees = $this->empModel->getAll($status ?: null, $deptId ? (int)$deptId : null, $page, $perPage, $keyword);
         $departments = $this->deptModel->getAll();
 
         $this->render('employees/index', [

@@ -58,6 +58,11 @@ class Device extends Model {
             $params['department_id'] = (int)$filters['department_id'];
         }
 
+        if (!empty($filters['employee_id'])) {
+            $where[] = "d.current_employee_id = :employee_id";
+            $params['employee_id'] = (int)$filters['employee_id'];
+        }
+
         // Lọc theo cấu hình CPU
         if (!empty($filters['cpu'])) {
             $where[] = "s.cpu LIKE :cpu";

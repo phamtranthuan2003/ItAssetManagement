@@ -11,6 +11,7 @@ require_once __DIR__ . '/../models/TicketDetail.php';
 require_once __DIR__ . '/../models/Device.php';
 require_once __DIR__ . '/../models/Department.php';
 require_once __DIR__ . '/../models/Employee.php';
+require_once __DIR__ . '/../models/User.php';
 
 class TicketController extends Controller {
     private Ticket $ticketModel;
@@ -18,6 +19,7 @@ class TicketController extends Controller {
     private Device $deviceModel;
     private Department $deptModel;
     private Employee $empModel;
+    private User $userModel;
 
     public function __construct() {
         Auth::requireLogin();
@@ -26,6 +28,7 @@ class TicketController extends Controller {
         $this->deviceModel = new Device();
         $this->deptModel = new Department();
         $this->empModel = new Employee();
+        $this->userModel = new User();
     }
 
     /**
@@ -34,14 +37,25 @@ class TicketController extends Controller {
     public function index(): void {
         $type = $this->get('type', '');
         $status = $this->get('status', '');
+        $filters = [
+            'type' => $type,
+            'status' => $status,
+            'to_employee_id' => $this->get('to_employee_id', ''),
+            'created_by' => $this->get('created_by', '')
+        ];
 
-        $tickets = $this->ticketModel->getAll($type ?: null, $status ?: null);
+        $tickets = $this->ticketModel->getAll($type ?: null, $status ?: null, $filters);
+        $employees = $this->empModel->getForSelect();
+        $users = $this->userModel->getAll();
 
         $this->render('tickets/index', [
             'pageTitle' => 'Quản lý phiếu cấp phát / chuyển giao / thu hồi',
             'tickets'   => $tickets,
             'type'      => $type,
-            'status'    => $status
+            'status'    => $status,
+            'filters'   => $filters,
+            'employees' => $employees,
+            'users'     => $users
         ]);
     }
 

@@ -20,11 +20,14 @@ class DepartmentController extends Controller {
      * Danh sách phòng ban
      */
     public function index(): void {
-        $departments = $this->deptModel->getAll();
+        $keyword = $this->get('keyword', '');
+        $departments = $this->deptModel->getAll($keyword);
 
         $this->render('departments/index', [
             'pageTitle'   => 'Quản lý phòng ban',
-            'departments' => $departments
+            'departments' => $departments,
+            'keyword'     => $keyword,
+            'returnTo'    => 'departments' . ($keyword !== '' ? '?' . http_build_query(['keyword' => $keyword]) : '')
         ]);
     }
 
@@ -33,17 +36,18 @@ class DepartmentController extends Controller {
      */
     public function store(): void {
         $this->validateCsrf();
+        $returnTo = $this->returnTo('departments', 'departments');
 
         $code = strtoupper($this->post('code', ''));
         $name = $this->post('name', '');
         $description = $this->post('description', '');
 
         if (empty($code) || empty($name)) {
-            redirect('departments', 'Mã và tên phòng ban là bắt buộc!', 'danger');
+            redirect($returnTo, 'Mã và tên phòng ban là bắt buộc!', 'danger');
         }
 
         if ($this->deptModel->isCodeExists($code)) {
-            redirect('departments', "Mã phòng ban [{$code}] đã tồn tại!", 'danger');
+            redirect($returnTo, "Mã phòng ban [{$code}] đã tồn tại!", 'danger');
         }
 
         $this->deptModel->create([
@@ -52,7 +56,7 @@ class DepartmentController extends Controller {
             'description' => $description
         ]);
 
-        redirect('departments', "Thêm mới phòng ban [{$name}] thành công!", 'success');
+        redirect($returnTo, "Thêm mới phòng ban [{$name}] thành công!", 'success');
     }
 
     /**
@@ -60,17 +64,18 @@ class DepartmentController extends Controller {
      */
     public function update(int $id): void {
         $this->validateCsrf();
+        $returnTo = $this->returnTo('departments', 'departments');
 
         $code = strtoupper($this->post('code', ''));
         $name = $this->post('name', '');
         $description = $this->post('description', '');
 
         if (empty($code) || empty($name)) {
-            redirect('departments', 'Mã và tên phòng ban là bắt buộc!', 'danger');
+            redirect($returnTo, 'Mã và tên phòng ban là bắt buộc!', 'danger');
         }
 
         if ($this->deptModel->isCodeExists($code, $id)) {
-            redirect('departments', "Mã phòng ban [{$code}] đã tồn tại ở phòng ban khác!", 'danger');
+            redirect($returnTo, "Mã phòng ban [{$code}] đã tồn tại ở phòng ban khác!", 'danger');
         }
 
         $this->deptModel->update($id, [
@@ -79,7 +84,7 @@ class DepartmentController extends Controller {
             'description' => $description
         ]);
 
-        redirect('departments', "Cập nhật phòng ban [{$name}] thành công!", 'success');
+        redirect($returnTo, "Cập nhật phòng ban [{$name}] thành công!", 'success');
     }
 
     /**
@@ -87,12 +92,13 @@ class DepartmentController extends Controller {
      */
     public function delete(int $id): void {
         $this->validateCsrf();
+        $returnTo = $this->returnTo('departments', 'departments');
 
         if (!$this->deptModel->canDelete($id)) {
-            redirect('departments', 'Không thể xóa phòng ban đang có nhân viên hoặc thiết bị liên kết!', 'danger');
+            redirect($returnTo, 'Không thể xóa phòng ban đang có nhân viên hoặc thiết bị liên kết!', 'danger');
         }
 
         $this->deptModel->delete($id);
-        redirect('departments', 'Đã xóa phòng ban thành công!', 'success');
+        redirect($returnTo, 'Đã xóa phòng ban thành công!', 'success');
     }
 }

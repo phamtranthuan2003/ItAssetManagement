@@ -8,12 +8,14 @@ require_once __DIR__ . '/../../core/Controller.php';
 require_once __DIR__ . '/../../core/Auth.php';
 require_once __DIR__ . '/../models/Device.php';
 require_once __DIR__ . '/../models/Department.php';
+require_once __DIR__ . '/../models/Employee.php';
 require_once __DIR__ . '/../models/DeviceHistory.php';
 require_once __DIR__ . '/../models/Maintenance.php';
 
 class DeviceController extends Controller {
     private Device $deviceModel;
     private Department $deptModel;
+    private Employee $empModel;
     private DeviceHistory $historyModel;
     private Maintenance $maintModel;
 
@@ -21,6 +23,7 @@ class DeviceController extends Controller {
         Auth::requireLogin();
         $this->deviceModel = new Device();
         $this->deptModel = new Department();
+        $this->empModel = new Employee();
         $this->historyModel = new DeviceHistory();
         $this->maintModel = new Maintenance();
     }
@@ -39,6 +42,7 @@ class DeviceController extends Controller {
             'status'            => $this->get('status', ''),
             'condition_state'   => $this->get('condition_state', ''),
             'department_id'     => $this->get('department_id', ''),
+            'employee_id'       => $this->get('employee_id', ''),
             'cpu'               => $this->get('cpu', ''),
             'ram_gb'            => $this->get('ram_gb', ''),
             'ssd_capacity'      => $this->get('ssd_capacity', ''),
@@ -52,6 +56,7 @@ class DeviceController extends Controller {
         $devices = $this->deviceModel->getList($filters, $page, $perPage);
 
         $departments = $this->deptModel->getAll();
+        $employees = $this->empModel->getForSelect();
 
         $this->render('devices/index', [
             'pageTitle'    => 'Quản lý thiết bị',
@@ -61,6 +66,7 @@ class DeviceController extends Controller {
             'totalPages'   => $totalPages,
             'totalDevices' => $totalDevices,
             'departments'  => $departments,
+            'employees'    => $employees,
             'returnTo'     => 'devices?' . http_build_query(array_merge($filters, ['page' => $page]))
         ]);
     }
@@ -336,6 +342,7 @@ class DeviceController extends Controller {
             'status'            => $this->get('status', ''),
             'condition_state'   => $this->get('condition_state', ''),
             'department_id'     => $this->get('department_id', ''),
+            'employee_id'       => $this->get('employee_id', ''),
             'cpu'               => $this->get('cpu', ''),
             'ram_gb'            => $this->get('ram_gb', ''),
             'ssd_capacity'      => $this->get('ssd_capacity', ''),

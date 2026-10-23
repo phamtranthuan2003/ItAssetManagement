@@ -1,19 +1,19 @@
 <div class="card mb-4">
     <div class="card-body">
-        <form action="<?= url('devices') ?>" method="GET" class="row g-3">
+        <form action="<?= url('devices') ?>" method="GET" class="row g-3" data-auto-filter>
             <!-- Tìm kiếm từ khóa -->
             <div class="col-md-3">
                 <label class="form-label small fw-semibold">Từ khóa tìm kiếm</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" name="keyword" class="form-control" placeholder="Loại, hãng, model, serial..." value="<?= e($filters['keyword']) ?>">
+                    <input type="text" name="keyword" class="form-control" placeholder="Loại, hãng, model, serial..." value="<?= e($filters['keyword']) ?>" data-debounce-filter>
                 </div>
             </div>
 
             <!-- Loại thiết bị -->
             <div class="col-md-2">
                 <label class="form-label small fw-semibold">Loại thiết bị</label>
-                <input type="text" name="type" class="form-control" placeholder="PC, Laptop, Máy CNC..." value="<?= e($filters['type']) ?>">
+                <input type="text" name="type" class="form-control" placeholder="PC, Laptop, Máy CNC..." value="<?= e($filters['type']) ?>" data-debounce-filter>
             </div>
 
             <!-- Trạng thái -->
@@ -53,9 +53,21 @@
                 </select>
             </div>
 
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold">Người đang sử dụng</label>
+                <select name="employee_id" class="form-select">
+                    <option value="">-- Tất cả người dùng --</option>
+                    <?php foreach ($employees as $employee): ?>
+                        <option value="<?= (int)$employee['id'] ?>" <?= (string)$filters['employee_id'] === (string)$employee['id'] ? 'selected' : '' ?>>
+                            <?= e($employee['fullname']) ?> (<?= e($employee['code']) ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
             <!-- Lọc theo cấu hình CPU -->
             <div class="col-md-3">
-                <input type="text" name="cpu" class="form-control form-control-sm" placeholder="Lọc theo CPU (i5, i7, Ryzen...)" value="<?= e($filters['cpu']) ?>">
+                <input type="text" name="cpu" class="form-control form-control-sm" placeholder="Lọc theo CPU (i5, i7, Ryzen...)" value="<?= e($filters['cpu']) ?>" data-debounce-filter>
             </div>
 
             <!-- Lọc theo RAM -->
@@ -70,7 +82,7 @@
 
             <!-- Lọc theo SSD -->
             <div class="col-md-2">
-                <input type="text" name="ssd_capacity" class="form-control form-control-sm" placeholder="SSD (256GB, 512GB...)" value="<?= e($filters['ssd_capacity']) ?>">
+                <input type="text" name="ssd_capacity" class="form-control form-control-sm" placeholder="SSD (256GB, 512GB...)" value="<?= e($filters['ssd_capacity']) ?>" data-debounce-filter>
             </div>
 
             <!-- Checkbox lọc đặc biệt -->

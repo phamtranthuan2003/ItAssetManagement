@@ -14,13 +14,33 @@ class Maintenance extends Model {
     /**
      * Lấy toàn bộ danh sách phiếu bảo trì/sửa chữa/nâng cấp
      */
-    public function getAll(?string $status = null): array {
+    public function getAll(?string $status = null, array $filters = []): array {
         $where = [];
         $params = [];
 
         if (!empty($status)) {
             $where[] = "m.status = :status";
             $params['status'] = $status;
+        }
+
+        if (!empty($filters['device_id'])) {
+            $where[] = "m.device_id = :device_id";
+            $params['device_id'] = (int)$filters['device_id'];
+        }
+
+        if (!empty($filters['created_by'])) {
+            $where[] = "m.created_by = :created_by";
+            $params['created_by'] = (int)$filters['created_by'];
+        }
+
+        if (!empty($filters['date_from'])) {
+            $where[] = "m.start_date >= :date_from";
+            $params['date_from'] = $filters['date_from'];
+        }
+
+        if (!empty($filters['date_to'])) {
+            $where[] = "m.start_date <= :date_to";
+            $params['date_to'] = $filters['date_to'];
         }
 
         $whereClause = !empty($where) ? "WHERE " . implode(' AND ', $where) : "";
@@ -33,6 +53,13 @@ class Maintenance extends Model {
                 ORDER BY m.start_date DESC, m.id DESC";
 
         return $this->fetchAll($sql, $params);
+    }
+
+    public function getDeviceOptions(): array {
+        $sql = "SELECT id, type, brand, model
+                FROM devices
+                ORDER BY id DESC";
+        return $this->fetchAll($sql);
     }
 
     /**

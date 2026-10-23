@@ -8,15 +8,18 @@ require_once __DIR__ . '/../../core/Controller.php';
 require_once __DIR__ . '/../../core/Auth.php';
 require_once __DIR__ . '/../models/Maintenance.php';
 require_once __DIR__ . '/../models/Device.php';
+require_once __DIR__ . '/../models/User.php';
 
 class MaintenanceController extends Controller {
     private Maintenance $maintModel;
     private Device $deviceModel;
+    private User $userModel;
 
     public function __construct() {
         Auth::requireLogin();
         $this->maintModel = new Maintenance();
         $this->deviceModel = new Device();
+        $this->userModel = new User();
     }
 
     /**
@@ -24,14 +27,25 @@ class MaintenanceController extends Controller {
      */
     public function index(): void {
         $status = $this->get('status', '');
-        $records = $this->maintModel->getAll($status ?: null);
-        $devices = $this->deviceModel->getList([], 1, 100);
+        $filters = [
+            'status' => $status,
+            'device_id' => $this->get('device_id', ''),
+            'created_by' => $this->get('created_by', ''),
+            'date_from' => $this->get('date_from', ''),
+            'date_to' => $this->get('date_to', '')
+        ];
+        $records = $this->maintModel->getAll($status ?: null, $filters);
+        $devices = $this->maintModel->getDeviceOptions();
+        $users = $this->userModel->getAll();
 
         $this->render('maintenance/index', [
             'pageTitle' => 'Quản lý bảo trì & nâng cấp thiết bị',
             'records'   => $records,
             'devices'   => $devices,
-            'status'    => $status
+            'users'     => $users,
+            'status'    => $status,
+            'filters'   => $filters,
+            'returnTo'  => 'maintenance?' . http_build_query($filters)
         ]);
     }
 

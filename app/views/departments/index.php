@@ -8,9 +8,26 @@
     </button>
 </div>
 
+<div class="card mb-3">
+    <div class="card-body">
+        <form action="<?= url('departments') ?>" method="GET" class="row g-2 align-items-end" data-auto-filter>
+            <div class="col-md-8">
+                <label for="departmentSearch" class="form-label small fw-semibold">Tìm phòng ban theo tên hoặc mã</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="search" name="keyword" id="departmentSearch" class="form-control" placeholder="Nhập tên hoặc mã phòng ban..." value="<?= e($keyword) ?>" data-debounce-filter>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <a href="<?= url('departments') ?>" class="btn btn-light btn-sm border">Xóa bộ lọc</a>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="card">
     <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
+        <table class="table table-hover align-middle mb-0" id="departmentTable">
             <thead class="table-light">
                 <tr>
                     <th style="width: 120px;">Mã phòng</th>
@@ -24,7 +41,7 @@
             <tbody>
                 <?php if (empty($departments)): ?>
                 <tr>
-                    <td colspan="6" class="text-center py-4 text-muted">Chưa có phòng ban nào trong hệ thống.</td>
+                    <td colspan="6" class="text-center py-4 text-muted"><?= $keyword !== '' ? 'Không có kết quả phù hợp.' : 'Chưa có phòng ban nào trong hệ thống.' ?></td>
                 </tr>
                 <?php else: ?>
                     <?php foreach ($departments as $d): ?>
@@ -72,6 +89,7 @@
                                     <div class="modal-content">
                                         <form action="<?= url('departments/' . $d['id'] . '/update') ?>" method="POST">
                                             <?= csrf_field() ?>
+                                            <input type="hidden" name="return_to" value="<?= e($returnTo) ?>">
                                             <div class="modal-header">
                                                 <h5 class="modal-title">Chỉnh sửa phòng ban</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -105,6 +123,7 @@
                                     <div class="modal-content">
                                         <form action="<?= url('departments/' . $d['id'] . '/delete') ?>" method="POST">
                                             <?= csrf_field() ?>
+                                            <input type="hidden" name="return_to" value="<?= e($returnTo) ?>">
                                             <div class="modal-header">
                                                 <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Xác nhận xóa phòng ban</h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -136,6 +155,7 @@
         <div class="modal-content">
             <form action="<?= url('departments/store') ?>" method="POST">
                 <?= csrf_field() ?>
+            <input type="hidden" name="return_to" value="<?= e($returnTo) ?>">
                 <div class="modal-header">
                     <h5 class="modal-title"><i class="bi bi-plus-circle me-2 text-primary"></i>Thêm mới phòng ban</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>

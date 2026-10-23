@@ -12,7 +12,7 @@ class Employee extends Model {
     /**
      * Lấy danh sách nhân viên kèm thông tin phòng ban và số lượng thiết bị đang giữ
      */
-    public function getAll(?string $status = null, ?int $departmentId = null, int $page = 1, int $perPage = 10): array {
+    public function getAll(?string $status = null, ?int $departmentId = null, int $page = 1, int $perPage = 10, string $keyword = ''): array {
         $where = [];
         $params = [];
         $page = max(1, $page);
@@ -29,6 +29,15 @@ class Employee extends Model {
             $params['department_id'] = $departmentId;
         }
 
+        if (trim($keyword) !== '') {
+            $where[] = "(e.fullname LIKE :keyword_name OR e.code LIKE :keyword_code OR e.email LIKE :keyword_email OR e.phone LIKE :keyword_phone)";
+            $searchTerm = '%' . trim($keyword) . '%';
+            $params['keyword_name'] = $searchTerm;
+            $params['keyword_code'] = $searchTerm;
+            $params['keyword_email'] = $searchTerm;
+            $params['keyword_phone'] = $searchTerm;
+        }
+
         $whereClause = !empty($where) ? "WHERE " . implode(' AND ', $where) : "";
 
         $sql = "SELECT e.*, d.name AS department_name, d.code AS department_code,
@@ -42,7 +51,7 @@ class Employee extends Model {
         return $this->fetchAll($sql, $params);
     }
 
-    public function countFiltered(?string $status = null, ?int $departmentId = null): int {
+    public function countFiltered(?string $status = null, ?int $departmentId = null, string $keyword = ''): int {
         $where = [];
         $params = [];
 
@@ -54,6 +63,15 @@ class Employee extends Model {
         if ($departmentId !== null && $departmentId > 0) {
             $where[] = "department_id = :department_id";
             $params['department_id'] = $departmentId;
+        }
+
+        if (trim($keyword) !== '') {
+            $where[] = "(fullname LIKE :keyword_name OR code LIKE :keyword_code OR email LIKE :keyword_email OR phone LIKE :keyword_phone)";
+            $searchTerm = '%' . trim($keyword) . '%';
+            $params['keyword_name'] = $searchTerm;
+            $params['keyword_code'] = $searchTerm;
+            $params['keyword_email'] = $searchTerm;
+            $params['keyword_phone'] = $searchTerm;
         }
 
         $whereClause = !empty($where) ? "WHERE " . implode(' AND ', $where) : "";

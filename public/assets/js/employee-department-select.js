@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const optionsContainer = wrapper.querySelector('[data-employee-select-options]');
         const noResults = wrapper.querySelector('[data-employee-no-results]');
 
-        if (!employeeSelect || !departmentSelect || !toggle || !menu || !searchInput || !optionsContainer || !noResults) {
+        if (!employeeSelect || !toggle || !menu || !searchInput || !optionsContainer || !noResults) {
             return;
         }
 
@@ -22,7 +22,8 @@ document.addEventListener('DOMContentLoaded', function () {
         widgets.push(widget);
 
         function isOptionVisible(option) {
-            const departmentMatches = !departmentSelect.value || option.dataset.departmentId === departmentSelect.value;
+            const departmentMatches = !departmentSelect || !departmentSelect.value ||
+                option.dataset.departmentId === departmentSelect.value;
             const query = searchInput.value.trim().toLocaleLowerCase();
             return departmentMatches && (!query || option.textContent.toLocaleLowerCase().includes(query));
         }
@@ -86,13 +87,15 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        departmentSelect.addEventListener('change', function () {
-            employeeSelect.value = '';
-            toggle.textContent = employeeSelect.options[0].textContent;
-            searchInput.value = '';
-            searchInput.setCustomValidity('');
-            renderOptions();
-        });
+        if (departmentSelect) {
+            departmentSelect.addEventListener('change', function () {
+                employeeSelect.value = '';
+                toggle.textContent = employeeSelect.options[0].textContent;
+                searchInput.value = '';
+                searchInput.setCustomValidity('');
+                renderOptions();
+            });
+        }
 
         document.addEventListener('click', function (event) {
             if (!wrapper.contains(event.target)) {
@@ -100,7 +103,8 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        toggle.textContent = employeeSelect.options[0].textContent;
+        const selectedOption = employeeSelect.selectedOptions[0];
+        toggle.textContent = selectedOption ? selectedOption.textContent.trim() : employeeSelect.options[0].textContent;
     });
 
     document.querySelectorAll('form').forEach(function (form) {

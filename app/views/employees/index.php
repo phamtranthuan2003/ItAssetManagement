@@ -1,7 +1,12 @@
 <div class="card mb-4">
     <div class="card-body">
-        <form action="<?= url('employees') ?>" method="GET" class="row g-3 align-items-end">
-            <div class="col-md-4">
+        <form action="<?= url('employees') ?>" method="GET" class="row g-3 align-items-end" data-auto-filter>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold">Tìm nhân viên</label>
+                <input type="search" name="keyword" class="form-control form-control-sm" placeholder="Tên, mã, email hoặc số điện thoại..." value="<?= e($filters['keyword']) ?>" data-debounce-filter>
+            </div>
+
+            <div class="col-md-3">
                 <label class="form-label small fw-semibold">Phòng ban</label>
                 <select name="department_id" class="form-select form-select-sm">
                     <option value="">-- Tất cả phòng ban --</option>
@@ -13,7 +18,7 @@
                 </select>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label small fw-semibold">Tình trạng làm việc</label>
                 <select name="status" class="form-select form-select-sm">
                     <option value="">-- Tất cả --</option>
@@ -27,7 +32,7 @@
                 <a href="<?= url('employees') ?>" class="btn btn-light btn-sm border">Đặt lại</a>
             </div>
 
-            <div class="col-md-3 text-end">
+            <div class="col-md-2 text-end">
                 <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createEmpModal">
                     <i class="bi bi-person-plus me-1"></i> Thêm nhân viên
                 </button>

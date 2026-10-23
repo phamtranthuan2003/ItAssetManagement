@@ -1,7 +1,18 @@
 <div class="card mb-4">
     <div class="card-body">
-        <form action="<?= url('maintenance') ?>" method="GET" class="row g-3 align-items-end">
-            <div class="col-md-4">
+        <form action="<?= url('maintenance') ?>" method="GET" class="row g-3 align-items-end" data-auto-filter>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold">Thiết bị</label>
+                <select name="device_id" class="form-select form-select-sm">
+                    <option value="">-- Tất cả thiết bị --</option>
+                    <?php foreach ($devices as $device): ?>
+                        <option value="<?= (int)$device['id'] ?>" <?= (string)$filters['device_id'] === (string)$device['id'] ? 'selected' : '' ?>>
+                            STT <?= (int)$device['id'] ?> - <?= e(trim(($device['type'] ?? '') . ' ' . ($device['brand'] ?? '') . ' ' . ($device['model'] ?? ''))) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-md-3">
                 <label class="form-label small fw-semibold">Trạng thái bảo dưỡng</label>
                 <select name="status" class="form-select form-select-sm">
                     <option value="">-- Tất cả trạng thái --</option>
@@ -10,12 +21,28 @@
                     <option value="cannot_repair" <?= $status === 'cannot_repair' ? 'selected' : '' ?>>Không thể sửa chữa</option>
                 </select>
             </div>
-            <div class="col-md-2">
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold">Người phụ trách</label>
+                <select name="created_by" class="form-select form-select-sm">
+                    <option value="">-- Tất cả người phụ trách --</option>
+                    <?php foreach ($users as $user): ?>
+                        <option value="<?= (int)$user['id'] ?>" <?= (string)$filters['created_by'] === (string)$user['id'] ? 'selected' : '' ?>>
+                            <?= e($user['fullname']) ?> (<?= e($user['username']) ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold">Thời gian bắt đầu</label>
+                <div class="input-group input-group-sm">
+                    <input type="date" name="date_from" class="form-control" aria-label="Từ ngày" value="<?= e($filters['date_from']) ?>">
+                    <input type="date" name="date_to" class="form-control" aria-label="Đến ngày" value="<?= e($filters['date_to']) ?>">
+                </div>
+            </div>
+            <div class="col-12">
                 <button type="submit" class="btn btn-primary btn-sm px-3"><i class="bi bi-funnel me-1"></i> Lọc</button>
                 <a href="<?= url('maintenance') ?>" class="btn btn-light btn-sm border">Đặt lại</a>
-            </div>
-            <div class="col-md-6 text-end">
-                <a href="<?= url('maintenance/create') ?>" class="btn btn-warning text-dark btn-sm fw-semibold">
+                <a href="<?= url('maintenance/create') ?>" class="btn btn-warning text-dark btn-sm fw-semibold float-end">
                     <i class="bi bi-tools me-1"></i> Tạo phiếu bảo trì / Nâng cấp mới
                 </a>
             </div>
@@ -34,6 +61,7 @@
                     <th>Ngày xong</th>
                     <th>Chi phí</th>
                     <th>Đơn vị thực hiện</th>
+                    <th>Người phụ trách</th>
                     <th>Nội dung sự cố / Nâng cấp</th>
                     <th>Trạng thái</th>
                     <th class="text-end" style="width: 140px;">Thao tác</th>
@@ -42,7 +70,7 @@
             <tbody>
                 <?php if (empty($records)): ?>
                 <tr>
-                    <td colspan="9" class="text-center py-4 text-muted">Chưa có thông tin bảo dưỡng nào.</td>
+                    <td colspan="10" class="text-center py-4 text-muted"><?= !empty($filters['device_id']) || !empty($filters['created_by']) || !empty($filters['date_from']) || !empty($filters['date_to']) || !empty($status) ? 'Không có kết quả phù hợp với bộ lọc.' : 'Chưa có thông tin bảo dưỡng nào.' ?></td>
                 </tr>
                 <?php else: ?>
                     <?php foreach ($records as $r): ?>
@@ -66,6 +94,7 @@
                         <td><?= formatDate($r['end_date']) ?></td>
                         <td><strong class="text-dark"><?= formatMoney($r['cost']) ?></strong></td>
                         <td><?= e($r['provider'] ?? 'Nội bộ') ?></td>
+                        <td><?= e($r['creator_name']) ?></td>
                         <td>
                             <div class="small text-secondary" style="max-width: 250px;"><?= e($r['description']) ?></div>
                         </td>
@@ -96,7 +125,7 @@
                                     <div class="modal-content">
                                         <form action="<?= url('maintenance/' . $r['id'] . '/status') ?>" method="POST">
                                             <?= csrf_field() ?>
-                                            <input type="hidden" name="return_to" value="<?= e('maintenance?' . http_build_query(['status' => $status])) ?>">
+                                            <input type="hidden" name="return_to" value="<?= e($returnTo) ?>">
                                             <div class="modal-header">
                                                 <h5 class="modal-title"><i class="bi bi-tools me-2 text-primary"></i>Hoàn tất bảo trì thiết bị STT <?= (int)$r['device_id'] ?></h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>

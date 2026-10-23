@@ -1,7 +1,7 @@
 <div class="card mb-4">
     <div class="card-body">
-        <form action="<?= url('tickets') ?>" method="GET" class="row g-3 align-items-end">
-            <div class="col-md-3">
+        <form action="<?= url('tickets') ?>" method="GET" class="row g-3 align-items-end" data-auto-filter>
+            <div class="col-lg-2">
                 <label class="form-label small fw-semibold">Loại nghiệp vụ</label>
                 <select name="type" class="form-select form-select-sm">
                     <option value="">-- Tất cả loại phiếu --</option>
@@ -11,7 +11,7 @@
                 </select>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-lg-2">
                 <label class="form-label small fw-semibold">Trạng thái phiếu</label>
                 <select name="status" class="form-select form-select-sm">
                     <option value="">-- Tất cả trạng thái --</option>
@@ -22,12 +22,46 @@
                 </select>
             </div>
 
-            <div class="col-md-2">
+            <div class="col-lg-3">
+                <label class="form-label small fw-semibold">Người nhận</label>
+                <div class="employee-department-select dropdown position-relative" data-employee-search-select>
+                    <button type="button" class="form-select form-select-sm text-start" data-employee-select-toggle aria-haspopup="listbox" aria-expanded="false">
+                        -- Tất cả người nhận --
+                    </button>
+                    <select name="to_employee_id" class="d-none" data-employee-select tabindex="-1" aria-hidden="true">
+                        <option value="">-- Tất cả người nhận --</option>
+                        <?php foreach ($employees as $employee): ?>
+                            <option value="<?= (int)$employee['id'] ?>" <?= (string)$filters['to_employee_id'] === (string)$employee['id'] ? 'selected' : '' ?>>
+                                <?= e($employee['fullname']) ?> (<?= e($employee['code']) ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <div class="dropdown-menu w-100 p-2" data-employee-select-menu>
+                        <input type="search" class="form-control form-control-sm mb-2" data-employee-search-input aria-label="Tìm người nhận theo tên hoặc mã nhân viên" placeholder="Tìm theo tên hoặc mã nhân viên..." autocomplete="off">
+                        <div class="employee-select-options" data-employee-select-options role="listbox"></div>
+                        <div class="small text-muted px-2 py-1 d-none" data-employee-no-results>Không tìm thấy người nhận phù hợp.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3">
+                <label class="form-label small fw-semibold">Người tạo phiếu</label>
+                <select name="created_by" class="form-select form-select-sm">
+                    <option value="">-- Tất cả người tạo --</option>
+                    <?php foreach ($users as $user): ?>
+                        <option value="<?= (int)$user['id'] ?>" <?= (string)$filters['created_by'] === (string)$user['id'] ? 'selected' : '' ?>>
+                            <?= e($user['fullname']) ?> (<?= e($user['username']) ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="col-lg-2">
                 <button type="submit" class="btn btn-primary btn-sm px-3"><i class="bi bi-funnel me-1"></i> Lọc phiếu</button>
                 <a href="<?= url('tickets') ?>" class="btn btn-light btn-sm border">Đặt lại</a>
             </div>
 
-            <div class="col-md-4 text-end">
+            <div class="col-12 text-end">
                 <div class="btn-group">
                     <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
                         <i class="bi bi-plus-lg me-1"></i> Lập phiếu mới
@@ -62,7 +96,7 @@
             <tbody>
                 <?php if (empty($tickets)): ?>
                 <tr>
-                    <td colspan="9" class="text-center py-4 text-muted">Chưa có phiếu nào được tạo.</td>
+                    <td colspan="9" class="text-center py-4 text-muted"><?= !empty($filters['to_employee_id']) || !empty($filters['created_by']) || !empty($type) || !empty($status) ? 'Không có kết quả phù hợp với bộ lọc.' : 'Chưa có phiếu nào được tạo.' ?></td>
                 </tr>
                 <?php else: ?>
                     <?php foreach ($tickets as $t): ?>
