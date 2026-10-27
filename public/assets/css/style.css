@@ -132,6 +132,18 @@ body {
 }
 
 /* Stat Cards */
+.stat-card-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+
+.stat-card-link:focus-visible {
+    outline: 3px solid #2563eb;
+    outline-offset: 3px;
+    border-radius: 10px;
+}
+
 .stat-card {
     border-radius: 10px;
     transition: transform 0.2s, box-shadow 0.2s;

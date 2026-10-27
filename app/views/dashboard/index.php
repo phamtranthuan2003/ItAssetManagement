@@ -33,70 +33,78 @@
 <div class="row g-3 mb-4">
     <!-- Tổng thiết bị -->
     <div class="col-xl-3 col-sm-6">
-        <div class="card stat-card bg-white p-3">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <span class="text-muted small fw-semibold text-uppercase">Tổng thiết bị</span>
-                    <h3 class="fw-bold mb-0 text-dark"><?= number_format($stats['total']) ?></h3>
-                    <div class="small text-muted mt-1">
-                        <i class="bi bi-pc me-1"></i>PC: <strong><?= $stats['pc_count'] ?></strong> | 
-                        <i class="bi bi-laptop me-1"></i>Laptop: <strong><?= $stats['laptop_count'] ?></strong> |
-                        <i class="bi bi-box me-1"></i>Khác: <strong><?= $stats['other_count'] ?></strong>
+        <a href="<?= url('devices') ?>" class="stat-card-link">
+            <div class="card stat-card bg-white p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Tổng thiết bị</span>
+                        <h3 class="fw-bold mb-0 text-dark"><?= number_format($stats['total']) ?></h3>
+                        <div class="small text-muted mt-1">
+                            <i class="bi bi-pc me-1"></i>PC: <strong><?= $stats['pc_count'] ?></strong> |
+                            <i class="bi bi-laptop me-1"></i>Laptop: <strong><?= $stats['laptop_count'] ?></strong> |
+                            <i class="bi bi-box me-1"></i>Khác: <strong><?= $stats['other_count'] ?></strong>
+                        </div>
+                    </div>
+                    <div class="stat-icon bg-primary-subtle text-primary">
+                        <i class="bi bi-boxes"></i>
                     </div>
                 </div>
-                <div class="stat-icon bg-primary-subtle text-primary">
-                    <i class="bi bi-boxes"></i>
-                </div>
             </div>
-        </div>
+        </a>
     </div>
 
     <!-- Trong kho -->
     <div class="col-xl-3 col-sm-6">
-        <div class="card stat-card bg-white p-3">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <span class="text-muted small fw-semibold text-uppercase">Trong kho (Sẵn sàng)</span>
-                    <h3 class="fw-bold mb-0 text-success"><?= number_format($stats['in_stock']) ?></h3>
-                    <div class="small text-muted mt-1">Có thể cấp phát ngay</div>
-                </div>
-                <div class="stat-icon bg-success-subtle text-success">
-                    <i class="bi bi-box-seam"></i>
+        <a href="<?= url('devices?status=in_stock') ?>" class="stat-card-link">
+            <div class="card stat-card bg-white p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Trong kho (Sẵn sàng)</span>
+                        <h3 class="fw-bold mb-0 text-success"><?= number_format($stats['in_stock']) ?></h3>
+                        <div class="small text-muted mt-1">Có thể cấp phát ngay</div>
+                    </div>
+                    <div class="stat-icon bg-success-subtle text-success">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
 
     <!-- Đang cấp phát -->
     <div class="col-xl-3 col-sm-6">
-        <div class="card stat-card bg-white p-3">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <span class="text-muted small fw-semibold text-uppercase">Đang cấp phát</span>
-                    <h3 class="fw-bold mb-0 text-primary"><?= number_format($stats['allocated']) ?></h3>
-                    <div class="small text-muted mt-1">Đang được nhân viên dùng</div>
-                </div>
-                <div class="stat-icon bg-info-subtle text-info">
-                    <i class="bi bi-person-check"></i>
+        <a href="<?= url('devices?status=allocated') ?>" class="stat-card-link">
+            <div class="card stat-card bg-white p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Đang cấp phát</span>
+                        <h3 class="fw-bold mb-0 text-primary"><?= number_format($stats['allocated']) ?></h3>
+                        <div class="small text-muted mt-1">Đang được nhân viên dùng</div>
+                    </div>
+                    <div class="stat-icon bg-info-subtle text-info">
+                        <i class="bi bi-person-check"></i>
+                    </div>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
 
     <!-- Đang bảo trì -->
     <div class="col-xl-3 col-sm-6">
-        <div class="card stat-card bg-white p-3">
-            <div class="d-flex align-items-center justify-content-between">
-                <div>
-                    <span class="text-muted small fw-semibold text-uppercase">Đang bảo trì / Sửa</span>
-                    <h3 class="fw-bold mb-0 text-warning"><?= number_format($stats['maintenance']) ?></h3>
-                    <div class="small text-muted mt-1">Thanh lý: <?= $stats['liquidated'] ?> máy</div>
-                </div>
-                <div class="stat-icon bg-warning-subtle text-warning">
-                    <i class="bi bi-tools"></i>
+        <a href="<?= url('devices?status=maintenance') ?>" class="stat-card-link">
+            <div class="card stat-card bg-white p-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Đang bảo trì / Sửa</span>
+                        <h3 class="fw-bold mb-0 text-warning"><?= number_format($stats['maintenance']) ?></h3>
+                        <div class="small text-muted mt-1">Thanh lý: <?= $stats['liquidated'] ?> máy</div>
+                    </div>
+                    <div class="stat-icon bg-warning-subtle text-warning">
+                        <i class="bi bi-tools"></i>
+                    </div>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
 </div>
 
