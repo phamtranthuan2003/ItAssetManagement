@@ -32,6 +32,9 @@ class RoleController extends Controller {
         $code = strtolower(trim($code));
         $name = trim($name);
 
+        if ($code === 'admin' && Auth::id() !== 6) {
+            redirect('roles', 'Chỉ Super Admin mới được tạo hoặc phân quyền cho role admin.', 'danger');
+        }
         if (!preg_match('/^[a-z][a-z0-9_]{1,39}$/', $code) || $name === '' || strlen($name) > 400) {
             redirect('roles', 'Mã vai trò cần bắt đầu bằng chữ thường, chỉ gồm chữ/số/gạch dưới (2-40 ký tự) và tên không được để trống.', 'danger');
         }
@@ -49,8 +52,8 @@ class RoleController extends Controller {
         if (!$role) {
             redirect('roles', 'Không tìm thấy vai trò.', 'danger');
         }
-        if ($role['code'] === 'admin') {
-            redirect('roles', 'Vai trò quản trị hệ thống được bảo vệ và luôn có toàn quyền.', 'danger');
+        if ($role['code'] === 'admin' && Auth::id() !== 6) {
+            redirect('roles', 'Chỉ Super Admin mới được phân quyền cho role admin.', 'danger');
         }
 
         $permissions = $this->post('permissions', []);

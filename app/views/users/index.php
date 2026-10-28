@@ -31,8 +31,8 @@
                     <td><strong><?= e($u['fullname']) ?></strong></td>
                     <td><?= e($u['email'] ?? '—') ?></td>
                     <td>
-                        <span class="badge <?= $u['role'] === 'admin' ? 'bg-danger' : 'bg-primary' ?>">
-                            <?= e($u['role_name'] ?? $u['role']) ?>
+                        <span class="badge <?= (int)$u['id'] === 6 ? 'bg-danger' : ($u['role'] === 'admin' ? 'bg-danger' : 'bg-primary') ?>">
+                            <?= (int)$u['id'] === 6 ? 'Super Admin' : e($u['role_name'] ?? $u['role']) ?>
                         </span>
                     </td>
                     <td>
@@ -45,10 +45,16 @@
                     <td><small class="text-muted"><?= formatDate($u['created_at']) ?></small></td>
                     <td class="text-end">
                         <div class="btn-group btn-group-sm">
+                            <?php if ((int)$u['id'] !== 6 || Auth::id() === 6): ?>
                             <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editUserModal<?= $u['id'] ?>" title="Sửa">
                                 <i class="bi bi-pencil"></i>
                             </button>
-                            <?php if ($u['id'] !== Auth::id()): ?>
+                            <?php else: ?>
+                            <span class="btn btn-outline-secondary disabled" title="Chỉ Super Admin mới được quản lý tài khoản này">
+                                <i class="bi bi-shield-lock"></i>
+                            </span>
+                            <?php endif; ?>
+                            <?php if ((int)$u['id'] !== Auth::id() && (int)$u['id'] !== 6): ?>
                             <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteUserModal<?= $u['id'] ?>" title="Xóa">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -56,6 +62,7 @@
                         </div>
 
                         <!-- Modal Chỉnh sửa -->
+                        <?php if ((int)$u['id'] !== 6 || Auth::id() === 6): ?>
                         <div class="modal fade text-start" id="editUserModal<?= $u['id'] ?>" tabindex="-1">
                             <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
@@ -76,18 +83,26 @@
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label fw-semibold">Vai trò phân quyền</label>
+                                                <?php if ((int)$u['id'] === 6 || (int)$u['id'] === Auth::id() || ($u['role'] === 'admin' && Auth::id() !== 6)): ?>
+                                                <input class="form-control" value="<?= (int)$u['id'] === 6 ? 'Super Admin' : e($u['role_name'] ?? $u['role']) ?>" readonly>
+                                                <?php else: ?>
                                                 <select name="role" class="form-select">
                                                     <?php foreach ($roles as $role): ?>
                                                     <option value="<?= e($role['code']) ?>" <?= $u['role'] === $role['code'] ? 'selected' : '' ?>><?= e($role['name']) ?></option>
                                                     <?php endforeach; ?>
                                                 </select>
+                                                <?php endif; ?>
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label fw-semibold">Trạng thái tài khoản</label>
+                                                <?php if ((int)$u['id'] === 6): ?>
+                                                <input class="form-control" value="Super Admin - luôn hoạt động" readonly>
+                                                <?php else: ?>
                                                 <select name="status" class="form-select">
                                                     <option value="1" <?= $u['status'] == 1 ? 'selected' : '' ?>>Kích hoạt hoạt động</option>
                                                     <option value="0" <?= $u['status'] == 0 ? 'selected' : '' ?>>Khóa tài khoản</option>
                                                 </select>
+                                                <?php endif; ?>
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label fw-semibold">Đặt lại mật khẩu mới (Nếu cần)</label>
@@ -102,24 +117,25 @@
                                 </div>
                             </div>
                         </div>
+                        <?php endif; ?>
 
                         <!-- Modal Xóa -->
-                        <?php if ($u['id'] !== Auth::id()): ?>
+                        <?php if ((int)$u['id'] !== Auth::id() && (int)$u['id'] !== 6): ?>
                         <div class="modal fade text-start" id="deleteUserModal<?= $u['id'] ?>" tabindex="-1">
                             <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
                                     <form action="<?= url('users/' . $u['id'] . '/delete') ?>" method="POST">
                                         <?= csrf_field() ?>
                                         <div class="modal-header">
-                                            <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Xác nhận xóa tài khoản</h5>
+                                            <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Khóa tài khoản</h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                         </div>
                                         <div class="modal-body">
-                                            Bạn có chắc chắn muốn xóa tài khoản <strong><?= e($u['username']) ?></strong> (<?= e($u['fullname']) ?>)?
+                                            Bạn có chắc chắn muốn khóa tài khoản <strong><?= e($u['username']) ?></strong> (<?= e($u['fullname']) ?>)? Lịch sử thao tác sẽ được giữ lại.
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                                            <button type="submit" class="btn btn-danger">Xác nhận xóa</button>
+                                            <button type="submit" class="btn btn-danger">Khóa tài khoản</button>
                                         </div>
                                     </form>
                                 </div>

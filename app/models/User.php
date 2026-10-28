@@ -84,10 +84,10 @@ class User extends Model {
     }
 
     /**
-     * Xóa tài khoản
+     * Deactivate an account while preserving user references in audit history.
      */
-    public function delete(int $id): bool {
-        $sql = "DELETE FROM {$this->table} WHERE id = :id";
+    public function deactivate(int $id): bool {
+        $sql = "UPDATE {$this->table} SET status = 0 WHERE id = :id";
         return (bool)$this->query($sql, ['id' => $id]);
     }
 

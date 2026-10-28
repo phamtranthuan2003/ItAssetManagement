@@ -206,7 +206,8 @@ CREATE TABLE `maintenances` (
 
 -- 1. Tài khoản mẫu (Mật khẩu đều là: password123)
 INSERT INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `role`, `status`) VALUES
-(1, 'admin', '$2y$10$2yKvpupzQNm41o.MhNcV4OWwIt1OQkIRphDPOmewPgLhs35TdBxqK', 'Quản trị viên Hệ thống', 'admin@warehouse.local', 'admin', 1),
+(1, 'admin', '$2y$10$2yKvpupzQNm41o.MhNcV4OWwIt1OQkIRphDPOmewPgLhs35TdBxqK', 'Quản trị viên Hệ thống', 'admin@warehouse.local', 'warehouse', 1),
+(6, 'superadmin', '$2y$10$2yKvpupzQNm41o.MhNcV4OWwIt1OQkIRphDPOmewPgLhs35TdBxqK', 'Super Admin Hệ thống', 'superadmin@warehouse.local', 'admin', 1),
 (2, 'thukho', '$2y$10$2yKvpupzQNm41o.MhNcV4OWwIt1OQkIRphDPOmewPgLhs35TdBxqK', 'Nguyễn Văn Kho', 'thukho@warehouse.local', 'warehouse', 1);
 
 -- 1.1 Vai trò mặc định và danh mục quyền
@@ -221,10 +222,14 @@ INSERT INTO `permissions` (`code`, `name`) VALUES
 ('maintenance.view', 'Xem bảo trì'), ('maintenance.create', 'Tạo phiếu bảo trì'), ('maintenance.update', 'Cập nhật bảo trì'),
 ('departments.view', 'Xem phòng ban'), ('departments.create', 'Thêm phòng ban'), ('departments.update', 'Sửa phòng ban'), ('departments.delete', 'Xóa phòng ban'),
 ('employees.view', 'Xem nhân viên'), ('employees.create', 'Thêm nhân viên'), ('employees.update', 'Sửa nhân viên'), ('employees.delete', 'Xóa nhân viên'), ('employees.revoke', 'Thu hồi thiết bị nhân viên'),
-('reports.view', 'Xem báo cáo');
+('reports.view', 'Xem báo cáo'),
+('users.manage', 'Quản lý tài khoản'),
+('roles.manage', 'Quản lý vai trò & phân quyền');
 INSERT INTO `role_permissions` (`role_id`, `permission_id`)
 SELECT r.id, p.id FROM `roles` r CROSS JOIN `permissions` p
-WHERE r.code = 'warehouse' AND p.code <> 'devices.delete';
+WHERE r.code = 'warehouse' AND p.code NOT IN ('devices.delete', 'users.manage', 'roles.manage');
+INSERT INTO `role_permissions` (`role_id`, `permission_id`)
+SELECT r.id, p.id FROM `roles` r CROSS JOIN `permissions` p WHERE r.code = 'admin';
 
 -- 2. Phòng ban mẫu
 INSERT INTO `departments` (`id`, `code`, `name`, `description`) VALUES

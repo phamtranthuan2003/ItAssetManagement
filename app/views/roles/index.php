@@ -16,7 +16,7 @@
                 <div>
                     <strong><?= e($role['name']) ?></strong>
                     <span class="badge bg-secondary ms-2"><?= e($role['code']) ?></span>
-                    <?php if ($role['code'] === 'admin'): ?><span class="badge bg-danger ms-1">Super-admin</span><?php endif; ?>
+                    <?php if ($role['code'] === 'admin'): ?><span class="badge bg-danger ms-1">Role Admin</span><?php endif; ?>
                 </div>
                 <?php if (!in_array($role['code'], ['admin', 'warehouse', 'customer'], true)): ?>
                 <form action="<?= url('roles/' . $role['id'] . '/delete') ?>" method="POST" onsubmit="return confirm('Xóa vai trò này?')">
@@ -26,9 +26,12 @@
                 <?php endif; ?>
             </div>
             <div class="card-body">
-                <?php if ($role['code'] === 'admin'): ?>
-                    <p class="text-muted mb-0">Vai trò hệ thống có toàn quyền và không thể thay đổi.</p>
+                <?php if ($role['code'] === 'admin' && Auth::id() !== 6): ?>
+                    <p class="text-muted mb-0">Chỉ Super Admin (ID 6) mới được thay đổi quyền của role Admin.</p>
                 <?php else: ?>
+                <?php if ($role['code'] === 'admin'): ?>
+                    <div class="alert alert-warning py-2">Đây là quyền của role Admin. Super Admin ID 6 luôn có toàn quyền hệ thống và không bị giới hạn bởi các lựa chọn bên dưới.</div>
+                <?php endif; ?>
                 <?php if ($role['code'] === 'customer'): ?>
                     <div class="alert alert-info py-2">Role Khách hàng mặc định chưa có quyền nào. Hãy tích quyền cần thiết và lưu trước khi gán role cho tài khoản.</div>
                 <?php endif; ?>

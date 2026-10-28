@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th10 28, 2026 lúc 04:43 AM
+-- Thời gian đã tạo: Th10 28, 2026 lúc 04:58 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.2.12
 
@@ -928,7 +928,9 @@ INSERT INTO `permissions` (`id`, `code`, `name`) VALUES
 (19, 'employees.update', 'Sửa nhân viên'),
 (20, 'employees.delete', 'Xóa nhân viên'),
 (21, 'employees.revoke', 'Thu hồi thiết bị nhân viên'),
-(22, 'reports.view', 'Xem báo cáo');
+(22, 'reports.view', 'Xem báo cáo'),
+(45, 'users.manage', 'Quản lý tài khoản'),
+(46, 'roles.manage', 'Quản lý vai trò & phân quyền');
 
 -- --------------------------------------------------------
 
@@ -967,6 +969,29 @@ CREATE TABLE `role_permissions` (
 --
 
 INSERT INTO `role_permissions` (`role_id`, `permission_id`) VALUES
+(1, 1),
+(1, 2),
+(1, 3),
+(1, 4),
+(1, 5),
+(1, 6),
+(1, 7),
+(1, 8),
+(1, 9),
+(1, 10),
+(1, 11),
+(1, 12),
+(1, 13),
+(1, 14),
+(1, 15),
+(1, 16),
+(1, 17),
+(1, 18),
+(1, 19),
+(1, 20),
+(1, 21),
+(1, 22),
+(1, 45),
 (2, 1),
 (2, 2),
 (2, 3),
@@ -1288,11 +1313,11 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `role`, `status`, `created_at`) VALUES
-(1, 'admin', '$2y$10$2yKvpupzQNm41o.MhNcV4OWwIt1OQkIRphDPOmewPgLhs35TdBxqK', 'Quản trị viên Hệ thống', 'admin@warehouse.local', 'admin', 1, '2026-10-20 15:58:11'),
+(1, 'admin', '$2y$10$8s8zT5sT54YPiIFjETta0uq7ym4deKCjjjLbr.fXKw0hPigRaI7OC', 'Quản trị viên Hệ thống', 'admin@warehouse.local', 'warehouse', 1, '2026-10-20 15:58:11'),
 (2, 'thukho', '$2y$10$2yKvpupzQNm41o.MhNcV4OWwIt1OQkIRphDPOmewPgLhs35TdBxqK', 'Thủ Kho', 'thukho@warehouse.local', 'warehouse', 1, '2026-10-20 15:58:11'),
 (3, 'ducvm', '$2y$10$o9pmZEGLAuNz03Kgkx9QXOP4KgIixRwD9mBalS4cutoJ/TAnHTXXS', 'Vũ Minh Đức', 'duc.vm@everland.vn', 'admin', 1, '2026-10-23 11:02:22'),
 (4, 'username', '$2y$10$oZSfzP0scs26y1hnblfe/eAwV9ohB3TKw5guDCDm5Dx55SvtvoiU6', 'Khách hàng', '', 'customer', 1, '2026-10-28 10:40:11'),
-(5, 'thuanpt', '$2y$10$Rbkv7HgwbRxI3U9e4u84XuSNbdZ2vVKztqXGlFgU4LML//thL8bVC', 'Phạm Trần Thuận', 'phamtranthuan2003@gmail.com', 'admin', 1, '2026-10-28 10:42:31');
+(6, 'thuanpt', '$2y$10$tYYmvSpVvepzWDKCWjmnC.nXcKp93gH8p7OGKgUn325v00n6hjJa2', 'Phạm Trần Thuận', 'phamtranthuan2003@gmail.com', 'admin', 1, '2026-10-28 10:45:07');
 
 --
 -- Chỉ mục cho các bảng đã đổ
@@ -1451,13 +1476,13 @@ ALTER TABLE `maintenances`
 -- AUTO_INCREMENT cho bảng `permissions`
 --
 ALTER TABLE `permissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
 
 --
 -- AUTO_INCREMENT cho bảng `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT cho bảng `tickets`
@@ -1475,7 +1500,7 @@ ALTER TABLE `ticket_details`
 -- AUTO_INCREMENT cho bảng `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Các ràng buộc cho các bảng đã đổ

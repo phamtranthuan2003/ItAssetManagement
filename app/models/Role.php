@@ -26,7 +26,9 @@ class Role extends Model {
             'view' => 'Xem nhân viên', 'create' => 'Thêm nhân viên', 'update' => 'Sửa nhân viên',
             'delete' => 'Xóa nhân viên', 'revoke' => 'Thu hồi thiết bị nhân viên'
         ],
-        'reports' => ['view' => 'Xem báo cáo']
+        'reports' => ['view' => 'Xem báo cáo'],
+        'users' => ['manage' => 'Quản lý tài khoản'],
+        'roles' => ['manage' => 'Quản lý vai trò & phân quyền']
     ];
 
     public static function permissionCatalog(): array {

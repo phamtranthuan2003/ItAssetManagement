@@ -77,7 +77,7 @@ class Auth {
      * Kiểm tra có phải Admin không
      */
     public static function isAdmin(): bool {
-        return self::role() === 'admin';
+        return self::id() === 6;
     }
 
     public static function hasPermission(string $permission): bool {

@@ -28,7 +28,10 @@ class UserController extends Controller {
         $this->render('users/index', [
             'pageTitle' => 'Quản lý tài khoản hệ thống',
             'users'     => $users,
-            'roles'     => $this->roleModel->getAll()
+            'roles'     => array_values(array_filter(
+                $this->roleModel->getAll(),
+                static fn(array $role): bool => Auth::id() === 6 || $role['code'] !== 'admin'
+            ))
         ]);
     }
 
@@ -59,6 +62,9 @@ class UserController extends Controller {
         if (!is_string($role) || !$this->userModel->roleExists($role)) {
             redirect('users', 'Vai trò được chọn không hợp lệ.', 'danger');
         }
+        if ($role === 'admin' && Auth::id() !== 6) {
+            redirect('users', 'Chỉ Super Admin mới được cấp role Admin.', 'danger');
+        }
 
         $this->userModel->create([
             'username' => $username,
@@ -78,10 +84,22 @@ class UserController extends Controller {
     public function update(int $id): void {
         $this->validateCsrf();
 
+        $targetUser = $this->userModel->findById($id);
+        if (!$targetUser) {
+            redirect('users', 'Không tìm thấy tài khoản.', 'danger');
+        }
+        if ($id === 6 && Auth::id() !== 6) {
+            redirect('users', 'Chỉ Super Admin mới được quản lý tài khoản Super Admin.', 'danger');
+        }
+        if ($targetUser['role'] === 'admin' && Auth::id() !== 6) {
+            redirect('users', 'Chỉ Super Admin mới được quản lý tài khoản thuộc role Admin.', 'danger');
+        }
+
         $fullname = trim($this->post('fullname', ''));
         $email = trim($this->post('email', ''));
-        $role = $this->post('role', 'warehouse');
-        $status = (int)$this->post('status', 1);
+        $isSelf = $id === Auth::id();
+        $role = ($id === 6 || $isSelf) ? $targetUser['role'] : $this->post('role', 'warehouse');
+        $status = ($id === 6 || $isSelf) ? (int)$targetUser['status'] : (int)$this->post('status', 1);
         $password = $this->post('password', '');
 
         if (empty($fullname)) {
@@ -89,6 +107,9 @@ class UserController extends Controller {
         }
         if (!is_string($role) || !$this->userModel->roleExists($role)) {
             redirect('users', 'Vai trò được chọn không hợp lệ.', 'danger');
+        }
+        if ($role === 'admin' && Auth::id() !== 6) {
+            redirect('users', 'Chỉ Super Admin mới được cấp role Admin.', 'danger');
         }
 
         $data = [
@@ -115,11 +136,14 @@ class UserController extends Controller {
     public function delete(int $id): void {
         $this->validateCsrf();
 
+        if ($id === 6) {
+            redirect('users', 'Không thể xóa tài khoản Super Admin.', 'danger');
+        }
         if ($id === Auth::id()) {
             redirect('users', 'Bạn không thể tự xóa tài khoản của chính mình!', 'danger');
         }
 
-        $this->userModel->delete($id);
-        redirect('users', 'Đã xóa tài khoản thành công!', 'success');
+        $this->userModel->deactivate($id);
+        redirect('users', 'Đã khóa tài khoản. Lịch sử thao tác được giữ nguyên để bảo toàn kiểm toán.', 'success');
     }
 }
