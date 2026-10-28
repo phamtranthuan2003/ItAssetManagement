@@ -312,9 +312,10 @@ class DeviceController extends Controller {
     }
 
     /**
-     * Xóa thiết bị (Chỉ cho phép xóa khi thiết bị không đang cấp phát)
+     * Xóa thiết bị và lịch sử liên quan (Chỉ dành cho Admin)
      */
     public function delete(int $id): void {
+        Auth::requireAdmin();
         $this->validateCsrf();
         $returnTo = $this->returnTo('devices', 'devices');
 
@@ -323,12 +324,35 @@ class DeviceController extends Controller {
             redirect($returnTo, 'Không tìm thấy thiết bị!', 'danger');
         }
 
-        if ($device['status'] === 'allocated') {
-            redirect($returnTo, 'Không thể xóa thiết bị đang được cấp phát cho nhân viên! Vui lòng thu hồi trước.', 'danger');
+        $deleteEmployee = $this->post('delete_employee', '') === '1';
+        $confirmOtherDevices = $this->post('confirm_other_devices', '') === '1';
+        $result = $this->deviceModel->delete($id, $deleteEmployee, $confirmOtherDevices);
+
+        if ($result['status'] === 'confirmation_required') {
+            $this->render('devices/confirm_employee_delete', [
+                'pageTitle'    => 'Xác nhận xóa nhân viên',
+                'device'       => $device,
+                'employee'     => $result['employee'],
+                'otherDevices' => $result['other_devices'],
+                'returnTo'     => $returnTo
+            ]);
+            return;
         }
 
-        $this->deviceModel->delete($id);
-        redirect($returnTo, "Đã xóa thiết bị STT {$id} thành công!", 'success');
+        if ($result['status'] !== 'deleted') {
+            redirect($returnTo, 'Không thể xóa thiết bị vì thiết bị không còn tồn tại. Vui lòng tải lại danh sách.', 'danger');
+        }
+
+        $message = "Đã xóa thiết bị STT {$id} và các lịch sử liên quan thành công!";
+        if ($result['employee_deleted']) {
+            $message .= ' Đã xóa nhân viên liên quan';
+            if ($result['returned_devices'] > 0) {
+                $message .= ' và đưa ' . $result['returned_devices'] . ' thiết bị khác về kho';
+            }
+            $message .= '.';
+        }
+
+        redirect($returnTo, $message, 'success');
     }
 
     /**

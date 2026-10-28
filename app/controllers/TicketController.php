@@ -115,9 +115,10 @@ class TicketController extends Controller {
             redirect('tickets/create?type=' . $ticketType, 'Vui lòng chọn ít nhất một thiết bị vào phiếu!', 'danger');
         }
 
-        if ($ticketType === 'revocation') {
+        if ($ticketType === 'revocation' || $ticketType === 'transfer') {
             if (empty($fromEmpId)) {
-                redirect('tickets/create?type=revocation', 'Vui lòng chọn nhân viên bàn giao thiết bị!', 'danger');
+                $typeLabel = $ticketType === 'transfer' ? 'transfer' : 'revocation';
+                redirect('tickets/create?type=' . $typeLabel, 'Vui lòng chọn nhân viên đang bàn giao thiết bị!', 'danger');
             }
 
             $employeeDeviceIds = array_map(
@@ -126,7 +127,11 @@ class TicketController extends Controller {
             );
             foreach ($deviceIds as $deviceId) {
                 if (!empty($deviceId) && !in_array((int)$deviceId, $employeeDeviceIds, true)) {
-                    redirect('tickets/create?type=revocation', 'Thiết bị được chọn không thuộc nhân viên đã chọn hoặc không còn được cấp phát!', 'danger');
+                    redirect(
+                        'tickets/create?type=' . $ticketType,
+                        'Thiết bị được chọn không thuộc nhân viên đã chọn hoặc không còn được cấp phát!',
+                        'danger'
+                    );
                 }
             }
         }

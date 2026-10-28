@@ -220,7 +220,7 @@
                                 <a href="<?= url('devices/' . $d['id'] . '/edit?' . http_build_query(['return_to' => $returnTo])) ?>" class="btn btn-outline-primary" title="Sửa thông tin">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <?php if ($d['status'] !== 'allocated'): ?>
+                                <?php if (Auth::isAdmin()): ?>
                                 <button type="button" class="btn btn-outline-danger" title="Xóa" data-bs-toggle="modal" data-bs-target="#deleteModal<?= $d['id'] ?>">
                                     <i class="bi bi-trash"></i>
                                 </button>
@@ -228,7 +228,7 @@
                             </div>
 
                             <!-- Modal xác nhận xóa -->
-                            <?php if ($d['status'] !== 'allocated'): ?>
+                            <?php if (Auth::isAdmin()): ?>
                             <div class="modal fade text-start" id="deleteModal<?= $d['id'] ?>" tabindex="-1">
                                 <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content">
@@ -240,7 +240,18 @@
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
                                             <div class="modal-body">
-                                                Bạn có chắc chắn muốn xóa thiết bị STT <strong><?= (int)$d['id'] ?></strong> (<?= e($d['model'] ?: $d['type']) ?>) khỏi hệ thống? Thao tác này không thể hoàn tác.
+                                                Bạn có chắc chắn muốn xóa thiết bị STT <strong><?= (int)$d['id'] ?></strong> (<?= e($d['model'] ?: $d['type']) ?>) khỏi hệ thống? Các lịch sử và chi tiết phiếu liên quan cũng sẽ bị xóa. Thao tác này không thể hoàn tác.
+                                                <?php if (!empty($d['current_employee_id'])): ?>
+                                                <div class="form-check mt-3">
+                                                    <input class="form-check-input" type="checkbox" name="delete_employee" value="1" id="deleteEmployee<?= (int)$d['id'] ?>">
+                                                    <label class="form-check-label" for="deleteEmployee<?= (int)$d['id'] ?>">
+                                                        Xóa luôn nhân viên <strong><?= e($d['employee_name'] ?? '') ?></strong>
+                                                    </label>
+                                                    <div class="form-text">
+                                                        Không tích chọn: chỉ xóa thiết bị này. Nếu nhân viên còn thiết bị khác, hệ thống sẽ yêu cầu xác nhận thêm trước khi xóa nhân viên và đưa các thiết bị đó về kho.
+                                                    </div>
+                                                </div>
+                                                <?php endif; ?>
                                             </div>
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>

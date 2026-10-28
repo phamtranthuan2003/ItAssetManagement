@@ -299,11 +299,80 @@ class Device extends Model {
     }
 
     /**
-     * Xóa thiết bị
+     * Xóa thiết bị, và tùy chọn nhân viên cùng các thiết bị khác đang được giao.
      */
-    public function delete(int $id): bool {
-        $sql = "DELETE FROM {$this->table} WHERE id = :id";
-        return (bool)$this->query($sql, ['id' => $id]);
+    public function delete(int $id, bool $deleteEmployee = false, bool $confirmOtherDevices = false): array {
+        $this->beginTransaction();
+
+        try {
+            $device = $this->fetch(
+                "SELECT id, current_employee_id FROM {$this->table} WHERE id = :id FOR UPDATE",
+                ['id' => $id]
+            );
+            if (!$device) {
+                $this->rollBack();
+                return ['status' => 'not_found'];
+            }
+
+            $employee = null;
+            $otherDevices = [];
+            if ($deleteEmployee && !empty($device['current_employee_id'])) {
+                $employeeId = (int)$device['current_employee_id'];
+                $employee = $this->fetch(
+                    "SELECT id, fullname, code FROM employees WHERE id = :id FOR UPDATE",
+                    ['id' => $employeeId]
+                );
+                $otherDevices = $this->fetchAll(
+                    "SELECT id, device_code, type, brand, model
+                     FROM {$this->table}
+                     WHERE current_employee_id = :employee_id AND id <> :device_id
+                     ORDER BY id
+                     FOR UPDATE",
+                    ['employee_id' => $employeeId, 'device_id' => $id]
+                );
+
+                if ($employee && !empty($otherDevices) && !$confirmOtherDevices) {
+                    $this->rollBack();
+                    return [
+                        'status' => 'confirmation_required',
+                        'employee' => $employee,
+                        'other_devices' => $otherDevices
+                    ];
+                }
+
+                if ($employee && !empty($otherDevices)) {
+                    $this->query(
+                        "UPDATE {$this->table}
+                         SET current_employee_id = NULL,
+                             current_department_id = NULL,
+                             status = 'in_stock',
+                             is_temporary = 0,
+                             expected_return_date = NULL
+                         WHERE current_employee_id = :employee_id AND id <> :device_id",
+                        ['employee_id' => $employeeId, 'device_id' => $id]
+                    );
+                }
+            }
+
+            $this->query("DELETE FROM ticket_details WHERE device_id = :id", ['id' => $id]);
+            $deleted = $this->query("DELETE FROM {$this->table} WHERE id = :id", ['id' => $id]);
+            if ($employee) {
+                $this->query("DELETE FROM employees WHERE id = :id", ['id' => $employee['id']]);
+            }
+            $this->commit();
+
+            return [
+                'status' => $deleted->rowCount() > 0 ? 'deleted' : 'not_found',
+                'employee_deleted' => (bool)$employee,
+                'returned_devices' => count($otherDevices)
+            ];
+        } catch (Throwable $exception) {
+            if ($this->db->inTransaction()) {
+                $this->rollBack();
+            }
+
+            throw $exception;
+        }
     }
 
     /**

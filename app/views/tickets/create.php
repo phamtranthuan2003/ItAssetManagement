@@ -92,7 +92,7 @@
                                         $employeeSelectClass = 'form-select form-select-sm';
                                         $employeeSelectPlaceholder = '-- Chọn nhân viên đang giữ --';
                                         $employeeSelectOptions = $employees;
-                                        $employeeSelectRequired = false;
+                                        $employeeSelectRequired = true;
                                         require __DIR__ . '/../components/employee_department_select.php';
                                         ?>
                                     </div>
@@ -215,12 +215,18 @@
                                             </div>
                                         </div>
                                         <?php else: ?>
-                                        <select name="device_id[]" class="form-select form-select-sm" required>
-                                            <option value="">-- Chọn thiết bị --</option>
+                                        <select name="device_id[]" class="form-select form-select-sm" required <?= $type === 'transfer' ? 'data-transfer-device-select' : '' ?>>
+                                            <option value=""><?= $type === 'transfer' ? '-- Chọn nhân viên bàn giao trước --' : '-- Chọn thiết bị --' ?></option>
                                             <?php if ($type === 'allocation'): ?>
                                                 <?php foreach ($inStockDevices as $dev): ?>
                                                     <option value="<?= $dev['id'] ?>">
                                                         STT <?= (int)$dev['id'] ?> - <?= e($dev['type']) ?><?= trim(($dev['brand'] ?? '') . ' ' . ($dev['model'] ?? '')) !== '' ? ' ' . e(trim($dev['brand'] . ' ' . $dev['model'])) : '' ?><?= !empty($dev['ram_gb']) ? ' (RAM ' . (int)$dev['ram_gb'] . 'GB)' : '' ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            <?php elseif ($type === 'transfer'): ?>
+                                                <?php foreach ($allocatedDevices as $dev): ?>
+                                                    <option value="<?= (int)$dev['id'] ?>" data-employee-id="<?= (int)$dev['current_employee_id'] ?>">
+                                                        STT <?= (int)$dev['id'] ?> - <?= e($dev['type']) ?><?= trim(($dev['brand'] ?? '') . ' ' . ($dev['model'] ?? '')) !== '' ? ' ' . e(trim($dev['brand'] . ' ' . $dev['model'])) : '' ?> - Đang cấp: <?= e($dev['employee_name'] ?? 'Chưa rõ') ?>
                                                     </option>
                                                 <?php endforeach; ?>
                                             <?php else: ?>
@@ -291,6 +297,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const searchInput = clone.querySelector('[data-device-search-input]');
                 if (searchInput) searchInput.value = '';
                 container.appendChild(clone);
+                filterTransferDeviceSelect(clone.querySelector('[data-transfer-device-select]'));
                 container.dispatchEvent(new CustomEvent('revocation-device-row-added', { detail: clone }));
             }
         });
@@ -305,6 +312,36 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         });
+    }
+
+    const fromEmployeeSelect = document.getElementById('fromEmployeeSelect');
+    function filterTransferDeviceSelect(select) {
+        if (!select) return;
+
+        const employeeId = fromEmployeeSelect ? fromEmployeeSelect.value : '';
+        select.value = '';
+        select.options[0].textContent = employeeId
+            ? '-- Chọn thiết bị --'
+            : '-- Chọn nhân viên bàn giao trước --';
+
+        Array.from(select.options).slice(1).forEach(function (option) {
+            option.hidden = !employeeId || option.dataset.employeeId !== employeeId;
+        });
+    }
+
+    if (fromEmployeeSelect) {
+        fromEmployeeSelect.addEventListener('change', function () {
+            container.querySelectorAll('[data-transfer-device-select]').forEach(filterTransferDeviceSelect);
+        });
+        const fromDepartmentSelect = document.getElementById('fromDepartmentSelect');
+        if (fromDepartmentSelect) {
+            fromDepartmentSelect.addEventListener('change', function () {
+                setTimeout(function () {
+                    container.querySelectorAll('[data-transfer-device-select]').forEach(filterTransferDeviceSelect);
+                }, 0);
+            });
+        }
+        container.querySelectorAll('[data-transfer-device-select]').forEach(filterTransferDeviceSelect);
     }
 });
 </script>

@@ -161,6 +161,13 @@ class Ticket extends Model {
                     if ($device['status'] === 'in_stock') {
                         throw new Exception("Thiết bị STT {$deviceId} đang ở 'Trong kho', không thể thực hiện thu hồi!");
                     }
+                } elseif ($ticketType === 'transfer') {
+                    if (
+                        $device['status'] !== 'allocated' ||
+                        (int)$device['current_employee_id'] !== $fromEmployeeId
+                    ) {
+                        throw new Exception("Thiết bị STT {$deviceId} không thuộc nhân viên bàn giao đã chọn hoặc không còn được cấp phát!");
+                    }
                 }
             }
 
