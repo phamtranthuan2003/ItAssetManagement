@@ -33,9 +33,11 @@
             </div>
 
             <div class="col-md-2 text-end">
+                <?php if (Auth::hasPermission('employees.create')): ?>
                 <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createEmpModal">
                     <i class="bi bi-person-plus me-1"></i> Thêm nhân viên
                 </button>
+                <?php endif; ?>
             </div>
         </form>
     </div>
@@ -102,7 +104,7 @@
                                 <a href="<?= url('employees/' . $e['id'] . '?' . http_build_query(['return_to' => $returnTo])) ?>" class="btn btn-outline-secondary" title="Xem hồ sơ">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <?php if ($e['held_devices_count'] == 0): ?>
+                                <?php if ($e['held_devices_count'] == 0 && Auth::hasPermission('employees.delete')): ?>
                                 <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteEmpModal<?= $e['id'] ?>" title="Xóa">
                                     <i class="bi bi-trash"></i>
                                 </button>
@@ -110,7 +112,7 @@
                             </div>
 
                             <!-- Modal Xóa -->
-                            <?php if ($e['held_devices_count'] == 0): ?>
+                            <?php if ($e['held_devices_count'] == 0 && Auth::hasPermission('employees.delete')): ?>
                             <div class="modal fade text-start" id="deleteEmpModal<?= $e['id'] ?>" tabindex="-1">
                                 <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content">
@@ -163,6 +165,7 @@
 </div>
 
 <!-- Modal Thêm mới nhân viên -->
+<?php if (Auth::hasPermission('employees.create')): ?>
 <div class="modal fade" id="createEmpModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -221,3 +224,4 @@
         </div>
     </div>
 </div>
+<?php endif; ?>

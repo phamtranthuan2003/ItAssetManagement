@@ -10,9 +10,11 @@
         </div>
     </div>
     <div class="d-flex gap-2">
+        <?php if (Auth::hasPermission('devices.update')): ?>
         <a href="<?= url('devices/' . $device['id'] . '/edit?' . http_build_query(['return_to' => $returnTo])) ?>" class="btn btn-outline-primary btn-sm">
             <i class="bi bi-pencil me-1"></i> Chỉnh sửa
         </a>
+        <?php endif; ?>
         <a href="<?= url($returnTo) ?>" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-arrow-left me-1"></i> Danh sách
         </a>
@@ -162,12 +164,16 @@
 
                     <!-- Nút thao tác nhanh khi đang cấp phát -->
                     <div class="d-grid gap-2">
+                        <?php if (Auth::hasPermission('tickets.create')): ?>
                         <a href="<?= url('tickets/create?type=transfer') ?>" class="btn btn-outline-info">
                             <i class="bi bi-arrow-left-right me-1"></i> Chuyển giao sang người khác
                         </a>
+                        <?php endif; ?>
+                        <?php if (Auth::hasPermission('tickets.create')): ?>
                         <a href="<?= url('tickets/create?type=revocation') ?>" class="btn btn-outline-danger">
                             <i class="bi bi-box-arrow-in-left me-1"></i> Lập phiếu thu hồi về kho
                         </a>
+                        <?php endif; ?>
                     </div>
 
                 <?php elseif ($device['status'] === 'in_stock'): ?>
@@ -178,12 +184,16 @@
                     </div>
 
                     <div class="d-grid gap-2">
+                        <?php if (Auth::hasPermission('tickets.create')): ?>
                         <a href="<?= url('tickets/create?type=allocation') ?>" class="btn btn-success">
                             <i class="bi bi-box-arrow-right me-1"></i> Cấp phát thiết bị này ngay
                         </a>
+                        <?php endif; ?>
+                        <?php if (Auth::hasPermission('maintenance.create')): ?>
                         <a href="<?= url('maintenance/create?device_id=' . $device['id']) ?>" class="btn btn-outline-warning text-dark">
                             <i class="bi bi-tools me-1"></i> Gửi bảo dưỡng / Nâng cấp RAM/SSD
                         </a>
+                        <?php endif; ?>
                     </div>
 
                 <?php elseif ($device['status'] === 'maintenance'): ?>
@@ -193,9 +203,11 @@
                         <small class="text-muted">Tạm ngưng cấp phát cho đến khi hoàn thành sửa chữa</small>
                     </div>
                     <div class="d-grid">
+                        <?php if (Auth::hasPermission('maintenance.view')): ?>
                         <a href="<?= url('maintenance') ?>" class="btn btn-outline-warning text-dark">
                             <i class="bi bi-eye me-1"></i> Xem danh sách bảo trì
                         </a>
+                        <?php endif; ?>
                     </div>
                 <?php else: ?>
                     <div class="alert alert-secondary py-3 mb-3 text-center">

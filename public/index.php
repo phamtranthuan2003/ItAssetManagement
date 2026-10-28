@@ -95,5 +95,13 @@ $router->post('users/store', 'UserController@store');
 $router->post('users/{id}/update', 'UserController@update');
 $router->post('users/{id}/delete', 'UserController@delete');
 
+// ==========================================
+// 9. QUẢN LÝ VAI TRÒ & QUYỀN RBAC
+// ==========================================
+$router->get('roles', 'RoleController@index');
+$router->post('roles/store', 'RoleController@store');
+$router->post('roles/{id}/permissions', 'RoleController@updatePermissions');
+$router->post('roles/{id}/delete', 'RoleController@delete');
+
 // Tiến hành điều phối request
 $router->dispatch();

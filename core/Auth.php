@@ -5,6 +5,9 @@
  */
 
 class Auth {
+    private static ?array $currentUser = null;
+    private static ?array $permissionCache = null;
+
     /**
      * Khởi tạo session nếu chưa có
      */
@@ -39,36 +42,35 @@ class Auth {
             return null;
         }
 
-        // Tự động làm mới thông tin từ CSDL để luôn hiển thị đúng họ tên tiếng Việt mới nhất
-        if (empty($_SESSION['user']) || str_contains($_SESSION['user']['fullname'] ?? '', '?')) {
-            try {
-                $db = Database::getConnection();
-                $stmt = $db->prepare("SELECT id, username, fullname, email, role FROM users WHERE id = :id LIMIT 1");
-                $stmt->execute(['id' => (int)$_SESSION['user_id']]);
-                $freshUser = $stmt->fetch();
-                if ($freshUser) {
-                    $_SESSION['user'] = [
-                        'id'       => (int)$freshUser['id'],
-                        'username' => $freshUser['username'],
-                        'fullname' => $freshUser['fullname'],
-                        'email'    => $freshUser['email'] ?? '',
-                        'role'     => $freshUser['role']
-                    ];
-                }
-            } catch (Exception $e) {
-                // Giữ session hiện tại nếu lỗi kết nối
-            }
+        if (self::$currentUser !== null) {
+            return self::$currentUser;
         }
 
-        return $_SESSION['user'] ?? null;
+        $db = Database::getConnection();
+        $stmt = $db->prepare("SELECT id, username, fullname, email, role, status FROM users WHERE id = :id LIMIT 1");
+        $stmt->execute(['id' => (int)$_SESSION['user_id']]);
+        $freshUser = $stmt->fetch();
+        if (!$freshUser || (int)$freshUser['status'] !== 1) {
+            self::logout();
+            return null;
+        }
+
+        self::$currentUser = [
+            'id'       => (int)$freshUser['id'],
+            'username' => $freshUser['username'],
+            'fullname' => $freshUser['fullname'],
+            'email'    => $freshUser['email'] ?? '',
+            'role'     => $freshUser['role']
+        ];
+        $_SESSION['user'] = self::$currentUser;
+        return self::$currentUser;
     }
 
     /**
      * Lấy role của user hiện tại ('admin' hoặc 'warehouse')
      */
     public static function role(): ?string {
-        self::initSession();
-        return $_SESSION['user']['role'] ?? null;
+        return self::user()['role'] ?? null;
     }
 
     /**
@@ -76,6 +78,42 @@ class Auth {
      */
     public static function isAdmin(): bool {
         return self::role() === 'admin';
+    }
+
+    public static function hasPermission(string $permission): bool {
+        if (self::isAdmin()) {
+            return true;
+        }
+
+        $user = self::user();
+        if (!$user) {
+            return false;
+        }
+
+        if (self::$permissionCache === null) {
+            $db = Database::getConnection();
+            $stmt = $db->prepare(
+                'SELECT p.code
+                 FROM role_permissions rp
+                 INNER JOIN permissions p ON p.id = rp.permission_id
+                 INNER JOIN roles r ON r.id = rp.role_id
+                 WHERE r.code = :role'
+            );
+            $stmt->execute(['role' => $user['role']]);
+            self::$permissionCache = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        }
+
+        return in_array($permission, self::$permissionCache, true);
+    }
+
+    public static function requirePermission(string $permission): void {
+        self::requireLogin();
+        if (!self::hasPermission($permission)) {
+            http_response_code(403);
+            echo '<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><title>403 - Không đủ quyền</title></head>'
+                . '<body><h1>403 - Không đủ quyền truy cập</h1><p>Tài khoản của bạn chưa được cấp quyền thực hiện thao tác này.</p></body></html>';
+            exit;
+        }
     }
 
     /**
@@ -91,6 +129,8 @@ class Auth {
     public static function login(array $user): void {
         self::initSession();
         session_regenerate_id(true); // Chống Session Fixation
+        self::$currentUser = null;
+        self::$permissionCache = null;
         $_SESSION['user_id'] = (int)$user['id'];
         $_SESSION['user'] = [
             'id' => (int)$user['id'],
@@ -106,6 +146,8 @@ class Auth {
      */
     public static function logout(): void {
         self::initSession();
+        self::$currentUser = null;
+        self::$permissionCache = null;
         $_SESSION = [];
         if (ini_get("session.use_cookies")) {
             $params = session_get_cookie_params();
@@ -121,7 +163,7 @@ class Auth {
      * Bắt buộc phải đăng nhập mới được truy cập
      */
     public static function requireLogin(): void {
-        if (!self::check()) {
+        if (!self::check() || !self::user()) {
             redirect('login', 'Vui lòng đăng nhập để tiếp tục truy cập!', 'warning');
         }
     }
@@ -134,5 +176,22 @@ class Auth {
         if (!self::isAdmin()) {
             redirect('dashboard', 'Bạn không có quyền thực hiện thao tác này (Chỉ dành cho Admin)!', 'danger');
         }
+    }
+
+    public static function landingPath(): string {
+        foreach ([
+            'dashboard.view' => 'dashboard',
+            'devices.view' => 'devices',
+            'tickets.view' => 'tickets',
+            'maintenance.view' => 'maintenance',
+            'departments.view' => 'departments',
+            'employees.view' => 'employees',
+            'reports.view' => 'reports'
+        ] as $permission => $path) {
+            if (self::hasPermission($permission)) {
+                return $path;
+            }
+        }
+        return 'profile';
     }
 }

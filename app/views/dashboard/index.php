@@ -116,9 +116,12 @@
             <p class="mb-0 text-white-50 small">Khởi tạo nhanh các giao dịch xuất nhập kho và cấp phát thiết bị</p>
         </div>
         <div class="d-flex flex-wrap gap-2">
+            <?php if (Auth::hasPermission('devices.create')): ?>
             <a href="<?= url('devices/create') ?>" class="btn btn-light fw-semibold">
                 <i class="bi bi-plus-circle text-primary me-1"></i> Nhập thiết bị mới
             </a>
+            <?php endif; ?>
+            <?php if (Auth::hasPermission('tickets.create')): ?>
             <a href="<?= url('tickets/create?type=allocation') ?>" class="btn btn-success fw-semibold">
                 <i class="bi bi-box-arrow-right me-1"></i> Lập phiếu cấp phát
             </a>
@@ -128,6 +131,7 @@
             <a href="<?= url('tickets/create?type=revocation') ?>" class="btn btn-danger fw-semibold">
                 <i class="bi bi-box-arrow-in-left me-1"></i> Lập phiếu thu hồi
             </a>
+            <?php endif; ?>
         </div>
     </div>
 </div>

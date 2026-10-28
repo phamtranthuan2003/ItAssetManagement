@@ -3,9 +3,11 @@
         <h4 class="fw-bold mb-1">Quản lý Phòng Ban</h4>
         <div class="text-muted small">Cơ cấu tổ chức tiếp nhận và phân bổ thiết bị công ty</div>
     </div>
+    <?php if (Auth::hasPermission('departments.create')): ?>
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createDeptModal">
         <i class="bi bi-plus-lg me-1"></i> Thêm mới phòng ban
     </button>
+    <?php endif; ?>
 </div>
 
 <div class="card mb-3">
@@ -69,9 +71,12 @@
                         </td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
+                                <?php if (Auth::hasPermission('departments.update')): ?>
                                 <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editDeptModal<?= $d['id'] ?>" title="Chỉnh sửa">
                                     <i class="bi bi-pencil"></i>
                                 </button>
+                                <?php endif; ?>
+                                <?php if (Auth::hasPermission('departments.delete')): ?>
                                 <?php if ($d['active_employees_count'] == 0 && $d['allocated_devices_count'] == 0): ?>
                                 <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteDeptModal<?= $d['id'] ?>" title="Xóa">
                                     <i class="bi bi-trash"></i>
@@ -81,9 +86,11 @@
                                     <i class="bi bi-trash"></i>
                                 </button>
                                 <?php endif; ?>
+                                <?php endif; ?>
                             </div>
 
                             <!-- Modal Chỉnh sửa -->
+                            <?php if (Auth::hasPermission('departments.update')): ?>
                             <div class="modal fade text-start" id="editDeptModal<?= $d['id'] ?>" tabindex="-1">
                                 <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content">
@@ -116,8 +123,10 @@
                                     </div>
                                 </div>
                             </div>
+                            <?php endif; ?>
 
                             <!-- Modal Xóa -->
+                            <?php if (Auth::hasPermission('departments.delete')): ?>
                             <div class="modal fade text-start" id="deleteDeptModal<?= $d['id'] ?>" tabindex="-1">
                                 <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content">
@@ -139,6 +148,7 @@
                                     </div>
                                 </div>
                             </div>
+                            <?php endif; ?>
 
                         </td>
                     </tr>
@@ -150,6 +160,7 @@
 </div>
 
 <!-- Modal Thêm mới phòng ban -->
+<?php if (Auth::hasPermission('departments.create')): ?>
 <div class="modal fade" id="createDeptModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -182,3 +193,4 @@
         </div>
     </div>
 </div>
+<?php endif; ?>

@@ -62,6 +62,7 @@
             </div>
 
             <div class="col-12 text-end">
+                <?php if (Auth::hasPermission('tickets.create')): ?>
                 <div class="btn-group">
                     <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
                         <i class="bi bi-plus-lg me-1"></i> Lập phiếu mới
@@ -72,6 +73,7 @@
                         <li><a class="dropdown-item" href="<?= url('tickets/create?type=revocation') ?>"><i class="bi bi-box-arrow-in-left text-danger me-2"></i> Phiếu thu hồi</a></li>
                     </ul>
                 </div>
+                <?php endif; ?>
             </div>
         </form>
     </div>
@@ -141,9 +143,11 @@
                                 <a href="<?= url('tickets/' . $t['id']) ?>" class="btn btn-outline-secondary" title="Xem chi tiết">
                                     <i class="bi bi-eye"></i>
                                 </a>
+                                <?php if (Auth::hasPermission('tickets.print')): ?>
                                 <a href="<?= url('tickets/' . $t['id'] . '/print') ?>" target="_blank" class="btn btn-outline-primary" title="In biên bản">
                                     <i class="bi bi-printer"></i>
                                 </a>
+                                <?php endif; ?>
                             </div>
                         </td>
                     </tr>

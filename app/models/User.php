@@ -21,7 +21,8 @@ class User extends Model {
      * Tìm user theo ID
      */
     public function findById(int $id): ?array {
-        $sql = "SELECT id, username, fullname, email, role, status, created_at FROM {$this->table} WHERE id = :id LIMIT 1";
+        $sql = "SELECT u.id, u.username, u.fullname, u.email, u.role, r.name AS role_name, u.status, u.created_at
+                FROM {$this->table} u LEFT JOIN roles r ON r.code = u.role WHERE u.id = :id LIMIT 1";
         return $this->fetch($sql, ['id' => $id]);
     }
 
@@ -29,8 +30,13 @@ class User extends Model {
      * Lấy toàn bộ danh sách users
      */
     public function getAll(): array {
-        $sql = "SELECT id, username, fullname, email, role, status, created_at FROM {$this->table} ORDER BY id DESC";
+        $sql = "SELECT u.id, u.username, u.fullname, u.email, u.role, r.name AS role_name, u.status, u.created_at
+                FROM {$this->table} u LEFT JOIN roles r ON r.code = u.role ORDER BY u.id DESC";
         return $this->fetchAll($sql);
+    }
+
+    public function roleExists(string $role): bool {
+        return $this->count('SELECT COUNT(*) FROM roles WHERE code = :role', ['role' => $role]) > 0;
     }
 
     /**

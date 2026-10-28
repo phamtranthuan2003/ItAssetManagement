@@ -315,7 +315,7 @@ class DeviceController extends Controller {
      * Xóa thiết bị và lịch sử liên quan (Chỉ dành cho Admin)
      */
     public function delete(int $id): void {
-        Auth::requireAdmin();
+        Auth::requirePermission('devices.delete');
         $this->validateCsrf();
         $returnTo = $this->returnTo('devices', 'devices');
 

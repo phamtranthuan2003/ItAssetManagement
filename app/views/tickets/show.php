@@ -10,9 +10,11 @@
         </div>
     </div>
     <div class="d-flex gap-2">
+        <?php if (Auth::hasPermission('tickets.print')): ?>
         <a href="<?= url('tickets/' . $ticket['id'] . '/print') ?>" target="_blank" class="btn btn-primary">
             <i class="bi bi-printer me-1"></i> In biên bản bàn giao (PDF/HTML)
         </a>
+        <?php endif; ?>
         <a href="<?= url('tickets') ?>" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i> Danh sách phiếu
         </a>

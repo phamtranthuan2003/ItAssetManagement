@@ -115,12 +115,16 @@
         Tìm thấy <strong><?= number_format($totalDevices) ?></strong> thiết bị phù hợp.
     </div>
     <div class="d-flex gap-2">
+        <?php if (Auth::hasPermission('devices.export')): ?>
         <a href="<?= url('devices/export?' . http_build_query($filters)) ?>" class="btn btn-outline-success btn-sm">
             <i class="bi bi-file-earmark-excel me-1"></i> Xuất Excel / CSV
         </a>
+        <?php endif; ?>
+        <?php if (Auth::hasPermission('devices.create')): ?>
         <a href="<?= url('devices/create') ?>" class="btn btn-primary btn-sm">
             <i class="bi bi-plus-lg me-1"></i> Thêm mới thiết bị
         </a>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -217,10 +221,12 @@
                                 <a href="<?= url('devices/' . $d['id'] . '?' . http_build_query(['return_to' => $returnTo])) ?>" class="btn btn-outline-secondary" title="Xem chi tiết">
                                     <i class="bi bi-eye"></i>
                                 </a>
+                                <?php if (Auth::hasPermission('devices.update')): ?>
                                 <a href="<?= url('devices/' . $d['id'] . '/edit?' . http_build_query(['return_to' => $returnTo])) ?>" class="btn btn-outline-primary" title="Sửa thông tin">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                                <?php if (Auth::isAdmin()): ?>
+                                <?php endif; ?>
+                                <?php if (Auth::hasPermission('devices.delete')): ?>
                                 <button type="button" class="btn btn-outline-danger" title="Xóa" data-bs-toggle="modal" data-bs-target="#deleteModal<?= $d['id'] ?>">
                                     <i class="bi bi-trash"></i>
                                 </button>
@@ -228,7 +234,7 @@
                             </div>
 
                             <!-- Modal xác nhận xóa -->
-                            <?php if (Auth::isAdmin()): ?>
+                            <?php if (Auth::hasPermission('devices.delete')): ?>
                             <div class="modal fade text-start" id="deleteModal<?= $d['id'] ?>" tabindex="-1">
                                 <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content">

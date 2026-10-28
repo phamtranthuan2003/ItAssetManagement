@@ -1,7 +1,7 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h4 class="fw-bold mb-1">Quản lý Tài Khoản Hệ Thống</h4>
-        <div class="text-muted small">Phân quyền quản trị viên (Admin) và Nhân viên kho (Warehouse)</div>
+        <div class="text-muted small">Tạo tài khoản và gán role đã cấu hình trong phần quản lý vai trò.</div>
     </div>
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
         <i class="bi bi-person-plus me-1"></i> Tạo tài khoản mới
@@ -32,7 +32,7 @@
                     <td><?= e($u['email'] ?? '—') ?></td>
                     <td>
                         <span class="badge <?= $u['role'] === 'admin' ? 'bg-danger' : 'bg-primary' ?>">
-                            <?= $u['role'] === 'admin' ? 'Quản trị viên (Admin)' : 'Nhân viên kho (Warehouse)' ?>
+                            <?= e($u['role_name'] ?? $u['role']) ?>
                         </span>
                     </td>
                     <td>
@@ -77,8 +77,9 @@
                                             <div class="mb-3">
                                                 <label class="form-label fw-semibold">Vai trò phân quyền</label>
                                                 <select name="role" class="form-select">
-                                                    <option value="warehouse" <?= $u['role'] === 'warehouse' ? 'selected' : '' ?>>Nhân viên kho (Warehouse)</option>
-                                                    <option value="admin" <?= $u['role'] === 'admin' ? 'selected' : '' ?>>Quản trị viên (Admin)</option>
+                                                    <?php foreach ($roles as $role): ?>
+                                                    <option value="<?= e($role['code']) ?>" <?= $u['role'] === $role['code'] ? 'selected' : '' ?>><?= e($role['name']) ?></option>
+                                                    <?php endforeach; ?>
                                                 </select>
                                             </div>
                                             <div class="mb-3">
@@ -163,8 +164,9 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Vai trò phân quyền</label>
                         <select name="role" class="form-select">
-                            <option value="warehouse" selected>Nhân viên kho (Warehouse)</option>
-                            <option value="admin">Quản trị viên (Admin)</option>
+                            <?php foreach ($roles as $role): ?>
+                            <option value="<?= e($role['code']) ?>" <?= $role['code'] === 'warehouse' ? 'selected' : '' ?>><?= e($role['name']) ?></option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="mb-3">

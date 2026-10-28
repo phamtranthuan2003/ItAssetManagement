@@ -12,7 +12,7 @@
                 <p class="text-muted mb-2">@<?= e($user['username']) ?></p>
                 <div>
                     <span class="badge <?= $user['role'] === 'admin' ? 'bg-danger' : 'bg-primary' ?> px-3 py-2 fs-6">
-                        <?= $user['role'] === 'admin' ? 'Quản trị viên (Admin)' : 'Nhân viên kho (Warehouse)' ?>
+                        <?= e($user['role_name'] ?? $user['role']) ?>
                     </span>
                 </div>
                 <div class="mt-4 text-start border-top pt-3">

@@ -7,13 +7,16 @@
 require_once __DIR__ . '/../../core/Controller.php';
 require_once __DIR__ . '/../../core/Auth.php';
 require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../models/Role.php';
 
 class UserController extends Controller {
     private User $userModel;
+    private Role $roleModel;
 
     public function __construct() {
-        Auth::requireAdmin();
+        Auth::requirePermission('users.manage');
         $this->userModel = new User();
+        $this->roleModel = new Role();
     }
 
     /**
@@ -24,7 +27,8 @@ class UserController extends Controller {
 
         $this->render('users/index', [
             'pageTitle' => 'Quản lý tài khoản hệ thống',
-            'users'     => $users
+            'users'     => $users,
+            'roles'     => $this->roleModel->getAll()
         ]);
     }
 
@@ -51,6 +55,9 @@ class UserController extends Controller {
 
         if ($this->userModel->isUsernameExists($username)) {
             redirect('users', "Tên đăng nhập [{$username}] đã tồn tại!", 'danger');
+        }
+        if (!is_string($role) || !$this->userModel->roleExists($role)) {
+            redirect('users', 'Vai trò được chọn không hợp lệ.', 'danger');
         }
 
         $this->userModel->create([
@@ -79,6 +86,9 @@ class UserController extends Controller {
 
         if (empty($fullname)) {
             redirect('users', 'Họ tên không được để trống!', 'danger');
+        }
+        if (!is_string($role) || !$this->userModel->roleExists($role)) {
+            redirect('users', 'Vai trò được chọn không hợp lệ.', 'danger');
         }
 
         $data = [

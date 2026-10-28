@@ -25,11 +25,53 @@ class Router {
      * Thêm route vào danh sách
      */
     private function addRoute(string $method, string $uri, string $action): void {
+        $permission = $this->permissionForRoute($action);
         $this->routes[] = [
             'method' => strtoupper($method),
             'uri'    => trim($uri, '/'),
-            'action' => $action
+            'action' => $action,
+            'permission' => $permission
         ];
+    }
+
+    private function permissionForRoute(string $action): ?string {
+        [$controller, $method] = explode('@', $action);
+        if ($controller === 'AuthController') {
+            return null;
+        }
+
+        if ($controller === 'UserController') {
+            return 'users.manage';
+        }
+        if ($controller === 'RoleController') {
+            return 'roles.manage';
+        }
+
+        $modules = [
+            'DashboardController' => 'dashboard',
+            'ReportController' => 'reports',
+            'DeviceController' => 'devices',
+            'DepartmentController' => 'departments',
+            'EmployeeController' => 'employees',
+            'TicketController' => 'tickets',
+            'MaintenanceController' => 'maintenance'
+        ];
+        $module = $modules[$controller] ?? null;
+        if ($module === null) {
+            return null;
+        }
+
+        $operation = match ($method) {
+            'create', 'store' => 'create',
+            'edit', 'update', 'updateStatus' => 'update',
+            'delete' => 'delete',
+            'exportCsv' => 'export',
+            'printTicket' => 'print',
+            'bulkRevoke' => 'revoke',
+            default => 'view'
+        };
+
+        return $module . '.' . $operation;
     }
 
     /**
@@ -65,6 +107,10 @@ class Router {
 
             if (preg_match($pattern, $path, $matches)) {
                 array_shift($matches); // Loại bỏ phần tử match toàn bộ chuỗi
+
+                if ($route['permission'] !== null) {
+                    Auth::requirePermission($route['permission']);
+                }
 
                 [$controllerName, $methodName] = explode('@', $route['action']);
 

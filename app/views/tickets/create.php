@@ -14,11 +14,13 @@
                         } ?>
                     </strong>
                 </span>
+                <?php if (Auth::hasPermission('tickets.create')): ?>
                 <div class="btn-group btn-group-sm">
                     <a href="<?= url('tickets/create?type=allocation') ?>" class="btn <?= $type === 'allocation' ? 'btn-primary' : 'btn-outline-primary' ?>">Cấp phát</a>
                     <a href="<?= url('tickets/create?type=transfer') ?>" class="btn <?= $type === 'transfer' ? 'btn-info text-white' : 'btn-outline-info' ?>">Chuyển giao</a>
                     <a href="<?= url('tickets/create?type=revocation') ?>" class="btn <?= $type === 'revocation' ? 'btn-danger' : 'btn-outline-danger' ?>">Thu hồi</a>
                 </div>
+                <?php endif; ?>
             </div>
             <div class="card-body p-4">
                 <form action="<?= url('tickets/store') ?>" method="POST" id="ticketForm">

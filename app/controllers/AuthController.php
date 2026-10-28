@@ -20,7 +20,8 @@ class AuthController extends Controller {
      */
     public function login(): void {
         if (Auth::check()) {
-            redirect('dashboard');
+            Auth::user();
+            redirect(Auth::landingPath());
         }
         $this->render('auth/login', [
             'pageTitle' => 'Đăng nhập hệ thống'
@@ -52,7 +53,7 @@ class AuthController extends Controller {
 
         // Đăng nhập thành công
         Auth::login($user);
-        redirect('dashboard', 'Chào mừng ' . $user['fullname'] . ' đã đăng nhập thành công!', 'success');
+        redirect(Auth::landingPath(), 'Chào mừng ' . $user['fullname'] . ' đã đăng nhập thành công!', 'success');
     }
 
     /**

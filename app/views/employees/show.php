@@ -9,6 +9,7 @@
                 </span>
             </div>
             <div class="card-body p-4">
+                <?php if (Auth::hasPermission('employees.update')): ?>
                 <form action="<?= url('employees/' . $employee['id'] . '/update') ?>" method="POST">
                     <?= csrf_field() ?>
                     <input type="hidden" name="return_to" value="<?= e($returnTo) ?>">
@@ -66,6 +67,15 @@
                         </button>
                     </div>
                 </form>
+                <?php else: ?>
+                <dl class="row mb-0">
+                    <dt class="col-5">Họ và tên</dt><dd class="col-7"><?= e($employee['fullname']) ?></dd>
+                    <dt class="col-5">Phòng ban</dt><dd class="col-7"><?= e($employee['department_name']) ?></dd>
+                    <dt class="col-5">Chức vụ</dt><dd class="col-7"><?= e($employee['position'] ?? '—') ?></dd>
+                    <dt class="col-5">Điện thoại</dt><dd class="col-7"><?= e($employee['phone'] ?? '—') ?></dd>
+                    <dt class="col-5">Email</dt><dd class="col-7"><?= e($employee['email'] ?? '—') ?></dd>
+                </dl>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -80,18 +90,22 @@
                         <h6 class="alert-heading fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>Nhân viên đã nghỉ việc nhưng vẫn đang giữ thiết bị!</h6>
                         <p class="mb-0 small">Cần thu hồi toàn bộ tài sản công ty ngay trước khi hoàn tất thủ tục thanh lý hợp đồng.</p>
                     </div>
+                    <?php if (Auth::hasPermission('employees.revoke')): ?>
                     <button type="button" class="btn btn-danger text-nowrap" data-bs-toggle="modal" data-bs-target="#bulkRevokeModal">
                         <i class="bi bi-box-arrow-in-left me-1"></i> Thu hồi tất cả (<?= count($heldDevices) ?> máy)
                     </button>
+                    <?php endif; ?>
                 </div>
             <?php else: ?>
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="fw-bold mb-0 text-dark">
                         <i class="bi bi-laptop me-2 text-primary"></i>Thiết bị đang nắm giữ (<?= count($heldDevices) ?>)
                     </h5>
+                    <?php if (Auth::hasPermission('employees.revoke')): ?>
                     <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#bulkRevokeModal">
                         <i class="bi bi-box-arrow-in-left me-1"></i> Thu hồi tất cả về kho
                     </button>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
         <?php else: ?>
@@ -171,7 +185,7 @@
             <a href="<?= url($returnTo) ?>" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i> Trở về danh sách nhân viên
             </a>
-            <?php if ($employee['status'] === 'working'): ?>
+            <?php if ($employee['status'] === 'working' && Auth::hasPermission('tickets.create')): ?>
             <a href="<?= url('tickets/create?type=allocation') ?>" class="btn btn-success">
                 <i class="bi bi-plus-lg me-1"></i> Lập phiếu cấp phát mới cho nhân viên này
             </a>
@@ -181,7 +195,7 @@
 </div>
 
 <!-- MODAL THU HỒI HÀNG LOẠT THIẾT BỊ -->
-<?php if (!empty($heldDevices)): ?>
+<?php if (!empty($heldDevices) && Auth::hasPermission('employees.revoke')): ?>
 <div class="modal fade" id="bulkRevokeModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">

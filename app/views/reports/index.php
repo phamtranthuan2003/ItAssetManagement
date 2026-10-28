@@ -130,9 +130,11 @@
                                         <span class="badge bg-danger"><?= formatDate($ov['expected_return_date']) ?></span>
                                     </td>
                                     <td class="text-end">
+                                        <?php if (Auth::hasPermission('tickets.create')): ?>
                                         <a href="<?= url('tickets/create?type=revocation') ?>" class="btn btn-outline-danger btn-sm">
                                             Thu hồi
                                         </a>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>

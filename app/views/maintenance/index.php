@@ -42,9 +42,11 @@
             <div class="col-12">
                 <button type="submit" class="btn btn-primary btn-sm px-3"><i class="bi bi-funnel me-1"></i> Lọc</button>
                 <a href="<?= url('maintenance') ?>" class="btn btn-light btn-sm border">Đặt lại</a>
+                <?php if (Auth::hasPermission('maintenance.create')): ?>
                 <a href="<?= url('maintenance/create') ?>" class="btn btn-warning text-dark btn-sm fw-semibold float-end">
                     <i class="bi bi-tools me-1"></i> Tạo phiếu bảo trì / Nâng cấp mới
                 </a>
+                <?php endif; ?>
             </div>
         </form>
     </div>
@@ -108,7 +110,7 @@
                             <?php endif; ?>
                         </td>
                         <td class="text-end">
-                            <?php if ($r['status'] === 'in_progress'): ?>
+                            <?php if ($r['status'] === 'in_progress' && Auth::hasPermission('maintenance.update')): ?>
                             <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#updateStatusModal<?= $r['id'] ?>" title="Cập nhật hoàn tất">
                                 <i class="bi bi-check2-circle me-1"></i> Xong
                             </button>
@@ -119,7 +121,7 @@
                             <?php endif; ?>
 
                             <!-- Modal Cập nhật hoàn thành -->
-                            <?php if ($r['status'] === 'in_progress'): ?>
+                            <?php if ($r['status'] === 'in_progress' && Auth::hasPermission('maintenance.update')): ?>
                             <div class="modal fade text-start" id="updateStatusModal<?= $r['id'] ?>" tabindex="-1">
                                 <div class="modal-dialog modal-dialog-centered">
                                     <div class="modal-content">
