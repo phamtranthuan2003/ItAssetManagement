@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * File: public/index.php
  * Front Controller: Tiếp nhận tất cả các request, khởi tạo cấu hình và điều hướng Router
@@ -38,6 +38,7 @@ $router->post('profile/password', 'AuthController@updatePassword');
 // 2. ROUTES BẢNG ĐIỀU KHIỂN & BÁO CÁO
 // ==========================================
 $router->get('dashboard', 'DashboardController@index');
+$router->get('dashboard/monthly-tickets', 'DashboardController@monthlyTickets');
 $router->get('reports', 'ReportController@index');
 
 // ==========================================

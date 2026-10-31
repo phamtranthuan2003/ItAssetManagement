@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * File: app/controllers/TicketController.php
  * Controller xử lý quy trình Cấp phát, Chuyển giao, Thu hồi thiết bị và In biên bản
@@ -46,6 +46,14 @@ class TicketController extends Controller {
             'created_by' => $this->get('created_by', '')
         ];
 
+        $baseFilters = $filters; unset($baseFilters['type']);
+        $typeCounts = [
+            'all'        => $this->ticketModel->countFiltered(null, $status ?: null, $baseFilters),
+            'allocation' => $this->ticketModel->countFiltered('allocation', $status ?: null, $baseFilters),
+            'transfer'   => $this->ticketModel->countFiltered('transfer', $status ?: null, $baseFilters),
+            'revocation' => $this->ticketModel->countFiltered('revocation', $status ?: null, $baseFilters),
+        ];
+
         $totalTickets = $this->ticketModel->countFiltered($type ?: null, $status ?: null, $filters);
         $totalPages = (int)ceil($totalTickets / $perPage);
         $page = min($page, max(1, $totalPages));
@@ -63,7 +71,8 @@ class TicketController extends Controller {
             'users'       => $users,
             'page'        => $page,
             'totalPages'  => $totalPages,
-            'totalTickets' => $totalTickets
+            'totalTickets' => $totalTickets,
+            'typeCounts'   => $typeCounts
         ]);
     }
 

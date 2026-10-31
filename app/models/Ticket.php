@@ -314,4 +314,128 @@ class Ticket extends Model {
             throw $e;
         }
     }
+
+    /**
+     * Thống kê cấp phát thiết bị trong 3 tháng: Tháng này, Tháng trước, Tháng trước nữa
+     *
+     * @param DateTime|null $baseDate Ngày mốc (mặc định là hiện tại)
+     * @return array
+     */
+    public function getAllocationStatsByThreeMonths(?DateTime $baseDate = null): array {
+        $base = $baseDate ? clone $baseDate : new DateTime();
+        $firstDay = new DateTime($base->format('Y-m-01'));
+
+        $months = [];
+        // Lấy 3 tháng: -2 (tháng trước nữa), -1 (tháng trước), 0 (tháng này)
+        for ($i = 2; $i >= 0; $i--) {
+            $d = (clone $firstDay)->modify("-{$i} month");
+            $key = $d->format('Y-m');
+            $label = match ($i) {
+                0 => 'Tháng này',
+                1 => 'Tháng trước',
+                2 => 'Tháng trước nữa',
+            };
+            $months[$key] = [
+                'key'          => $key,
+                'label'        => $label,
+                'display'      => $label . ' (' . $d->format('m/Y') . ')',
+                'month_name'   => 'Tháng ' . $d->format('m/Y'),
+                'short_name'   => $d->format('m/Y'),
+                'ticket_count' => 0,
+                'device_count' => 0,
+                'tickets'      => []
+            ];
+        }
+
+        $inKeys = "'" . implode("','", array_keys($months)) . "'";
+
+        // 1. Thống kê số phiếu và tổng số thiết bị cấp phát cho từng tháng
+        $sql = "SELECT 
+                    SUBSTRING(t.ticket_date, 1, 7) AS month_key,
+                    COUNT(DISTINCT t.id) AS ticket_count,
+                    COUNT(td.id) AS device_count
+                FROM {$this->table} t
+                LEFT JOIN ticket_details td ON t.id = td.ticket_id
+                WHERE t.ticket_type = 'allocation'
+                  AND SUBSTRING(t.ticket_date, 1, 7) IN ({$inKeys})
+                GROUP BY SUBSTRING(t.ticket_date, 1, 7)";
+        $rows = $this->fetchAll($sql);
+
+        foreach ($rows as $r) {
+            $k = $r['month_key'];
+            if (isset($months[$k])) {
+                $months[$k]['ticket_count'] = (int)$r['ticket_count'];
+                $months[$k]['device_count'] = (int)$r['device_count'];
+            }
+        }
+
+        // 2. Lấy trang đầu tiên (15 phiếu) cho từng tháng để hiển thị ngay
+        foreach (array_keys($months) as $mKey) {
+            $paginated = $this->getMonthlyAllocationsPaginated($mKey, 1, 15);
+            $months[$mKey]['tickets']  = $paginated['tickets'];
+            $months[$mKey]['total']    = $paginated['total'];
+            $months[$mKey]['has_more'] = $paginated['has_more'];
+        }
+
+        // 3. Tìm tháng có số lượng cấp phát nhiều nhất (Peak Month)
+        $peakKey = null;
+        $maxDeviceCount = -1;
+        $allZero = true;
+
+        foreach ($months as $k => $m) {
+            if ($m['device_count'] > 0 || $m['ticket_count'] > 0) {
+                $allZero = false;
+            }
+            if ($m['device_count'] > $maxDeviceCount) {
+                $maxDeviceCount = $m['device_count'];
+                $peakKey = $k;
+            }
+        }
+
+        return [
+            'months'      => $months,
+            'peak_key'    => $allZero ? null : $peakKey,
+            'max_devices' => $maxDeviceCount > 0 ? $maxDeviceCount : 0,
+            'has_data'    => !$allZero
+        ];
+    }
+
+    /**
+     * Lấy danh sách phiếu cấp phát trong tháng có phân trang (phục vụ AJAX cuộn lướt tới đâu tải tới đó)
+     *
+     * @param string $yearMonth Định dạng YYYY-MM
+     * @param int $page Trang hiện tại (bắt đầu từ 1)
+     * @param int $limit Số lượng phiếu mỗi lần tải
+     * @return array
+     */
+    public function getMonthlyAllocationsPaginated(string $yearMonth, int $page = 1, int $limit = 15): array {
+        $page = max(1, $page);
+        $limit = max(1, min(100, $limit));
+        $offset = ($page - 1) * $limit;
+
+        $countSql = "SELECT COUNT(*) FROM {$this->table} WHERE ticket_type = 'allocation' AND SUBSTRING(ticket_date, 1, 7) = :m";
+        $total = $this->count($countSql, ['m' => $yearMonth]);
+
+        $sql = "SELECT t.id, t.ticket_code, t.ticket_date, t.is_temporary, t.expected_return_date, t.status,
+                       te.fullname AS to_employee_name,
+                       td.name AS to_department_name,
+                       (SELECT COUNT(*) FROM ticket_details WHERE ticket_id = t.id) AS device_count
+                FROM {$this->table} t
+                LEFT JOIN employees te ON t.to_employee_id = te.id
+                LEFT JOIN departments td ON t.to_department_id = td.id
+                WHERE t.ticket_type = 'allocation'
+                  AND SUBSTRING(t.ticket_date, 1, 7) = :m
+                ORDER BY t.ticket_date DESC, t.id DESC
+                LIMIT {$limit} OFFSET {$offset}";
+
+        $tickets = $this->fetchAll($sql, ['m' => $yearMonth]);
+
+        return [
+            'tickets'  => $tickets,
+            'page'     => $page,
+            'limit'    => $limit,
+            'total'    => $total,
+            'has_more' => ($offset + count($tickets)) < $total
+        ];
+    }
 }

@@ -1,5 +1,34 @@
 <div class="card mb-4">
     <div class="card-body">
+        <!-- BỘ LỌC NHANH THEO LOẠI PHIẾU VÀ SỐ ĐẾM -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-3 border-bottom gap-2">
+            <div class="btn-group btn-group-sm shadow-sm flex-wrap">
+                <a href="<?= url('tickets' . (!empty($status) ? '?status=' . urlencode($status) : '')) ?>" 
+                   class="btn <?= empty($type) ? 'btn-primary' : 'btn-outline-secondary bg-white' ?>">
+                    <i class="bi bi-collection me-1"></i> Tất cả phiếu 
+                    <span class="badge <?= empty($type) ? 'bg-white text-primary' : 'bg-secondary' ?> ms-1"><?= $typeCounts['all'] ?? 0 ?></span>
+                </a>
+                <a href="<?= url('tickets?type=allocation' . (!empty($status) ? '&status=' . urlencode($status) : '')) ?>" 
+                   class="btn <?= $type === 'allocation' ? 'btn-primary' : 'btn-outline-secondary bg-white' ?>">
+                    <i class="bi bi-box-arrow-right me-1"></i> Cấp phát 
+                    <span class="badge <?= $type === 'allocation' ? 'bg-white text-primary' : 'bg-primary-subtle text-primary' ?> ms-1"><?= $typeCounts['allocation'] ?? 0 ?></span>
+                </a>
+                <a href="<?= url('tickets?type=transfer' . (!empty($status) ? '&status=' . urlencode($status) : '')) ?>" 
+                   class="btn <?= $type === 'transfer' ? 'btn-info text-white' : 'btn-outline-secondary bg-white' ?>">
+                    <i class="bi bi-arrow-left-right me-1"></i> Chuyển giao 
+                    <span class="badge <?= $type === 'transfer' ? 'bg-white text-info' : 'bg-info-subtle text-info' ?> ms-1"><?= $typeCounts['transfer'] ?? 0 ?></span>
+                </a>
+                <a href="<?= url('tickets?type=revocation' . (!empty($status) ? '&status=' . urlencode($status) : '')) ?>" 
+                   class="btn <?= $type === 'revocation' ? 'btn-danger' : 'btn-outline-secondary bg-white' ?>">
+                    <i class="bi bi-box-arrow-in-left me-1"></i> Thu hồi 
+                    <span class="badge <?= $type === 'revocation' ? 'bg-white text-danger' : 'bg-danger-subtle text-danger' ?> ms-1"><?= $typeCounts['revocation'] ?? 0 ?></span>
+                </a>
+            </div>
+            <div class="small text-muted">
+                <i class="bi bi-info-circle me-1"></i>Tổng phiếu kho: <strong><?= number_format($typeCounts['all'] ?? 0) ?></strong> (Gồm <strong><?= number_format($typeCounts['allocation'] ?? 0) ?></strong> cấp phát)
+            </div>
+        </div>
+
         <form action="<?= url('tickets') ?>" method="GET" class="row g-3 align-items-end" data-auto-filter>
             <div class="col-lg-2">
                 <label class="form-label small fw-semibold">Loại nghiệp vụ</label>

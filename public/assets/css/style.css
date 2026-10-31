@@ -213,3 +213,12 @@ body {
         border: 1px solid #ddd !important;
     }
 }
+
+/* Compact Timeline and Dashboard Enhancements */
+.timeline-compact { position: relative; padding-left: 20px; }
+.timeline-compact::before { content: ''; position: absolute; left: 6px; top: 5px; bottom: 5px; width: 2px; background: #e2e8f0; }
+.timeline-compact .timeline-item { position: relative; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px dashed #f1f5f9; }
+.timeline-compact .timeline-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+.timeline-compact .timeline-dot { position: absolute; left: -18px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: #3b82f6; border: 2px solid #ffffff; box-shadow: 0 0 0 1px #3b82f6; }
+.peak-month-card { border: 2px solid #3b82f6 !important; background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%) !important; position: relative; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15) !important; }
+.peak-badge { background: linear-gradient(135deg, #f59e0b, #d97706); color: #ffffff; font-size: 0.72rem; padding: 3px 8px; border-radius: 20px; font-weight: 600; }
