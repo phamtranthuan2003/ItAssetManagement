@@ -181,12 +181,18 @@
                         </button>
                     </div>
 
+                    <?php if ($type === 'revocation'): ?>
+                    <div class="alert alert-info py-2 small">
+                        Màn hình đang ghép với PC sẽ được thu hồi cùng PC. Nếu cần ghi nhận tình trạng riêng cho màn hình, hãy thêm màn hình thành một dòng trong phiếu; nếu không, hệ thống mặc định màn hình ở tình trạng tốt.
+                    </div>
+                    <?php endif; ?>
+
                     <div class="table-responsive mb-4">
                         <table class="table table-bordered align-middle" id="devicesTable">
                             <thead class="table-light">
                                 <tr>
                                     <th style="width: 32%;">Thiết bị <span class="text-danger">*</span></th>
-                                    <th>Phụ kiện kèm theo (Chuột, phím, sạc, màn hình...)</th>
+                                    <th>Phụ kiện kèm theo (chuột, phím, sạc...)</th>
                                     <?php if ($type === 'revocation'): ?>
                                     <th style="width: 25%;">Tình trạng khi thu hồi</th>
                                     <?php endif; ?>
@@ -206,7 +212,7 @@
                                                 <option value="">-- Chọn thiết bị --</option>
                                                 <?php foreach ($allocatedDevices as $dev): ?>
                                                     <option value="<?= (int)$dev['id'] ?>" data-employee-id="<?= (int)$dev['current_employee_id'] ?>">
-                                                        STT <?= (int)$dev['id'] ?> - <?= e($dev['type']) ?><?= trim(($dev['brand'] ?? '') . ' ' . ($dev['model'] ?? '')) !== '' ? ' ' . e(trim($dev['brand'] . ' ' . $dev['model'])) : '' ?> - Đang cấp: <?= e($dev['employee_name'] ?? 'Chưa rõ') ?>
+                                                        STT <?= (int)$dev['id'] ?> - <?= e($dev['type']) ?><?= trim(($dev['brand'] ?? '') . ' ' . ($dev['model'] ?? '')) !== '' ? ' ' . e(trim($dev['brand'] . ' ' . $dev['model'])) : '' ?><?= !empty($dev['paired_pc_id']) ? ' - Ghép PC #' . (int)$dev['paired_pc_id'] : '' ?> - Đang cấp: <?= e($dev['employee_name'] ?? 'Chưa rõ') ?>
                                                     </option>
                                                 <?php endforeach; ?>
                                             </select>
@@ -217,18 +223,18 @@
                                             </div>
                                         </div>
                                         <?php else: ?>
-                                        <select name="device_id[]" class="form-select form-select-sm" required <?= $type === 'transfer' ? 'data-transfer-device-select' : '' ?>>
+                                        <select name="device_id[]" class="form-select form-select-sm" required <?= $type === 'transfer' ? 'data-transfer-device-select' : '' ?> <?= $type === 'allocation' ? 'data-allocation-device-select' : '' ?>>
                                             <option value=""><?= $type === 'transfer' ? '-- Chọn nhân viên bàn giao trước --' : '-- Chọn thiết bị --' ?></option>
                                             <?php if ($type === 'allocation'): ?>
                                                 <?php foreach ($inStockDevices as $dev): ?>
-                                                    <option value="<?= $dev['id'] ?>">
+                                                    <option value="<?= $dev['id'] ?>" data-device-type="<?= e($dev['type']) ?>" <?= (int)$selectedDeviceId === (int)$dev['id'] ? 'selected' : '' ?>>
                                                         STT <?= (int)$dev['id'] ?> - <?= e($dev['type']) ?><?= trim(($dev['brand'] ?? '') . ' ' . ($dev['model'] ?? '')) !== '' ? ' ' . e(trim($dev['brand'] . ' ' . $dev['model'])) : '' ?><?= !empty($dev['ram_gb']) ? ' (RAM ' . (int)$dev['ram_gb'] . 'GB)' : '' ?>
                                                     </option>
                                                 <?php endforeach; ?>
                                             <?php elseif ($type === 'transfer'): ?>
                                                 <?php foreach ($allocatedDevices as $dev): ?>
                                                     <option value="<?= (int)$dev['id'] ?>" data-employee-id="<?= (int)$dev['current_employee_id'] ?>">
-                                                        STT <?= (int)$dev['id'] ?> - <?= e($dev['type']) ?><?= trim(($dev['brand'] ?? '') . ' ' . ($dev['model'] ?? '')) !== '' ? ' ' . e(trim($dev['brand'] . ' ' . $dev['model'])) : '' ?> - Đang cấp: <?= e($dev['employee_name'] ?? 'Chưa rõ') ?>
+                                                        STT <?= (int)$dev['id'] ?> - <?= e($dev['type']) ?><?= trim(($dev['brand'] ?? '') . ' ' . ($dev['model'] ?? '')) !== '' ? ' ' . e(trim($dev['brand'] . ' ' . $dev['model'])) : '' ?><?= !empty($dev['paired_pc_id']) ? ' - Ghép PC #' . (int)$dev['paired_pc_id'] : '' ?> - Đang cấp: <?= e($dev['employee_name'] ?? 'Chưa rõ') ?>
                                                     </option>
                                                 <?php endforeach; ?>
                                             <?php else: ?>
@@ -240,9 +246,39 @@
                                             <?php endif; ?>
                                         </select>
                                         <?php endif; ?>
+                                        <?php if ($type === 'allocation'): ?>
+                                        <div class="mt-2 d-none" data-paired-monitor-field>
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <label class="form-label small fw-semibold mb-0">Màn hình cấp kèm PC (không bắt buộc)</label>
+                                                <span class="badge bg-primary-subtle text-primary" data-paired-monitor-count>0 đã chọn</span>
+                                            </div>
+                                            <input type="search" class="form-control form-control-sm mb-2" data-paired-monitor-search placeholder="Tìm theo mã, hãng, model hoặc serial..." autocomplete="off">
+                                            <div class="border rounded p-2 overflow-auto" style="max-height: 190px;" data-paired-monitor-list>
+                                                <?php foreach ($availableMonitors as $monitor): ?>
+                                                    <?php
+                                                    $monitorLabel = 'STT ' . (int)$monitor['id'] . ' - ' .
+                                                        trim(($monitor['brand'] ?? '') . ' ' . ($monitor['model'] ?? ''));
+                                                    if (!empty($monitor['serial_number'])) {
+                                                        $monitorLabel .= ' - SN: ' . $monitor['serial_number'];
+                                                    }
+                                                    ?>
+                                                    <label class="form-check d-flex align-items-start gap-2 mb-1 p-1 rounded border border-transparent" data-paired-monitor-item>
+                                                        <input type="checkbox" class="form-check-input flex-shrink-0 mt-1" name="paired_monitor_ids[0][]" value="<?= (int)$monitor['id'] ?>" data-paired-monitor-option disabled>
+                                                        <span class="small"><?= e($monitorLabel) ?></span>
+                                                    </label>
+                                                <?php endforeach; ?>
+                                                <?php if (empty($availableMonitors)): ?>
+                                                    <div class="small text-muted text-center py-2" data-paired-monitor-empty>Không có màn hình loại MH đang trong kho.</div>
+                                                <?php else: ?>
+                                                    <div class="small text-muted text-center py-2 d-none" data-paired-monitor-empty>Không tìm thấy màn hình phù hợp.</div>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="form-text">Tích chọn một hoặc nhiều màn hình. Mỗi màn hình được ghi riêng trong phiếu và tự chuyển/thu hồi cùng PC.</div>
+                                        </div>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
-                                        <input type="text" name="accessories[]" class="form-control form-control-sm" placeholder="VD: Chuột có dây, Củ sạc Type-C 65W, Màn hình 24 inch...">
+                                        <input type="text" name="accessories[]" class="form-control form-control-sm" placeholder="VD: Chuột có dây, bàn phím, củ sạc Type-C 65W...">
                                     </td>
                                     <?php if ($type === 'revocation'): ?>
                                     <td>
@@ -286,21 +322,87 @@ document.addEventListener('DOMContentLoaded', function () {
     const btnAddRow = document.getElementById('btnAddDeviceRow');
     const container = document.getElementById('deviceRowsContainer');
 
+    function updateAllocationRows() {
+        if (!container) return;
+        const rows = Array.from(container.querySelectorAll('tr'));
+        rows.forEach(function (row) {
+            const deviceSelect = row.querySelector('[data-allocation-device-select]');
+            const monitorOptions = row.querySelectorAll('[data-paired-monitor-option]');
+            if (!deviceSelect || monitorOptions.length === 0) return;
+            const selectedType = (deviceSelect.selectedOptions.length > 0 && deviceSelect.selectedOptions[0].dataset.deviceType) || '';
+            if (selectedType.trim().toLocaleLowerCase() !== 'pc') {
+                monitorOptions.forEach(function (option) {
+                    option.checked = false;
+                });
+            }
+        });
+
+        const monitorOwners = new Map();
+        rows.forEach(function (row, index) {
+            row.querySelectorAll('[data-paired-monitor-option]:checked').forEach(function (option) {
+                if (!monitorOwners.has(option.value)) monitorOwners.set(option.value, index);
+            });
+        });
+
+        rows.forEach(function (row, index) {
+            const deviceSelect = row.querySelector('[data-allocation-device-select]');
+            const monitorField = row.querySelector('[data-paired-monitor-field]');
+            const monitorOptions = row.querySelectorAll('[data-paired-monitor-option]');
+            monitorOptions.forEach(function (option) {
+                option.name = `paired_monitor_ids[${index}][]`;
+            });
+            if (!deviceSelect || !monitorField) return;
+
+            const selectedType = (deviceSelect.selectedOptions.length > 0 && deviceSelect.selectedOptions[0].dataset.deviceType) || '';
+            const isPc = selectedType.trim().toLocaleLowerCase() === 'pc';
+            monitorField.classList.toggle('d-none', !isPc);
+            const selectedCount = row.querySelectorAll('[data-paired-monitor-option]:checked').length;
+            const countBadge = row.querySelector('[data-paired-monitor-count]');
+            if (countBadge) countBadge.textContent = `${selectedCount} đã chọn`;
+
+            monitorOptions.forEach(function (option) {
+                const selectedInAnotherRow = monitorOwners.has(option.value) && monitorOwners.get(option.value) !== index;
+                option.disabled = !isPc || selectedInAnotherRow;
+            });
+
+            const search = row.querySelector('[data-paired-monitor-search]');
+            const query = search ? search.value.trim().toLocaleLowerCase() : '';
+            let visibleCount = 0;
+            row.querySelectorAll('[data-paired-monitor-item]').forEach(function (item) {
+                const matches = !query || item.textContent.toLocaleLowerCase().includes(query);
+                const checkbox = item.querySelector('[data-paired-monitor-option]');
+                item.classList.toggle('d-none', !matches);
+                item.classList.toggle('bg-primary-subtle', checkbox.checked);
+                item.classList.toggle('border-primary-subtle', checkbox.checked);
+                if (matches) visibleCount += 1;
+            });
+            const emptyMessage = row.querySelector('[data-paired-monitor-empty]');
+            if (emptyMessage && monitorOptions.length > 0) {
+                emptyMessage.classList.toggle('d-none', visibleCount > 0);
+            }
+        });
+    }
+
     if (btnAddRow && container) {
         btnAddRow.addEventListener('click', function () {
             const firstRow = container.querySelector('tr');
             if (firstRow) {
                 const clone = firstRow.cloneNode(true);
-                // Reset giá trị
-                const select = clone.querySelector('select');
-                if (select) select.selectedIndex = 0;
-                const input = clone.querySelector('input[type="text"]');
-                if (input) input.value = '';
+                clone.querySelectorAll('select').forEach(function (select) {
+                    select.selectedIndex = select.multiple ? -1 : 0;
+                });
+                clone.querySelectorAll('input[type="text"], [data-paired-monitor-search]').forEach(function (input) {
+                    input.value = '';
+                });
+                clone.querySelectorAll('[data-paired-monitor-option]').forEach(function (checkbox) {
+                    checkbox.checked = false;
+                });
                 const searchInput = clone.querySelector('[data-device-search-input]');
                 if (searchInput) searchInput.value = '';
                 container.appendChild(clone);
                 filterTransferDeviceSelect(clone.querySelector('[data-transfer-device-select]'));
                 container.dispatchEvent(new CustomEvent('revocation-device-row-added', { detail: clone }));
+                updateAllocationRows();
             }
         });
 
@@ -309,11 +411,23 @@ document.addEventListener('DOMContentLoaded', function () {
                 const rows = container.querySelectorAll('tr');
                 if (rows.length > 1) {
                     e.target.closest('tr').remove();
+                    updateAllocationRows();
                 } else {
                     alert('Phiếu phải có ít nhất một thiết bị!');
                 }
             }
         });
+        container.addEventListener('change', function (event) {
+            if (event.target.matches('[data-allocation-device-select], [data-paired-monitor-option]')) {
+                updateAllocationRows();
+            }
+        });
+        container.addEventListener('input', function (event) {
+            if (event.target.matches('[data-paired-monitor-search]')) {
+                updateAllocationRows();
+            }
+        });
+        updateAllocationRows();
     }
 
     const fromEmployeeSelect = document.getElementById('fromEmployeeSelect');

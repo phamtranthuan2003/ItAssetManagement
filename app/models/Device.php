@@ -11,6 +11,19 @@ require_once __DIR__ . '/DeviceHistory.php';
 class Device extends Model {
     protected string $table = 'devices';
 
+    public static function isPcType(string $type): bool {
+        return strcasecmp(trim($type), 'PC') === 0;
+    }
+
+    public static function isMonitorType(string $type): bool {
+        foreach (['MH', 'Màn hình', 'Màn hình rời', 'Monitor'] as $monitorType) {
+            if (strcasecmp(trim($type), $monitorType) === 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Xây dựng mệnh đề WHERE và danh sách tham số từ mảng bộ lọc
      */
@@ -165,11 +178,13 @@ class Device extends Model {
                        s.cpu, s.mainboard, s.ram_gb, s.ram_type, s.ssd_capacity, s.hdd_capacity, s.gpu, s.screen_size,
                        s.notes AS spec_notes,
                        e.fullname AS employee_name, e.code AS employee_code, e.phone AS employee_phone, e.email AS employee_email,
-                       dep.name AS department_name, dep.code AS department_code
+                       dep.name AS department_name, dep.code AS department_code,
+                       pc.device_code AS paired_pc_code, pc.type AS paired_pc_type
                 FROM {$this->table} d
                 LEFT JOIN device_specs s ON d.id = s.device_id
                 LEFT JOIN employees e ON d.current_employee_id = e.id
                 LEFT JOIN departments dep ON d.current_department_id = dep.id
+                LEFT JOIN {$this->table} pc ON d.paired_pc_id = pc.id
                 WHERE d.id = :id LIMIT 1";
 
         $device = $this->fetch($sql, ['id' => $id]);
@@ -178,8 +193,42 @@ class Device extends Model {
                 "SELECT brand, model, size FROM device_monitors WHERE device_id = :device_id ORDER BY monitor_no ASC",
                 ['device_id' => $id]
             );
+            $device['paired_monitors'] = $this->fetchAll(
+                "SELECT id, device_code, type, brand, model, serial_number, status
+                 FROM {$this->table}
+                 WHERE paired_pc_id = :pc_id
+                 ORDER BY id",
+                ['pc_id' => $id]
+            );
         }
         return $device;
+    }
+
+    public function findForUpdate(int $id): ?array {
+        return $this->fetch(
+            "SELECT id, type, status, current_employee_id, paired_pc_id
+             FROM {$this->table}
+             WHERE id = :id
+             FOR UPDATE",
+            ['id' => $id]
+        );
+    }
+
+    public function getPairedMonitors(int $pcId): array {
+        return $this->fetchAll(
+            "SELECT id, type, status, current_employee_id, paired_pc_id
+             FROM {$this->table}
+             WHERE paired_pc_id = :pc_id
+             ORDER BY id",
+            ['pc_id' => $pcId]
+        );
+    }
+
+    public function setPairedPc(int $monitorId, ?int $pcId): void {
+        $this->query(
+            "UPDATE {$this->table} SET paired_pc_id = :pc_id WHERE id = :monitor_id",
+            ['pc_id' => $pcId, 'monitor_id' => $monitorId]
+        );
     }
 
     /**
@@ -346,6 +395,7 @@ class Device extends Model {
                          SET current_employee_id = NULL,
                              current_department_id = NULL,
                              status = 'in_stock',
+                             paired_pc_id = NULL,
                              is_temporary = 0,
                              expected_return_date = NULL
                          WHERE current_employee_id = :employee_id AND id <> :device_id",
@@ -390,9 +440,20 @@ class Device extends Model {
         $sql = "SELECT d.id, d.device_code, d.type, d.brand, d.model, s.cpu, s.ram_gb, s.ssd_capacity
                 FROM {$this->table} d
                 LEFT JOIN device_specs s ON d.id = s.device_id
-                WHERE d.status = 'in_stock'
+                WHERE d.status = 'in_stock' AND d.paired_pc_id IS NULL
                 ORDER BY d.id DESC";
         return $this->fetchAll($sql);
+    }
+
+    public function getAvailableMonitors(): array {
+        return $this->fetchAll(
+            "SELECT id, device_code, type, brand, model, serial_number
+             FROM {$this->table}
+             WHERE status = 'in_stock'
+               AND paired_pc_id IS NULL
+               AND LOWER(TRIM(type)) IN ('mh', 'màn hình', 'monitor', 'màn hình rời')
+             ORDER BY id DESC"
+        );
     }
 
     /**
@@ -405,7 +466,7 @@ class Device extends Model {
             $where .= " AND d.current_employee_id = :emp_id";
             $params['emp_id'] = $employeeId;
         }
-        $sql = "SELECT d.id, d.device_code, d.type, d.brand, d.model, d.current_employee_id, d.current_department_id,
+        $sql = "SELECT d.id, d.device_code, d.type, d.brand, d.model, d.current_employee_id, d.current_department_id, d.paired_pc_id,
                        e.fullname AS employee_name, dep.name AS department_name
                 FROM {$this->table} d
                 LEFT JOIN employees e ON d.current_employee_id = e.id

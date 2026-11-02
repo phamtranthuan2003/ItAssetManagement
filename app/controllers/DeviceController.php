@@ -257,6 +257,24 @@ class DeviceController extends Controller {
         if ($type === '') {
             redirect($this->returnTo("devices/{$id}/edit", 'devices'), 'Vui lòng nhập loại thiết bị!', 'danger');
         }
+        $hasPairedDevices = !empty($device['paired_pc_id']) || !empty($device['paired_monitors']);
+        if ($hasPairedDevices && $status !== $device['status']) {
+            redirect(
+                $this->returnTo("devices/{$id}/edit", 'devices'),
+                'Thiết bị đang ghép PC - màn hình; hãy dùng phiếu cấp phát, chuyển giao, thu hồi hoặc quy trình bảo trì để đổi trạng thái.',
+                'danger'
+            );
+        }
+        if (
+            (!empty($device['paired_monitors']) && !Device::isPcType($type)) ||
+            (!empty($device['paired_pc_id']) && !Device::isMonitorType($type))
+        ) {
+            redirect(
+                $this->returnTo("devices/{$id}/edit", 'devices'),
+                'Không thể đổi loại thiết bị khi PC hoặc màn hình đang được ghép cặp.',
+                'danger'
+            );
+        }
         if ($hasMonitors && !$this->areMonitorDetailsValid($monitors)) {
             redirect($this->returnTo("devices/{$id}/edit", 'devices'), 'Vui lòng nhập hãng và kích thước hợp lệ cho từng màn hình đi kèm!', 'danger');
         }

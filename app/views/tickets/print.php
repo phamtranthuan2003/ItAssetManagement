@@ -1,215 +1,529 @@
+<?php
+$ticketDate = new DateTimeImmutable($ticket['ticket_date']);
+
+$fromName = $ticket['from_employee_name'] ?? '';
+$fromPosition = $ticket['from_employee_pos'] ?? '';
+$fromDepartment = $ticket['from_department_name'] ?? '';
+$fromContact = implode(' · ', array_filter([
+    $ticket['from_employee_phone'] ?? '',
+    $ticket['from_employee_email'] ?? '',
+], static fn ($value) => trim((string)$value) !== ''));
+
+$toName = $ticket['to_employee_name'] ?? '';
+$toPosition = $ticket['to_employee_pos'] ?? '';
+$toDepartment = $ticket['to_department_name'] ?? '';
+$toContact = implode(' · ', array_filter([
+    $ticket['to_employee_phone'] ?? '',
+    $ticket['to_employee_email'] ?? '',
+], static fn ($value) => trim((string)$value) !== ''));
+
+if ($ticket['ticket_type'] === 'allocation') {
+    $fromName = $fromName ?: 'Phạm Trần Thuận';
+    $fromPosition = $fromPosition ?: 'CV IT Helpdesk';
+    $fromDepartment = $fromDepartment ?: 'Phòng Công nghệ Thông tin';
+} elseif ($ticket['ticket_type'] === 'revocation') {
+    $toName = $toName ?: 'Phòng Công nghệ Thông tin';
+    $toPosition = $toPosition ?: 'Bộ phận tiếp nhận tài sản';
+    $toDepartment = $toDepartment ?: 'Phòng Công nghệ Thông tin';
+}
+
+$handoverPurpose = match ($ticket['ticket_type']) {
+    'allocation' => !empty($ticket['is_temporary'])
+        ? 'Cấp phát thiết bị CNTT tạm thời cho người dùng'
+        : 'Cấp phát thiết bị CNTT cho người dùng',
+    'transfer' => 'Điều chuyển thiết bị CNTT cho người dùng',
+    'revocation' => 'Thu hồi thiết bị CNTT',
+    default => 'Bàn giao thiết bị CNTT',
+};
+
+$handoverOption = match (true) {
+    $ticket['ticket_type'] === 'transfer' => 'transfer',
+    $ticket['ticket_type'] === 'allocation' && !empty($ticket['is_temporary']) => 'temporary',
+    $ticket['ticket_type'] === 'allocation' => 'new',
+    default => null,
+};
+
+$conditionLabels = [
+    'new' => 'Mới',
+    'used' => 'Đang sử dụng',
+    'broken' => 'Hỏng',
+    'under_warranty' => 'Còn bảo hành',
+    'good' => 'Tốt',
+    'missing_accessories' => 'Thiếu phụ kiện',
+];
+?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Biên bản bàn giao - <?= e($ticket['ticket_code']) ?></title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Biên bản bàn giao tài sản CNTT - <?= e($ticket['ticket_code']) ?></title>
     <style>
-        body {
-            font-family: 'Times New Roman', Times, serif;
-            color: #000;
-            background: #f8f9fa;
-            font-size: 14pt;
-            line-height: 1.4;
+        @page {
+            size: A4 portrait;
+            margin: 14mm 13mm;
         }
-        .page-print {
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            color: #111;
+            background: #e9ecef;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 11pt;
+            line-height: 1.3;
+        }
+
+        .toolbar {
+            position: sticky;
+            top: 0;
+            padding: 10px;
+            background: #fff;
+            border-bottom: 1px solid #ced4da;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .toolbar button {
+            padding: 8px 18px;
+            border: 0;
+            border-radius: 4px;
+            color: #fff;
+            background: #198754;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .paper {
             width: 210mm;
             min-height: 297mm;
-            padding: 20mm;
-            margin: 20px auto;
+            margin: 16px auto;
+            padding: 14mm 13mm;
             background: #fff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 12px rgb(0 0 0 / 15%);
         }
-        .document-title {
+
+        .header {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 12px;
+            text-align: center;
+            font-size: 10pt;
+        }
+
+        .header strong,
+        .header span {
+            display: block;
+        }
+
+        .header .company {
             text-transform: uppercase;
             font-weight: bold;
-            font-size: 16pt;
-            margin: 20px 0 5px;
-            text-align: center;
         }
-        .table-print {
+
+        .header .national-title {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .header .motto {
+            font-weight: bold;
+        }
+
+        .header .rule {
+            width: 65%;
+            margin: 4px auto;
+            border-bottom: 1px solid #111;
+        }
+
+        h1 {
+            margin: 22px 0 2px;
+            text-align: center;
+            font-size: 15pt;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            margin: 0 0 14px;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .meta {
+            margin: 10px 0;
+        }
+
+        .meta-line {
+            margin: 3px 0;
+        }
+
+        .type-options {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 10px 0 14px;
+        }
+
+        .type-option {
+            white-space: nowrap;
+        }
+
+        .box {
+            display: inline-flex;
+            width: 13px;
+            height: 13px;
+            margin-right: 4px;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #111;
+            vertical-align: -2px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .section-title {
+            margin: 13px 0 6px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .party {
+            margin: 0 0 8px;
+        }
+
+        .party-title {
+            margin: 7px 0 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .party-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 15px 0;
-            font-size: 12pt;
+            table-layout: fixed;
+            font-size: 10pt;
         }
-        .table-print th, .table-print td {
-            border: 1px solid #000;
-            padding: 6px 10px;
+
+        .party-table th,
+        .party-table td {
+            border: 1px solid #111;
+            padding: 5px 6px;
+            vertical-align: top;
         }
-        .table-print th {
-            background-color: #f2f2f2;
+
+        .party-table th {
             text-align: center;
+        }
+
+        .party-table .label {
+            width: 19%;
             font-weight: bold;
         }
-        .signature-box {
+
+        .party-table .value {
+            width: 31%;
+        }
+
+        .asset-table {
+            width: 100%;
+            margin: 8px 0 10px;
+            border-collapse: collapse;
+            table-layout: fixed;
+            font-size: 9pt;
+        }
+
+        .asset-table th,
+        .asset-table td {
+            border: 1px solid #111;
+            padding: 5px 4px;
+            vertical-align: top;
+            overflow-wrap: anywhere;
+        }
+
+        .asset-table th {
             text-align: center;
-            margin-top: 25px;
+            vertical-align: middle;
+            font-weight: bold;
+        }
+
+        .asset-table .center {
+            text-align: center;
+        }
+
+        .asset-table .spec-line {
+            margin: 1px 0;
+        }
+
+        .asset-table tbody tr {
             page-break-inside: avoid;
         }
-        .signature-role {
+
+        .commitment {
+            margin: 10px 0;
+        }
+
+        .signatures {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 24px;
+            text-align: center;
+            page-break-inside: avoid;
+        }
+
+        .signature-title {
+            min-height: 32px;
             font-weight: bold;
             text-transform: uppercase;
-            font-size: 12pt;
         }
-        .signature-note {
+
+        .signature-instruction {
+            min-height: 72px;
+            font-size: 9pt;
             font-style: italic;
-            font-size: 11pt;
-            margin-bottom: 70px;
         }
+
         .signature-name {
             font-weight: bold;
         }
+
+        .muted {
+            color: #555;
+        }
+
         @media print {
             body {
                 background: #fff;
+                font-size: 10pt;
+            }
+
+            .toolbar {
+                display: none;
+            }
+
+            .paper {
+                width: auto;
+                min-height: 0;
                 margin: 0;
                 padding: 0;
-            }
-            .page-print {
-                width: 100%;
-                min-height: auto;
-                padding: 10mm;
-                margin: 0;
                 box-shadow: none;
-            }
-            .no-print {
-                display: none !important;
             }
         }
     </style>
 </head>
 <body>
-
-<!-- Nút in (Ẩn khi in) -->
-<div class="no-print text-center py-3 bg-white border-bottom shadow-sm sticky-top">
-    <button onclick="window.print()" class="btn btn-primary px-4 me-2">
-        <i class="bi bi-printer me-1"></i> In biên bản này (Ctrl + P)
-    </button>
-    <button onclick="window.close()" class="btn btn-secondary px-3">
-        Đóng cửa sổ
-    </button>
+<div class="toolbar">
+    <button type="button" onclick="window.print()">In / Lưu PDF</button>
 </div>
 
-<div class="page-print">
-    <!-- TIÊU NGỮ QUỐC GIA -->
-    <div class="row">
-        <div class="col-6 text-center">
-            <strong>CÔNG TY CỔ PHẦN CÔNG NGHỆ</strong><br>
-            <span>PHÒNG HÀNH CHÍNH & CNTT</span><br>
-            <span class="small font-monospace">Số: <?= e($ticket['ticket_code']) ?></span>
+<main class="paper">
+    <header class="header">
+        <div>
+            <span class="company">CÔNG TY CỔ PHẦN TẬP ĐOÀN EVERLAND</span>
+            <span>PHÒNG CÔNG NGHỆ THÔNG TIN</span>
+            <div class="rule"></div>
+            <span>Số: ……/BBBG-CNTT</span>
         </div>
-        <div class="col-6 text-center">
-            <strong>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</strong><br>
-            <strong>Độc lập - Tự do - Hạnh phúc</strong><br>
-            <span style="letter-spacing: 2px;">---------o0o---------</span>
+        <div>
+            <span class="national-title">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</span>
+            <span class="motto">Độc lập - Tự do - Hạnh phúc</span>
+            <div class="rule"></div>
+            <span>Ngày <?= $ticketDate->format('d') ?> tháng <?= $ticketDate->format('m') ?> năm <?= $ticketDate->format('Y') ?></span>
         </div>
+    </header>
+
+    <h1>Biên bản bàn giao tài sản / thiết bị CNTT</h1>
+    <p class="subtitle">(V/v: <?= e($handoverPurpose) ?>)</p>
+
+    <div class="type-options" aria-label="Loại bàn giao">
+        <?php foreach ([
+            'new' => 'Cấp mới',
+            'replacement' => 'Cấp thay thế',
+            'transfer' => 'Điều chuyển',
+            'temporary' => 'Cấp tạm thời',
+        ] as $option => $label): ?>
+            <span class="type-option">
+                <span class="box"><?= $handoverOption === $option ? 'x' : '' ?></span>
+                <?= e($label) ?>
+            </span>
+        <?php endforeach; ?>
     </div>
 
-    <!-- TIÊU ĐỀ BIÊN BẢN -->
-    <div class="document-title">
-        <?= match ($ticket['ticket_type']) {
-            'allocation' => 'BIÊN BẢN BÀN GIAO THIẾT BỊ CNTT',
-            'transfer'   => 'BIÊN BẢN ĐIỀU CHUYỂN THIẾT BỊ CNTT',
-            'revocation' => 'BIÊN BẢN THU HỒI THIẾT BỊ CNTT',
-            default      => 'BIÊN BẢN BÀN GIAO THIẾT BỊ'
-        } ?>
-    </div>
-    <div class="text-center font-italic small mb-4">
-        Hôm nay, ngày <?= date('d', strtotime($ticket['ticket_date'])) ?> tháng <?= date('m', strtotime($ticket['ticket_date'])) ?> năm <?= date('Y', strtotime($ticket['ticket_date'])) ?>, tại Văn phòng Công ty, chúng tôi gồm có:
-    </div>
+    <div class="section-title">I. Các bên tham gia</div>
+    <section class="party">
+        <div class="party-title">Bên giao (Bên A): <?= e($fromDepartment ?: 'Phòng Công nghệ Thông tin') ?></div>
+        <table class="party-table">
+            <thead>
+                <tr>
+                    <th>Họ và tên</th>
+                    <th>Chức vụ</th>
+                    <th>Điện thoại / Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><?= e($fromName ?: 'Phạm Trần Thuận') ?></td>
+                    <td><?= e($fromPosition ?: 'CV IT Helpdesk') ?></td>
+                    <td><?= e($fromContact) ?></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
 
-    <!-- THÔNG TIN CÁC BÊN -->
-    <p class="mb-1"><strong>I. ĐẠI DIỆN BÊN GIAO (BÊN A):</strong></p>
-    <ul class="list-unstyled ps-3 mb-3">
-        <li>- Họ và tên: <strong><?= e($ticket['from_employee_name'] ?: 'Bộ phận Quản lý Kho CNTT') ?></strong></li>
-        <li>- Chức vụ: <?= e($ticket['from_employee_pos'] ?: 'Thủ kho / Kỹ thuật viên') ?></li>
-        <li>- Đơn vị / Phòng ban: <?= e($ticket['from_department_name'] ?: 'Phòng CNTT') ?></li>
-    </ul>
+    <section class="party">
+        <div class="party-title">Bên nhận (Bên B): <?= e($ticket['ticket_type'] === 'revocation' ? 'Phòng Công nghệ Thông tin' : 'Người sử dụng') ?></div>
+        <table class="party-table">
+            <tbody>
+                <tr>
+                    <td class="label">Họ và tên</td>
+                    <td class="value"><?= e($toName ?: '........................................................') ?></td>
+                    <td class="label">Mã nhân viên</td>
+                    <td class="value">........................................</td>
+                </tr>
+                <tr>
+                    <td class="label">Chức vụ</td>
+                    <td><?= e($toPosition ?: '........................................................') ?></td>
+                    <td class="label">Phòng ban / Đơn vị</td>
+                    <td><?= e($toDepartment ?: '........................................') ?></td>
+                </tr>
+                <tr>
+                    <td class="label">Công ty thành viên</td>
+                    <td>........................................................</td>
+                    <td class="label">Vị trí làm việc</td>
+                    <td>........................................</td>
+                </tr>
+                <tr>
+                    <td class="label">Điện thoại / Email</td>
+                    <td colspan="3"><?= e($toContact) ?></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
 
-    <p class="mb-1"><strong>II. ĐẠI DIỆN BÊN NHẬN (BÊN B):</strong></p>
-    <ul class="list-unstyled ps-3 mb-3">
-        <li>- Họ và tên: <strong><?= e($ticket['to_employee_name'] ?: 'Bộ phận Quản lý Kho CNTT') ?></strong></li>
-        <li>- Chức vụ: <?= e($ticket['to_employee_pos'] ?: 'Cán bộ tiếp nhận') ?></li>
-        <li>- Đơn vị / Phòng ban: <?= e($ticket['to_department_name'] ?: 'Kho thiết bị') ?></li>
-    </ul>
-
-    <p class="mb-2"><strong>III. NỘI DUNG BÀN GIAO:</strong></p>
-    <p class="ps-3 mb-2">
-        Bên A tiến hành bàn giao cho Bên B quản lý và sử dụng các trang thiết bị máy móc làm việc với thông số kỹ thuật chi tiết như sau:
+    <section>
+        <p>Hai bên cùng tiến hành bàn giao tài sản, thiết bị CNTT với nội dung như sau:</p>
+        <div class="section-title">II. Danh mục tài sản / thiết bị bàn giao</div>
         <?php if (!empty($ticket['reason'])): ?>
-            <br><em>(Lý do: <?= e($ticket['reason']) ?>)</em>
+            <p>Lý do bàn giao: <?= e($ticket['reason']) ?></p>
         <?php endif; ?>
+        <table class="asset-table">
+            <colgroup>
+                <col style="width: 6%">
+                <col style="width: 23%">
+                <col style="width: 31%">
+                <col style="width: 7%">
+                <col style="width: 15%">
+                <col style="width: 18%">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Tên thiết bị</th>
+                    <th>Cấu hình</th>
+                    <th>SL</th>
+                    <th>Tình trạng</th>
+                    <th>Ghi chú</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($details as $index => $row): ?>
+                    <?php
+                    $configuration = [];
+                    foreach ([
+                        'CPU' => $row['cpu'] ?? null,
+                        'Mainboard' => $row['mainboard'] ?? null,
+                        'RAM' => !empty($row['ram_gb'])
+                            ? (int)$row['ram_gb'] . ' GB' . (!empty($row['ram_type']) ? ' ' . $row['ram_type'] : '')
+                            : null,
+                        'SSD' => $row['ssd_capacity'] ?? null,
+                        'HDD' => $row['hdd_capacity'] ?? null,
+                        'GPU' => $row['gpu'] ?? null,
+                        'Màn hình' => !empty($row['screen_size']) ? $row['screen_size'] . ' inch' : null,
+                    ] as $label => $value) {
+                        if ($value !== null && trim((string)$value) !== '') {
+                            $configuration[] = $label . ': ' . $value;
+                        }
+                    }
+
+                    $deviceName = trim(implode(' ', array_filter([
+                        $row['type'] ?? '',
+                        $row['brand'] ?? '',
+                        $row['model'] ?? '',
+                    ], static fn ($value) => trim((string)$value) !== '')));
+                    $condition = $row['returned_condition'] ?: ($row['condition_state'] ?? '');
+                    $conditionLabel = $conditionLabels[$condition] ?? '................................';
+
+                    $notes = array_filter([
+                        $row['serial_number'] ? 'Serial: ' . $row['serial_number'] : null,
+                        $row['accessories'] ?? null,
+                        !empty($row['paired_pc_code']) ? 'Ghép với PC ' . $row['paired_pc_code'] : null,
+                        !empty($row['paired_monitor_list']) ? 'Màn hình kèm: ' . $row['paired_monitor_list'] : null,
+                        $row['notes'] ?? null,
+                    ], static fn ($value) => trim((string)$value) !== '');
+                    ?>
+                    <tr>
+                        <td class="center"><?= $index + 1 ?></td>
+                        <td>
+                            <strong><?= e($deviceName ?: 'Thiết bị') ?></strong>
+                            <div class="muted"><?= e($row['device_code'] ?? '') ?></div>
+                        </td>
+                        <td>
+                            <?php if ($configuration): ?>
+                                <?php foreach ($configuration as $line): ?>
+                                    <div class="spec-line"><?= e($line) ?></div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <span class="muted">Không có thông số cấu hình</span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="center">1</td>
+                        <td><?= e($conditionLabel) ?></td>
+                        <td><?= $notes ? e(implode('; ', $notes)) : '' ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                <?php if (empty($details)): ?>
+                    <tr>
+                        <td colspan="6" class="center">Không có thiết bị trong phiếu.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </section>
+
+    <?php if (!empty($ticket['is_temporary'])): ?>
+        <p class="commitment">
+            <strong>Thời hạn hoàn trả:</strong>
+            <?= !empty($ticket['expected_return_date']) ? formatDate($ticket['expected_return_date']) : 'Chưa xác định' ?>.
+            Bên nhận có trách nhiệm hoàn trả tài sản đúng thời hạn.
+        </p>
+    <?php endif; ?>
+    <?php if (!empty($ticket['notes'])): ?>
+        <p><strong>Ghi chú:</strong> <?= e($ticket['notes']) ?></p>
+    <?php endif; ?>
+    <p class="commitment">
+        Bên nhận đã kiểm tra và nhận đủ thiết bị như trên. Biên bản lập thành 02 bản, mỗi bên giữ 01 bản.
     </p>
 
-    <!-- BẢNG THIẾT BỊ BÀN GIAO -->
-    <table class="table-print">
-        <thead>
-            <tr>
-                <th style="width: 5%;">STT</th>
-                <th style="width: 18%;">STT thiết bị</th>
-                <th style="width: 25%;">Chủng loại / Model</th>
-                <th style="width: 18%;">Số Serial</th>
-                <th style="width: 34%;">Cấu hình & Phụ kiện đi kèm</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php 
-            $i = 1;
-            foreach ($details as $row): 
-            ?>
-            <tr>
-                <td class="text-center"><?= $i++ ?></td>
-                <td><strong><?= (int)$row['device_id'] ?></strong></td>
-                <td><?= e($row['brand']) ?> <?= e($row['model']) ?> (<?= e($row['type']) ?>)</td>
-                <td class="font-monospace text-center"><?= e($row['serial_number'] ?? '—') ?></td>
-                <td>
-                    <div><strong>CPU:</strong> <?= e($row['cpu']) ?>, <strong>RAM:</strong> <?= e($row['ram_gb']) ?>GB</div>
-                    <div><strong>Ổ cứng:</strong> <?= e($row['ssd_capacity'] ?? '—') ?></div>
-                    <div><strong>Phụ kiện:</strong> <?= !empty($row['accessories']) ? e($row['accessories']) : 'Thân máy' ?></div>
-                </td>
-            </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-
-    <p class="ps-3 mb-1">
-        <?php if ($ticket['is_temporary']): ?>
-            <strong>* Ghi chú thời hạn:</strong> Đây là biên bản cấp phát tạm thời. Bên nhận có trách nhiệm hoàn trả thiết bị về kho trước ngày <strong><?= formatDate($ticket['expected_return_date']) ?></strong>.
-        <?php else: ?>
-            <strong>* Cam kết trách nhiệm:</strong> Bên B có trách nhiệm sử dụng, bảo quản tài sản được cấp phát theo đúng quy định của Công ty. Nếu xảy ra hư hỏng do lỗi chủ quan hoặc mất mát phụ kiện, Bên B phải hoàn toàn chịu trách nhiệm bồi hoàn theo quy chế.
-        <?php endif; ?>
-    </p>
-
-    <div class="ps-3 mb-3">
-        Biên bản được lập thành 02 bản có giá trị pháp lý như nhau, mỗi bên giữ 01 bản để làm căn cứ quản lý tài sản.
-    </div>
-
-    <!-- KHỐI CHỮ KÝ 4 BÊN -->
-    <div class="row signature-box">
-        <div class="col-3">
-            <div class="signature-role">BÊN GIAO</div>
-            <div class="signature-note">(Ký, ghi rõ họ tên)</div>
-            <div class="signature-name"><?= e($ticket['from_employee_name'] ?: 'Đại diện kho') ?></div>
+    <section class="signatures">
+        <div>
+            <div class="signature-title">Quản lý tài sản</div>
+            <div class="signature-instruction">(Ký, ghi rõ họ tên)</div>
+            <div class="signature-name"><?= e($fromName) ?></div>
         </div>
-        <div class="col-3">
-            <div class="signature-role">BÊN NHẬN</div>
-            <div class="signature-note">(Ký, ghi rõ họ tên)</div>
-            <div class="signature-name"><?= e($ticket['to_employee_name'] ?: 'Đại diện kho') ?></div>
+        <div>
+            <div class="signature-title">ĐẠI DIỆN BÊN NHẬN</div>
+            <div class="signature-instruction">(Ký, ghi rõ họ tên)</div>
+            <div class="signature-name"><?= e($toName) ?></div>
         </div>
-        <div class="col-3">
-            <div class="signature-role">NGƯỜI LẬP PHIẾU</div>
-            <div class="signature-note">(Ký, ghi rõ họ tên)</div>
-            <div class="signature-name"><?= e($ticket['creator_name']) ?></div>
+        <div>
+            <div class="signature-title">Phòng CNTT</div>
+            <div class="signature-instruction">(Ký, ghi rõ họ tên)</div>
+            <div class="signature-name">Vũ Minh Đức</div>
         </div>
-        <div class="col-3">
-            <div class="signature-role">PHÊ DUYỆT</div>
-            <div class="signature-note">(Ký, ghi rõ họ tên)</div>
-            <div class="signature-name">Ban Giám Đốc / TP. IT</div>
-        </div>
-    </div>
-</div>
-
+    </section>
+</main>
 </body>
 </html>

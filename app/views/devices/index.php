@@ -43,7 +43,7 @@
             <!-- Phòng ban -->
             <div class="col-md-3">
                 <label class="form-label small fw-semibold">Phòng ban sử dụng</label>
-                <select name="department_id" class="form-select">
+                <select name="department_id" class="form-select" data-department-employee-filter>
                     <option value="">-- Tất cả phòng ban --</option>
                     <?php foreach ($departments as $dept): ?>
                         <option value="<?= $dept['id'] ?>" <?= $filters['department_id'] == $dept['id'] ? 'selected' : '' ?>>
@@ -55,10 +55,10 @@
 
             <div class="col-md-3">
                 <label class="form-label small fw-semibold">Người đang sử dụng</label>
-                <select name="employee_id" class="form-select">
+                <select name="employee_id" class="form-select" data-department-filtered-employee>
                     <option value="">-- Tất cả người dùng --</option>
                     <?php foreach ($employees as $employee): ?>
-                        <option value="<?= (int)$employee['id'] ?>" <?= (string)$filters['employee_id'] === (string)$employee['id'] ? 'selected' : '' ?>>
+                        <option value="<?= (int)$employee['id'] ?>" data-department-id="<?= (int)$employee['department_id'] ?>" <?= (string)$filters['employee_id'] === (string)$employee['id'] ? 'selected' : '' ?>>
                             <?= e($employee['fullname']) ?> (<?= e($employee['code']) ?>)
                         </option>
                     <?php endforeach; ?>

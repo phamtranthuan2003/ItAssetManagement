@@ -93,13 +93,16 @@ CREATE TABLE `devices` (
     `status` ENUM('in_stock', 'allocated', 'maintenance', 'liquidated') NOT NULL DEFAULT 'in_stock' COMMENT 'Trạng thái: Trong kho, Đang cấp phát, Bảo trì, Thanh lý',
     `current_employee_id` INT DEFAULT NULL COMMENT 'Nhân viên đang giữ thiết bị',
     `current_department_id` INT DEFAULT NULL COMMENT 'Phòng ban đang sử dụng',
+    `paired_pc_id` INT DEFAULT NULL COMMENT 'PC đang ghép với màn hình khi được cấp phát',
     `is_temporary` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '1: Cấp phát tạm thời, 0: Dài hạn',
     `expected_return_date` DATE DEFAULT NULL COMMENT 'Ngày dự kiến trả (nếu tạm thời)',
     `notes` TEXT DEFAULT NULL,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT `fk_dev_employee` FOREIGN KEY (`current_employee_id`) REFERENCES `employees` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT `fk_dev_department` FOREIGN KEY (`current_department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT `fk_dev_department` FOREIGN KEY (`current_department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT `fk_dev_paired_pc` FOREIGN KEY (`paired_pc_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+    KEY `idx_dev_paired_pc` (`paired_pc_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 5. BẢNG CẤU HÌNH CHI TIẾT THIẾT BỊ (DEVICE_SPECS)

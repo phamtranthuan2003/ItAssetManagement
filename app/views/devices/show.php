@@ -69,6 +69,29 @@
                     </div>
                     <?php endforeach; ?>
 
+                    <?php if (!empty($device['paired_pc_id']) || !empty($device['paired_monitors'])): ?>
+                    <div class="col-12">
+                        <div class="p-2 bg-primary-subtle rounded border border-primary-subtle">
+                            <span class="text-muted small d-block">Thiết bị đang ghép cặp</span>
+                            <?php if (!empty($device['paired_pc_id'])): ?>
+                                <a class="fw-semibold text-decoration-none" href="<?= url('devices/' . (int)$device['paired_pc_id']) ?>">
+                                    <i class="bi bi-pc-display me-1"></i>PC #<?= (int)$device['paired_pc_id'] ?>
+                                </a>
+                            <?php endif; ?>
+                            <?php foreach (($device['paired_monitors'] ?? []) as $pairedMonitor): ?>
+                                <div>
+                                    <a class="fw-semibold text-decoration-none" href="<?= url('devices/' . (int)$pairedMonitor['id']) ?>">
+                                        <i class="bi bi-display me-1"></i>Màn hình #<?= (int)$pairedMonitor['id'] ?>
+                                        <?= e(trim(($pairedMonitor['brand'] ?? '') . ' ' . ($pairedMonitor['model'] ?? ''))) ?>
+                                    </a>
+                                    <?= renderStatusBadge($pairedMonitor['status']) ?>
+                                </div>
+                            <?php endforeach; ?>
+                            <div class="form-text">Liên kết được cập nhật cùng các phiếu cấp phát, chuyển giao và thu hồi.</div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
+
                     <div class="col-sm-6">
                         <div class="p-2 bg-light rounded">
                             <span class="text-muted small d-block">Bộ nhớ RAM</span>
@@ -185,7 +208,7 @@
 
                     <div class="d-grid gap-2">
                         <?php if (Auth::hasPermission('tickets.create')): ?>
-                        <a href="<?= url('tickets/create?type=allocation') ?>" class="btn btn-success">
+                        <a href="<?= url('tickets/create?' . http_build_query(['type' => 'allocation', 'device_id' => (int)$device['id']])) ?>" class="btn btn-success">
                             <i class="bi bi-box-arrow-right me-1"></i> Cấp phát thiết bị này ngay
                         </a>
                         <?php endif; ?>

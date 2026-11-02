@@ -148,6 +148,6 @@
 <!-- Main Custom JS -->
 <script src="<?= asset('js/main.js') ?>"></script>
 <script src="<?= asset('js/employee-department-select.js?v=2') ?>"></script>
-<script src="<?= asset('js/filter-controls.js') ?>"></script>
+<script src="<?= asset('js/filter-controls.js?v=2') ?>"></script>
 </body>
 </html>

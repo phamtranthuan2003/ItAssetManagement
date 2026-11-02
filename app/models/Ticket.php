@@ -47,6 +47,8 @@ class Ticket extends Model {
         return $this->fetchAll($sql, $params);
     }
 
+
+
     public function countFiltered(?string $type = null, ?string $status = null, array $filters = []): int {
         [$where, $params] = $this->buildFilterConditions($type, $status, $filters);
         $whereClause = !empty($where) ? "WHERE " . implode(' AND ', $where) : "";
@@ -86,8 +88,10 @@ class Ticket extends Model {
      */
     public function findById(int $id): ?array {
         $sql = "SELECT t.*, u.fullname AS creator_name, u.username AS creator_username,
-                       fe.fullname AS from_employee_name, fe.code AS from_employee_code, fe.position AS from_employee_pos,
-                       te.fullname AS to_employee_name, te.code AS to_employee_code, te.position AS to_employee_pos,
+                       fe.fullname AS from_employee_name, fe.code AS from_employee_code,
+                       fe.position AS from_employee_pos, fe.phone AS from_employee_phone, fe.email AS from_employee_email,
+                       te.fullname AS to_employee_name, te.code AS to_employee_code,
+                       te.position AS to_employee_pos, te.phone AS to_employee_phone, te.email AS to_employee_email,
                        fd.name AS from_department_name, fd.code AS from_department_code,
                        td.name AS to_department_name, td.code AS to_department_code
                 FROM {$this->table} t
@@ -142,13 +146,121 @@ class Ticket extends Model {
             $ticketDetailModel = new TicketDetail();
             $historyModel = new DeviceHistory();
 
-            // Kiểm tra ràng buộc cho từng thiết bị trước khi tạo phiếu
+            $selectedIds = [];
+            $devicesById = [];
             foreach ($devicesItems as $item) {
                 $deviceId = (int)$item['device_id'];
-                $device = $deviceModel->findByIdWithSpec($deviceId);
+                if ($deviceId < 1 || isset($selectedIds[$deviceId])) {
+                    throw new Exception("Thiết bị trong phiếu không hợp lệ hoặc bị chọn trùng.");
+                }
+                $selectedIds[$deviceId] = true;
+                $device = $deviceModel->findForUpdate($deviceId);
 
                 if (!$device) {
                     throw new Exception("Thiết bị ID #{$deviceId} không tồn tại trong hệ thống!");
+                }
+                $devicesById[$deviceId] = $device;
+            }
+
+            $monitorParentById = [];
+            if ($ticketType === 'allocation') {
+                foreach ($devicesItems as $item) {
+                    $pcId = (int)$item['device_id'];
+                    $monitorIds = $item['paired_monitor_ids'] ?? [];
+                    if (!is_array($monitorIds)) {
+                        throw new Exception("Danh sách màn hình ghép với PC không hợp lệ.");
+                    }
+                    if (!empty($monitorIds) && !Device::isPcType($devicesById[$pcId]['type'])) {
+                        throw new Exception("Chỉ có thể ghép màn hình với thiết bị loại PC.");
+                    }
+
+                    foreach ($monitorIds as $monitorIdValue) {
+                        $monitorId = filter_var($monitorIdValue, FILTER_VALIDATE_INT, [
+                            'options' => ['min_range' => 1]
+                        ]);
+                        if (!$monitorId || $monitorId === $pcId || isset($monitorParentById[$monitorId])) {
+                            throw new Exception("Danh sách màn hình ghép với PC không hợp lệ hoặc bị trùng.");
+                        }
+
+                        $monitorParentById[$monitorId] = $pcId;
+                        if (!isset($selectedIds[$monitorId])) {
+                            $selectedIds[$monitorId] = true;
+                            $devicesItems[] = [
+                                'device_id' => $monitorId,
+                                'accessories' => '',
+                                'returned_condition' => null,
+                                'notes' => "Màn hình cấp kèm PC #{$pcId}"
+                            ];
+                            $devicesById[$monitorId] = null;
+                        }
+                    }
+                }
+
+                foreach ($monitorParentById as $monitorId => $pcId) {
+                    $monitor = $devicesById[$monitorId] ?? $deviceModel->findForUpdate($monitorId);
+                    if (!$monitor) {
+                        throw new Exception("Màn hình ID #{$monitorId} không tồn tại trong hệ thống!");
+                    }
+                    $devicesById[$monitorId] = $monitor;
+                    if (
+                        !Device::isMonitorType($monitor['type']) ||
+                        $monitor['status'] !== 'in_stock' ||
+                        !empty($monitor['paired_pc_id'])
+                    ) {
+                        throw new Exception("Màn hình STT {$monitorId} không còn sẵn sàng để cấp phát hoặc đã được ghép với PC khác.");
+                    }
+                }
+            } elseif ($ticketType === 'transfer' || $ticketType === 'revocation') {
+                $rootIds = $selectedIds;
+                foreach ($devicesById as $deviceId => $device) {
+                    if (!empty($device['paired_pc_id']) && !isset($rootIds[(int)$device['paired_pc_id']])) {
+                        throw new Exception(
+                            "Màn hình STT {$deviceId} đang ghép với PC #" . (int)$device['paired_pc_id'] .
+                            "; hãy chọn PC để chuyển giao hoặc thu hồi cả bộ."
+                        );
+                    }
+                    if (!empty($device['paired_pc_id']) && !Device::isPcType($devicesById[(int)$device['paired_pc_id']]['type'] ?? '')) {
+                        throw new Exception("Màn hình STT {$deviceId} đang liên kết với một thiết bị không phải PC.");
+                    }
+
+                    if (!Device::isPcType($device['type'])) {
+                        continue;
+                    }
+
+                    foreach ($deviceModel->getPairedMonitors((int)$deviceId) as $monitor) {
+                        $monitorId = (int)$monitor['id'];
+                        if (
+                            $monitor['status'] !== 'allocated' ||
+                            (int)$monitor['current_employee_id'] !== $fromEmployeeId
+                        ) {
+                            throw new Exception("Màn hình STT {$monitorId} đang ghép với PC #{$deviceId} nhưng không thuộc nhân viên bàn giao.");
+                        }
+                        if (isset($selectedIds[$monitorId])) {
+                            continue;
+                        }
+
+                        $selectedIds[$monitorId] = true;
+                        $devicesItems[] = [
+                            'device_id' => $monitorId,
+                            'accessories' => '',
+                            'returned_condition' => 'good',
+                            'notes' => "Tự động đi cùng PC #{$deviceId}; tình trạng mặc định Tốt"
+                        ];
+                        $devicesById[$monitorId] = $deviceModel->findForUpdate($monitorId);
+                    }
+                }
+            }
+
+            // Validate trạng thái, người đang giữ và loại tài sản của toàn bộ thiết bị trong phiếu.
+            foreach ($devicesItems as $item) {
+                $deviceId = (int)$item['device_id'];
+                $device = $devicesById[$deviceId] ?? null;
+                if (!$device) {
+                    $device = $deviceModel->findForUpdate($deviceId);
+                    if (!$device) {
+                        throw new Exception("Thiết bị ID #{$deviceId} không tồn tại trong hệ thống!");
+                    }
+                    $devicesById[$deviceId] = $device;
                 }
 
                 if ($ticketType === 'allocation') {
@@ -158,8 +270,8 @@ class Ticket extends Model {
                     }
                 } elseif ($ticketType === 'revocation') {
                     // Ràng buộc: Không thu hồi thiết bị đang ở kho
-                    if ($device['status'] === 'in_stock') {
-                        throw new Exception("Thiết bị STT {$deviceId} đang ở 'Trong kho', không thể thực hiện thu hồi!");
+                    if ($device['status'] === 'in_stock' || (int)$device['current_employee_id'] !== $fromEmployeeId) {
+                        throw new Exception("Thiết bị STT {$deviceId} không thuộc nhân viên bàn giao hoặc đang ở trong kho, không thể thu hồi!");
                     }
                 } elseif ($ticketType === 'transfer') {
                     if (
@@ -203,6 +315,9 @@ class Ticket extends Model {
                 $accessories = $item['accessories'] ?? '';
                 $returnedCondition = $item['returned_condition'] ?? null;
                 $notes = $item['notes'] ?? '';
+                if (isset($monitorParentById[$deviceId]) && trim((string)$notes) === '') {
+                    $notes = "Màn hình cấp kèm PC #" . $monitorParentById[$deviceId];
+                }
 
                 $ticketDetailModel->create($ticketId, [
                     'device_id'          => $deviceId,
@@ -214,6 +329,9 @@ class Ticket extends Model {
                 // Xử lý logic thay đổi trạng thái theo từng loại phiếu
                 if ($ticketType === 'allocation') {
                     // Cấp phát: chuyển thành 'allocated', gán nhân viên & phòng ban
+                    if (isset($monitorParentById[$deviceId])) {
+                        $deviceModel->setPairedPc($deviceId, $monitorParentById[$deviceId]);
+                    }
                     $deviceModel->updateStatusAndAssignee(
                         $deviceId,
                         'allocated',
@@ -284,6 +402,9 @@ class Ticket extends Model {
                         null,
                         $newCondition
                     );
+                    if (Device::isMonitorType($devicesById[$deviceId]['type'])) {
+                        $deviceModel->setPairedPc($deviceId, null);
+                    }
 
                     $condText = match ($returnedCondition) {
                         'broken' => 'Hỏng hóc (chuyển sang Bảo trì)',

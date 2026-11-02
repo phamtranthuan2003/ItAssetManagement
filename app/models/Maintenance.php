@@ -173,11 +173,33 @@ class Maintenance extends Model {
 
             $deviceId = (int)$maint['device_id'];
 
-            // Nếu hoàn thành bảo trì -> thiết bị trở lại 'in_stock' và tình trạng 'used' (hoặc nếu là PC nâng cấp)
+            $deviceState = $this->fetch(
+                "SELECT id, current_employee_id, paired_pc_id
+                 FROM devices
+                 WHERE id = :id
+                 FOR UPDATE",
+                ['id' => $deviceId]
+            );
+
             if ($status === 'completed') {
-                $this->query("UPDATE devices SET status = 'in_stock', condition_state = 'used' WHERE id = :id", ['id' => $deviceId]);
+                $deviceModel = new Device();
+                $hasPairedDevices = !empty($deviceState['paired_pc_id']) ||
+                    !empty($deviceModel->getPairedMonitors($deviceId));
+                $newDeviceStatus = $hasPairedDevices && !empty($deviceState['current_employee_id'])
+                    ? 'allocated'
+                    : 'in_stock';
+                $this->query(
+                    "UPDATE devices SET status = :status, condition_state = 'used' WHERE id = :id",
+                    ['id' => $deviceId, 'status' => $newDeviceStatus]
+                );
             } elseif ($status === 'cannot_repair') {
                 $this->query("UPDATE devices SET status = 'liquidated', condition_state = 'broken' WHERE id = :id", ['id' => $deviceId]);
+                $deviceModel = new Device();
+                $deviceModel->setPairedPc($deviceId, null);
+                $this->query(
+                    "UPDATE devices SET paired_pc_id = NULL WHERE paired_pc_id = :device_id",
+                    ['device_id' => $deviceId]
+                );
             }
 
             // Ghi lịch sử

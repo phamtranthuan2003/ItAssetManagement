@@ -82,7 +82,7 @@ Cơ sở dữ liệu tên là `warehouse_db` sử dụng bảng mã `utf8mb4_uni
 1. **`users`**: Quản lý tài khoản quản trị và thủ kho (`id`, `username`, `password`, `fullname`, `email`, `role`, `status`).
 2. **`departments`**: Quản lý phòng ban sử dụng thiết bị (`id`, `code`, `name`, `description`).
 3. **`employees`**: Quản lý nhân viên công ty (`id`, `code`, `fullname`, `department_id`, `position`, `status`).
-4. **`devices`**: Quản lý thông tin chung thiết bị (`id`, `device_code`, `type`, `brand`, `model`, `serial_number`, `import_date`, `warranty_expiry`, `condition_state`, `status`, `current_employee_id`, `current_department_id`, `is_temporary`, `expected_return_date`, `notes`).
+4. **`devices`**: Quản lý thông tin chung thiết bị (`id`, `device_code`, `type`, `brand`, `model`, `serial_number`, `import_date`, `warranty_expiry`, `condition_state`, `status`, `current_employee_id`, `current_department_id`, `paired_pc_id`, `is_temporary`, `expected_return_date`, `notes`). Màn hình được quản lý như một thiết bị riêng; `paired_pc_id` liên kết màn hình với PC đang sử dụng.
 5. **`device_specs`**: Quản lý cấu hình chi tiết theo quan hệ 1-1 với `devices` (`id`, `device_id`, `cpu`, `mainboard`, `ram_gb`, `ram_type`, `ssd_capacity`, `hdd_capacity`, `gpu`, `screen_size`, `notes`).
 6. **`tickets`**: Phiếu giao dịch cấp phát / chuyển giao / thu hồi (`id`, `ticket_code`, `ticket_type`, `ticket_date`, `created_by`, `from_employee_id`, `to_employee_id`, `is_temporary`, `status`, `reason`, `notes`).
 7. **`ticket_details`**: Chi tiết các thiết bị trong một phiếu (`id`, `ticket_id`, `device_id`, `accessories`, `returned_condition`, `notes`).
@@ -114,6 +114,7 @@ Bạn có 2 cách chạy:
 - Chọn cơ sở dữ liệu `warehouse_db`, bấm vào tab **Import (Nhập)**.
 - Chọn file `database.sql` có sẵn trong thư mục dự án và bấm nút **Import** ở cuối trang.
 *(Hoặc dùng lệnh MySQL CLI: `C:\xampp\mysql\bin\mysql.exe -u root warehouse_db < database.sql`)*
+- Nếu đang dùng cơ sở dữ liệu cũ, chạy thêm file `database_pc_monitor_migration.sql` một lần để bổ sung khóa liên kết PC - màn hình.
 
 ### Bước 4: Kiểm tra cấu hình kết nối CSDL (nếu cần)
 Mở file `config/config.php`:
@@ -159,23 +160,27 @@ Hệ thống được tạo sẵn 2 tài khoản để bạn đăng nhập thử
    - Khi chọn loại thiết bị là **PC**: Form tự động mở thêm trường **Mainboard (Bo mạch chủ)**.
    - Khi chọn loại thiết bị là **Laptop**: Form tự động mở thêm trường **Màn hình**.
    - Bộ lọc nâng cao hỗ trợ lọc theo: Loại máy, Hãng sản xuất, Trạng thái kho, Tình trạng máy, CPU, RAM tối thiểu, SSD, và Phòng ban đang dùng.
-2. **Cấp phát mượn tạm thời & Cảnh báo quá hạn:**
+2. **Cấp phát PC kèm màn hình:**
+   - Nhập màn hình dưới loại thiết bị **MH** (hoặc **Màn hình**) để quản lý riêng theo mã thiết bị và serial.
+   - Khi lập phiếu cấp phát PC, có thể chọn một hoặc nhiều màn hình đang trong kho. Màn hình sẽ được ghi riêng trong phiếu và liên kết với PC.
+   - Chuyển giao/thu hồi PC sẽ đồng bộ các màn hình đang ghép; có thể chọn màn hình riêng trong phiếu thu hồi để ghi nhận tình trạng riêng. Màn hình đi kèm không chọn riêng sẽ mặc định tình trạng tốt khi thu hồi.
+3. **Cấp phát mượn tạm thời & Cảnh báo quá hạn:**
    - Khi lập phiếu cấp phát, nếu tích chọn "Cấp phát tạm thời" và chọn hạn trả, hệ thống sẽ tự động giám sát.
    - Nếu quá ngày trả mà chưa thu hồi, trang Dashboard và danh sách thiết bị sẽ bật **Cảnh báo đỏ** kèm danh sách trực quan.
-3. **Cảnh báo sắp hết hạn bảo hành:**
+4. **Cảnh báo sắp hết hạn bảo hành:**
    - Hệ thống tự động tính khoảng cách ngày bảo hành của thiết bị, cảnh báo các máy còn dưới 30 ngày bảo hành.
-4. **Quy trình Thu hồi tự động & Thông minh:**
+5. **Quy trình Thu hồi tự động & Thông minh:**
    - Thu hồi thiết bị cho phép ghi nhận tình trạng khi trả:
      - Nếu trả **Tốt** -> Thiết bị tự động chuyển về trạng thái **Trong kho (in_stock)**.
      - Nếu trả **Hỏng** -> Thiết bị tự động chuyển sang trạng thái **Bảo trì (maintenance)**.
      - Xóa người sử dụng và phòng ban hiện tại.
-5. **Thu hồi hàng loạt khi nhân sự nghỉ việc:**
+6. **Thu hồi hàng loạt khi nhân sự nghỉ việc:**
    - Vào menu **Nhân viên** -> Chọn nhân viên -> Bấm vào hồ sơ để xem các thiết bị đang giữ.
    - Bấm nút **"Thu hồi tất cả thiết bị"**: Toàn bộ máy nhân viên đang giữ sẽ được đưa vào 1 phiếu thu hồi duy nhất trong 1 click và có tùy chọn chuyển trạng thái nhân sự thành **Đã nghỉ việc**.
-6. **In Biên bản bàn giao chuẩn hành chính:**
+7. **In Biên bản bàn giao chuẩn hành chính:**
    - Ở bất kỳ phiếu cấp phát/chuyển giao/thu hồi nào, bấm nút **In biên bản**.
    - Giao diện in được thiết kế chuẩn khổ A4, trang trọng với Quốc hiệu tiêu ngữ, bảng thông số kỹ thuật, phụ kiện đi kèm và 4 ô chữ ký: Bên giao, Bên nhận, Thủ kho, Lãnh đạo phê duyệt. Bấm nút **In biên bản (Ctrl + P)** để in ra giấy hoặc lưu thành file PDF.
-7. **Xuất danh sách thiết bị ra Excel / CSV:**
+8. **Xuất danh sách thiết bị ra Excel / CSV:**
    - Tại trang danh sách thiết bị hoặc báo cáo, bấm nút **Xuất Excel / CSV**. File xuất ra đã được chèn UTF-8 BOM, đảm bảo mở trực tiếp bằng Microsoft Excel mà không bao giờ bị lỗi font tiếng Việt.
 #   I t A s s e t M a n a g e m e n t  
  

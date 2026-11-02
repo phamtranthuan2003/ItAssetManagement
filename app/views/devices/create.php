@@ -26,6 +26,8 @@
                             <datalist id="deviceTypes">
                                 <option value="PC">
                                 <option value="Laptop">
+                                <option value="MH">
+                                <option value="Màn hình">
                                 <option value="Máy CNC">
                                 <option value="Máy in">
                             </datalist>
@@ -92,6 +94,7 @@
                                 <input type="checkbox" name="has_monitors" id="hasMonitors" class="form-check-input" value="1">
                                 <label class="form-check-label fw-semibold" for="hasMonitors">Có kèm màn hình rời</label>
                             </div>
+                            <div class="form-text">Thông tin bên dưới chỉ mô tả cấu hình. Muốn cấp phát và theo dõi riêng, hãy nhập màn hình thành thiết bị loại “Màn hình”.</div>
                         </div>
                         <div class="col-12 d-none" id="monitorFields">
                             <div id="monitorList" class="d-flex flex-column gap-3"></div>

@@ -81,7 +81,11 @@ class TicketController extends Controller {
      */
     public function create(): void {
         $type = $this->get('type', 'allocation'); // allocation, transfer, revocation
+        $selectedDeviceId = filter_var($this->get('device_id'), FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1]
+        ]) ?: null;
         $inStockDevices = $this->deviceModel->getAvailableInStock();
+        $availableMonitors = $this->deviceModel->getAvailableMonitors();
         $allocatedDevices = $this->deviceModel->getAllocatedDevices();
         $departments = $this->deptModel->getAll();
         $employees = $this->empModel->getForSelect($type === 'revocation' ? null : 'working');
@@ -90,9 +94,11 @@ class TicketController extends Controller {
             'pageTitle'        => 'Lập phiếu mới',
             'type'             => $type,
             'inStockDevices'   => $inStockDevices,
+            'availableMonitors' => $availableMonitors,
             'allocatedDevices' => $allocatedDevices,
             'departments'      => $departments,
-            'employees'        => $employees
+            'employees'        => $employees,
+            'selectedDeviceId' => $selectedDeviceId
         ]);
     }
 
@@ -119,9 +125,13 @@ class TicketController extends Controller {
         $accessories = $_POST['accessories'] ?? [];
         $returnedConditions = $_POST['returned_condition'] ?? [];
         $itemNotes = $_POST['item_notes'] ?? [];
+        $pairedMonitorIds = $_POST['paired_monitor_ids'] ?? [];
 
         if (empty($deviceIds) || !is_array($deviceIds)) {
             redirect('tickets/create?type=' . $ticketType, 'Vui lòng chọn ít nhất một thiết bị vào phiếu!', 'danger');
+        }
+        if (!is_array($pairedMonitorIds)) {
+            redirect('tickets/create?type=' . $ticketType, 'Danh sách màn hình ghép với PC không hợp lệ!', 'danger');
         }
 
         if ($ticketType === 'revocation' || $ticketType === 'transfer') {
@@ -160,11 +170,16 @@ class TicketController extends Controller {
         $devicesItems = [];
         foreach ($deviceIds as $index => $devId) {
             if (empty($devId)) continue;
+            $rowMonitorIds = $pairedMonitorIds[$index] ?? [];
+            if (!is_array($rowMonitorIds)) {
+                redirect('tickets/create?type=' . $ticketType, 'Danh sách màn hình ghép với PC không hợp lệ!', 'danger');
+            }
             $devicesItems[] = [
                 'device_id'          => (int)$devId,
                 'accessories'        => $accessories[$index] ?? '',
                 'returned_condition' => $returnedConditions[$index] ?? null,
-                'notes'              => $itemNotes[$index] ?? ''
+                'notes'              => $itemNotes[$index] ?? '',
+                'paired_monitor_ids' => $rowMonitorIds
             ];
         }
 
