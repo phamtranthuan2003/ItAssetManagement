@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th10 28, 2026 lúc 04:58 AM
+-- Thời gian đã tạo: Th10 02, 2026 lúc 10:55 AM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.2.12
 
@@ -51,7 +51,8 @@ INSERT INTO `departments` (`id`, `code`, `name`, `description`, `created_at`) VA
 (11, 'BHC', 'Ban Hành Chính', '', '2026-10-21 10:12:38'),
 (12, 'BNS', 'Ban Nhân Sự', '', '2026-10-21 10:15:02'),
 (13, 'BMC', 'Ban Marcom', '', '2026-10-21 10:18:35'),
-(14, 'CT H&H', 'CT H&H', '', '2026-10-21 10:20:58');
+(14, 'CT H&H', 'CT H&H', '', '2026-10-21 10:20:58'),
+(23, 'CHI NHáNH KINH BắC', 'CNKB', '', '2026-10-30 11:48:38');
 
 -- --------------------------------------------------------
 
@@ -72,6 +73,7 @@ CREATE TABLE `devices` (
   `status` enum('in_stock','allocated','maintenance','liquidated') NOT NULL DEFAULT 'in_stock' COMMENT 'Trạng thái: Trong kho, Đang cấp phát, Bảo trì, Thanh lý',
   `current_employee_id` int(11) DEFAULT NULL COMMENT 'Nhân viên đang giữ thiết bị',
   `current_department_id` int(11) DEFAULT NULL COMMENT 'Phòng ban đang sử dụng',
+  `paired_pc_id` int(11) DEFAULT NULL COMMENT 'PC đang ghép với màn hình khi được cấp phát',
   `is_temporary` tinyint(1) NOT NULL DEFAULT 0 COMMENT '1: Cấp phát tạm thời, 0: Dài hạn',
   `expected_return_date` date DEFAULT NULL COMMENT 'Ngày dự kiến trả (nếu tạm thời)',
   `notes` text DEFAULT NULL,
@@ -83,138 +85,136 @@ CREATE TABLE `devices` (
 -- Đang đổ dữ liệu cho bảng `devices`
 --
 
-INSERT INTO `devices` (`id`, `device_code`, `type`, `brand`, `model`, `serial_number`, `import_date`, `warranty_expiry`, `condition_state`, `status`, `current_employee_id`, `current_department_id`, `is_temporary`, `expected_return_date`, `notes`, `created_at`, `updated_at`) VALUES
-(1, '1', 'Laptop', 'Dell', 'Dell Latitude 3420', NULL, '2026-10-21', NULL, 'used', 'allocated', 1, 2, 0, NULL, NULL, '2026-10-21 08:06:25', '2026-10-21 08:06:57'),
-(16, 'TB87E959CBE9A2B7CEB75DDE5F', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 4, 1, 0, NULL, NULL, '2026-10-21 11:28:00', '2026-10-21 11:59:16'),
-(17, 'TB4D73EED24F927131286E3C1F', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 148, 1, 0, NULL, NULL, '2026-10-21 14:29:06', '2026-10-21 14:32:36'),
-(19, 'TB675FDD25E41C340D691BC167', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 6, 1, 0, NULL, NULL, '2026-10-21 14:36:38', '2026-10-21 14:36:59'),
-(20, 'TBE7265CD8E557ABD80AD9C456', 'Laptop', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 7, 1, 0, NULL, NULL, '2026-10-21 14:38:32', '2026-10-21 14:38:49'),
-(21, 'TB81DDFBD18CBC64C124E43900', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 8, 5, 0, NULL, NULL, '2026-10-21 14:40:29', '2026-10-21 14:43:50'),
-(22, 'TBCACB08E8CDC0A49EC1C9F66F', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 9, 5, 0, NULL, NULL, '2026-10-21 15:39:01', '2026-10-21 15:39:31'),
-(23, 'TB4E681EB525651A13071C696C', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 10, 5, 0, NULL, NULL, '2026-10-21 15:46:23', '2026-10-21 15:47:06'),
-(24, 'TBD786796B95B67F0992A10CB0', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 149, 5, 0, NULL, NULL, '2026-10-21 15:48:27', '2026-10-21 15:49:43'),
-(25, 'TB2D3A1C3ED1C7CF293F571617', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 11, 6, 0, NULL, NULL, '2026-10-21 15:50:47', '2026-10-21 15:51:29'),
-(26, 'TBFD09758F8FDC7A8124488DD1', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 12, 6, 0, NULL, NULL, '2026-10-21 15:52:24', '2026-10-21 15:52:42'),
-(27, 'TB43BB04A78190BFDD41E5176C', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 15, 7, 0, NULL, 'Vỏ case máy tính XIGMATEK XA- 20/XA-22 (ATX); Nguồn XIGMATEK 500W', '2026-10-21 15:54:50', '2026-10-21 15:55:15'),
-(28, 'TB6C9D2D725EF573C936608FE6', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 16, 7, 0, NULL, NULL, '2026-10-21 15:56:31', '2026-10-21 15:56:51'),
-(29, 'TBA98FC6820500E3B69E8F24A7', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 17, 7, 0, NULL, NULL, '2026-10-21 15:57:57', '2026-10-21 15:58:14'),
-(30, 'TB658A4EC15F206F8992816C5F', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 18, 7, 0, NULL, NULL, '2026-10-21 15:59:44', '2026-10-21 16:00:01'),
-(31, 'TB5CAD678DA8C4B346DE03229C', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 14, 7, 0, NULL, 'Vỏ cây máy tính Xigmatek XA-20 /22; Nguồn máy tính ATX500', '2026-10-21 16:02:18', '2026-10-21 16:02:53'),
-(32, 'TBFDE786614EADF65DC7FABDB4', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 20, 7, 0, NULL, NULL, '2026-10-21 16:05:12', '2026-10-21 16:05:29'),
-(33, 'TB7DA2BC2BFB6902BDA8AC56AD', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 21, 7, 0, NULL, NULL, '2026-10-21 16:06:38', '2026-10-21 16:08:28'),
-(34, 'TB3663D1F2F864AC51C72AEA01', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 13, 7, 0, NULL, NULL, '2026-10-21 16:11:01', '2026-10-21 16:11:31'),
-(35, 'TB50E4AEE119DFD4E944DB497C', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 23, 7, 0, NULL, NULL, '2026-10-21 16:13:12', '2026-10-21 16:13:28'),
-(36, 'TB7C3319D109F2521A5D011335', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 151, 7, 0, NULL, NULL, '2026-10-21 16:16:02', '2026-10-21 16:17:10'),
-(37, 'TB8665CDD7EF9C1B66DB3AF3F0', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 24, 7, 0, NULL, NULL, '2026-10-21 16:18:29', '2026-10-21 16:18:46'),
-(38, 'TB82410AEAFC54E1B6783E24C1', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 26, 7, 0, NULL, NULL, '2026-10-21 16:20:02', '2026-10-21 16:20:15'),
-(39, 'TB89E0C8823C73C36B67901837', 'PC', '', '', NULL, '2026-10-21', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-21 16:22:06', '2026-10-21 16:22:06'),
-(40, 'TBE1270BABD2290463C248A06D', 'Ổ cứng di động', '', 'HDD Box adata AV320-2T-2.5', NULL, '2026-10-21', NULL, 'used', 'allocated', 151, 7, 0, NULL, 'Sử dụng chung trong công tác lưu chuyển dữ liệu thuộc phạm vi chuyên môn', '2026-10-21 16:23:22', '2026-10-21 16:23:43'),
-(41, 'TBAF19323B97B5C7572DA7A66D', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 68, 10, 0, NULL, NULL, '2026-10-21 16:46:19', '2026-10-21 16:46:47'),
-(42, 'TBEE29C8C9019FB675F619D14E', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 69, 10, 0, NULL, NULL, '2026-10-21 16:48:12', '2026-10-21 16:48:34'),
-(43, 'TB0E5B187903D221901ED904D8', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 70, 10, 0, NULL, 'Jonsbo CR-1000 RGB; Case Xigmatek  AERO 2F - 2 FAN; Nguồn Ximareck 450W', '2026-10-21 16:50:37', '2026-10-21 16:50:50'),
-(44, 'TBE28C323AB372DBD0DAFFB51F', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-21 16:51:47', '2026-10-23 11:14:20'),
-(45, 'TB093E732E7FFF9324726098AE', 'Laptop', '', 'Acer aspire A315-54K', NULL, '2026-10-21', NULL, 'used', 'allocated', 72, 10, 0, NULL, NULL, '2026-10-21 16:53:10', '2026-10-21 16:53:24'),
-(46, 'TB297576BE6D1BF2BD413D5E5F', 'Laptop', '', 'AMD Radeon Graphics/14 inch full HD/Windows  11 Home/bạc/Vỏ nhựa,', NULL, '2026-10-21', NULL, 'used', 'allocated', 73, 2, 0, NULL, NULL, '2026-10-21 17:11:01', '2026-10-21 17:11:14'),
-(47, 'TBF2A296668F6C25DB50929144', 'Laptop', '', 'HP-8B78', NULL, '2026-10-21', NULL, 'used', 'allocated', 83, 12, 0, NULL, NULL, '2026-10-21 17:14:34', '2026-10-27 16:23:54'),
-(48, 'TB82B064284F2F1E090D5C8A12', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 92, 13, 0, NULL, NULL, '2026-10-22 08:06:29', '2026-10-22 08:07:55'),
-(49, 'TBF3DFB66CEEA63FC6E3367246', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 93, 13, 0, NULL, NULL, '2026-10-22 08:09:18', '2026-10-22 08:09:35'),
-(50, 'TBCE83569BD7C6BCB56CDE7E21', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 92, 13, 0, NULL, NULL, '2026-10-22 08:11:04', '2026-10-22 08:14:50'),
-(51, 'TB5FFE9AC42A047BC80D69F951', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 95, 13, 0, NULL, NULL, '2026-10-22 08:12:51', '2026-10-22 08:13:06'),
-(52, 'TBBFD786E0BAB3E011DBBEC2A7', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 96, 14, 0, NULL, 'Vỏ case Xigmatek XS-29 mATX Office Black, Nguồn máy tính Xigmatek X-Power III 350 300W', '2026-10-22 08:16:40', '2026-10-22 08:16:57'),
-(53, 'TB26FBA5CD0A47223E44C9D8CB', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 97, 14, 0, NULL, NULL, '2026-10-22 08:20:04', '2026-10-22 08:20:29'),
-(54, 'TBD877AA9D86EC6DCB41FFBF87', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 98, 14, 0, NULL, NULL, '2026-10-22 08:21:21', '2026-10-22 08:21:34'),
-(55, 'TB5D6270C23E3C6E8D50300550', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 99, 14, 0, NULL, NULL, '2026-10-22 08:22:22', '2026-10-22 08:22:39'),
-(56, 'TB112A5E8404BA39B160776AD3', 'Laptop', '', 'Lenovo IdeaPad Gaming', NULL, '2026-10-22', NULL, 'used', 'allocated', 100, 14, 0, NULL, NULL, '2026-10-22 08:24:02', '2026-10-22 08:24:24'),
-(57, 'TB21C07A0EB6AAC652FEE3055D', 'Laptop', '', 'Laptop xách tay Dell Latitude 3520', NULL, '2026-10-22', NULL, 'used', 'allocated', 101, 14, 0, NULL, '\'Laptop xách tay Dell Latitude 3520, Intel Core i5-1135G7, 8GB Ram, 256GB SSD, 15.6\'\' FHD, WC, Wl+BT, Fedora, 1Y, chuột', '2026-10-22 08:25:56', '2026-10-22 08:26:12'),
-(58, 'TB70F034AE00BA73257D6ED98F', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 102, 14, 0, NULL, NULL, '2026-10-22 08:27:36', '2026-10-22 08:27:54'),
-(59, 'TB5450260DAE5D918B9DF294C8', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 103, 14, 0, NULL, NULL, '2026-10-22 08:28:42', '2026-10-22 08:29:11'),
-(60, 'TBB86E0EC09FCA69FF2EAEE3A6', 'PC', '', 'Dell Optiplex 7010', NULL, '2026-10-22', NULL, 'used', 'allocated', 104, 14, 0, NULL, NULL, '2026-10-22 08:30:11', '2026-10-22 08:30:27'),
-(61, 'TB3296896572B15567E4370016', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 105, 14, 0, NULL, NULL, '2026-10-22 08:31:24', '2026-10-22 08:31:36'),
-(62, 'TB0D8BB52C98FD0EE9CEC35263', 'Laptop', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 106, 14, 0, NULL, NULL, '2026-10-22 08:32:01', '2026-10-22 08:32:10'),
-(63, 'TB759B4AC7F18BA3DC38B81D27', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 27, 8, 0, NULL, NULL, '2026-10-22 08:52:21', '2026-10-22 08:54:27'),
-(64, 'TBF1EA30852F1768A2F8471433', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 28, 8, 0, NULL, NULL, '2026-10-22 08:55:51', '2026-10-22 08:56:07'),
-(65, 'TB3C1F2B89619E4F829FE4A794', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 29, 8, 0, NULL, 'Vỏ Cây Orien HP-T05', '2026-10-22 08:57:11', '2026-10-22 08:57:47'),
-(66, 'TBE890F9A14839543C30A3124F', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 30, 8, 0, NULL, NULL, '2026-10-22 08:59:57', '2026-10-22 09:00:15'),
-(67, 'TB0A4AC2C34442D0201481532A', 'PC', '', 'Dell OH4VK7', NULL, '2026-10-22', NULL, 'used', 'allocated', 31, 8, 0, NULL, NULL, '2026-10-22 09:01:11', '2026-10-22 09:01:28'),
-(68, 'TB1BEE25C470E9A9426D58A107', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 32, 8, 0, NULL, NULL, '2026-10-22 09:02:22', '2026-10-22 09:02:33'),
-(69, 'TB2D95A054702E24E4BCA89FA5', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 33, 8, 0, NULL, NULL, '2026-10-22 09:04:05', '2026-10-22 09:04:19'),
-(70, 'TB7693443262681BF8588C393B', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 34, 8, 0, NULL, 'Hdd Segate 1T ,Vỏ case máy tính Orient T05, VGA Nividia Geforce  GT730- 4G, Nguồn máy tính Orien 500w', '2026-10-22 09:09:35', '2026-10-22 09:09:54'),
-(71, 'TB1B45F8FF0841CCEC58C3DC63', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 35, 8, 0, NULL, '\"Ổ cứng HDD Seagate Barracuda\r\n1TB 3.5 inch 7200RPM, SATA; Chuột phím Rapoo USB; Vỏ Cây Orien T05; Nguồn Xigmatek X350\r\n\"', '2026-10-22 09:11:25', '2026-10-22 09:11:42'),
-(72, 'TB3AA36684C424D8ADA0C53CA9', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 36, 8, 0, NULL, NULL, '2026-10-22 09:13:20', '2026-10-22 09:13:51'),
-(73, 'TB3E2FD5FC1C5ECFA90A2FD823', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 35, 8, 0, NULL, NULL, '2026-10-22 09:14:50', '2026-10-22 09:15:08'),
-(74, 'TB7B2C1111FD1CA2FE99767C97', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 37, 8, 0, NULL, NULL, '2026-10-22 09:18:17', '2026-10-22 09:18:35'),
-(75, 'TBD39FE47AEB64D01CEB67979B', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 38, 8, 0, NULL, NULL, '2026-10-22 09:20:15', '2026-10-22 09:20:29'),
-(76, 'TB4E6345B09C872D1FB10F35CA', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 39, 8, 0, NULL, NULL, '2026-10-22 09:23:40', '2026-10-22 09:23:54'),
-(77, 'TB4802AC20CD19B80B7BA0F37B', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 40, 8, 0, NULL, NULL, '2026-10-22 09:24:40', '2026-10-22 09:24:51'),
-(78, 'TB7AA7DC5C2611C4CEE6C24653', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 41, 8, 0, NULL, NULL, '2026-10-22 09:31:14', '2026-10-22 09:31:54'),
-(80, 'TB5BF3A93F165D3E88224BCFDA', 'CASE', '', 'CASE MÁY CHỦ', NULL, '2026-10-22', NULL, 'used', 'allocated', 43, 8, 0, NULL, NULL, '2026-10-22 09:34:19', '2026-10-22 09:34:28'),
-(81, 'TB8ADB1FCBA646BF67890AB246', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 44, 8, 0, NULL, NULL, '2026-10-22 09:35:33', '2026-10-22 09:35:51'),
-(82, 'TB4146F39A12263779B09DF296', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 45, 8, 0, NULL, NULL, '2026-10-22 09:36:51', '2026-10-22 09:37:19'),
-(83, 'TBBD88D3FC65438E7F782E9C65', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 46, 8, 0, NULL, NULL, '2026-10-22 09:39:26', '2026-10-22 09:39:38'),
-(84, 'TB86A78695321E9CB7DB1054AE', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 47, 8, 0, NULL, NULL, '2026-10-22 09:40:30', '2026-10-22 09:40:43'),
-(85, 'TB78686C11259697B8BC7D193D', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 48, 8, 0, NULL, NULL, '2026-10-22 09:41:29', '2026-10-22 09:41:46'),
-(86, 'TB06E7C06C2B0047CC23D82A03', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 42, 8, 0, NULL, NULL, '2026-10-22 09:42:55', '2026-10-22 09:43:30'),
-(87, 'TB158950A2CC478B778C957E28', 'Laptop', '', 'Asus Expert P1503CVA _P1503CVA-i5SE16-50W Xám', NULL, '2026-10-22', NULL, 'used', 'allocated', 49, 8, 0, NULL, NULL, '2026-10-22 09:45:10', '2026-10-22 09:45:45'),
-(88, 'TBCF30FA6CB9252618C3EA8C0E', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 50, 8, 0, NULL, 'Vỏ máy tính Xigmatek XS-29, Nguồn máy tính Xigmatek X-Power III 350 (250W,230V)', '2026-10-22 09:47:07', '2026-10-22 09:47:34'),
-(89, 'TB4DFB9BC57BD976E5F9D6DF89', 'LK', '', '03 ổ cứng SSD Transcend 1TB', NULL, '2026-10-22', NULL, 'used', 'allocated', 34, 8, 0, NULL, NULL, '2026-10-22 09:47:55', '2026-10-22 09:48:36'),
-(90, 'TB09A501A27D9C6CF23D217FA1', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 52, 8, 0, NULL, NULL, '2026-10-22 09:49:22', '2026-10-22 09:49:34'),
-(91, 'TB4A68E0B03109E609BAA64F64', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 53, 8, 0, NULL, NULL, '2026-10-22 09:50:15', '2026-10-22 09:50:28'),
-(92, 'TBCB326475E59581D474485D7F', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 54, 8, 0, NULL, NULL, '2026-10-22 09:51:19', '2026-10-22 09:51:31'),
-(94, 'TBA47EB7674FDD9D0A1E759A06', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 75, 11, 0, NULL, 'vỏ SX29MATX, X-power III 350-300W,', '2026-10-22 09:54:52', '2026-10-22 09:55:06'),
-(95, 'TB453637D1B1F72AC6BE5A13EA', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 76, 11, 0, NULL, NULL, '2026-10-22 09:55:45', '2026-10-22 09:55:58'),
-(96, 'TB8DD4DA5A0ABAEBB5BDE2AE06', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 77, 11, 0, NULL, NULL, '2026-10-22 09:56:32', '2026-10-22 09:57:07'),
-(97, 'TBEDB7B33C51C37BD255003E94', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 78, 11, 0, NULL, NULL, '2026-10-22 09:57:59', '2026-10-22 09:58:15'),
-(98, 'TBF82602E1F5D6A7B36510C8B7', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 79, 11, 0, NULL, NULL, '2026-10-22 09:59:02', '2026-10-22 09:59:15'),
-(99, 'TBEB54E2C8727453EAD286D54D', 'Laptop', '', 'Lenovo', NULL, '2026-10-22', NULL, 'used', 'allocated', 80, 11, 0, NULL, NULL, '2026-10-22 09:59:59', '2026-10-22 10:00:12'),
-(100, 'TB87E895774218DBA0C819AAF7', 'Laptop', '', 'Dell 02MJVY,', NULL, '2026-10-22', NULL, 'used', 'allocated', 81, 11, 0, NULL, NULL, '2026-10-22 10:00:58', '2026-10-22 10:01:10'),
-(102, 'TB6BA7535D328F3DF8A308FF79', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 83, 12, 0, NULL, NULL, '2026-10-22 10:03:06', '2026-10-22 10:03:16'),
-(103, 'TB879663D9C5C0DC7AFB4F9EDB', 'Laptop', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 84, 12, 0, NULL, NULL, '2026-10-22 10:03:58', '2026-10-22 10:04:14'),
-(105, 'TB37162B2D191F459C3A4A829C', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 86, 12, 0, NULL, NULL, '2026-10-22 10:06:21', '2026-10-22 10:06:37'),
-(106, 'TB7D228C901C42DAA889F93510', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 87, 12, 0, NULL, 'Vỏ case máy tính Orient T03, Nguồn Orient ATX500', '2026-10-22 10:08:43', '2026-10-22 10:08:58'),
-(107, 'TB4618ED6C65CFC703B1801793', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 88, 12, 0, NULL, 'SSD 120Gb WD, Seagate 1T, Vỏ case máy tính Orient T03, Nguồn Orient ATX500', '2026-10-22 10:10:12', '2026-10-22 10:10:20'),
-(108, 'TB3AEE50E9CEFB9639AD883249', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 89, 12, 0, NULL, NULL, '2026-10-22 10:11:51', '2026-10-22 10:12:00'),
-(109, 'TBD5B39F4D740F8C9F196ED8CF', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 90, 12, 0, NULL, NULL, '2026-10-22 10:12:49', '2026-10-22 10:13:03'),
-(110, 'TB36AC7F300075392574B5CF8F', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 55, 9, 0, NULL, NULL, '2026-10-22 10:14:45', '2026-10-22 10:14:55'),
-(111, 'TB9E3CE970F2CBF80B6680B1AE', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 56, 9, 0, NULL, NULL, '2026-10-22 10:15:37', '2026-10-22 10:16:15'),
-(112, 'TBDC7E5A5C91AAC5F181B58347', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 57, 9, 0, NULL, NULL, '2026-10-22 10:19:48', '2026-10-22 10:20:03'),
-(113, 'TBB01C02D0E54FD9B6B5CCCE2B', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 58, 9, 0, NULL, 'Nguồn máy tính Ximateck 350W', '2026-10-22 10:39:49', '2026-10-22 10:40:04'),
-(114, 'TB733B563479BF6C136F3DE834', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 59, 9, 0, NULL, NULL, '2026-10-22 10:41:03', '2026-10-22 10:41:23'),
-(115, 'TB6AF68C6B469F82A11A19DF55', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 60, 9, 0, NULL, NULL, '2026-10-22 10:42:06', '2026-10-22 10:42:25'),
-(116, 'TB2AEF6778A86AE90538528088', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 61, 9, 0, NULL, NULL, '2026-10-22 10:43:07', '2026-10-22 10:43:21'),
-(117, 'TB89C2B3A029BDB59A25572F38', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 62, 9, 0, NULL, NULL, '2026-10-22 10:43:58', '2026-10-22 10:44:13'),
-(118, 'TB6D4F1EA5387F09BF4776B4BA', 'PC', '', 'CB xin dùng máy cá nhân - gửi đề xuất qua mail', NULL, '2026-10-22', NULL, 'used', 'allocated', 63, 9, 0, NULL, NULL, '2026-10-22 10:48:55', '2026-10-22 10:49:04'),
-(120, 'TBAC02D21FB92CE872D2FD6816', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 65, 9, 0, NULL, NULL, '2026-10-22 10:53:00', '2026-10-22 10:53:18'),
-(121, 'TB99B4599669F9A26C5C711F56', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 66, 9, 0, NULL, NULL, '2026-10-22 10:54:06', '2026-10-22 10:54:28'),
-(122, 'TB9DF9D6CED7517CFA1DC0D2AA', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 67, 9, 0, NULL, NULL, '2026-10-22 10:55:06', '2026-10-22 10:55:55'),
-(123, 'TB46FE5A2E10C0368A383A73B8', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-23 10:46:50', '2026-10-23 10:46:50'),
-(124, 'TB9C6BF0F40DA8505FBA6C0B47', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-23 10:47:46', '2026-10-23 10:47:46'),
-(125, 'TBD820BB55A79B9A262D218651', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-23 10:48:36', '2026-10-23 10:48:36'),
-(126, 'TB9720104AA361D2F9E949A078', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-23 10:49:48', '2026-10-23 10:49:48'),
-(127, 'TB00BEDB0EFFD0D0D7524D85B2', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-23 10:50:36', '2026-10-23 10:50:36'),
-(128, 'TBF56E07316DEE13B4D866B6E4', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-23 10:51:22', '2026-10-23 10:51:22'),
-(129, 'TBF6E56941161995934283B657', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-23 10:51:53', '2026-10-23 10:51:53'),
-(130, 'TB88074DE4443485607BC72B75', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, 'Cạnh a Hưng', '2026-10-23 10:52:44', '2026-10-23 10:53:44'),
-(131, 'TB83B9FAD9CB23307230CCE1C4', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, 'Cạnh a Hưng', '2026-10-23 10:53:36', '2026-10-23 10:53:36'),
-(132, 'TBF0EA33E790A85608EDF73DBF', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, 'Máy cạnh chị Ngát KT', '2026-10-23 10:54:38', '2026-10-23 10:54:38'),
-(133, 'TBEF9E8754D06B01AA9F73BED9', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, 'Seagate 1TB 3.5 inch 7200RPM, SATA; Nguồn máy tính Xigmatek X350; Vỏ Case Orient ATX T03/05;\r\n\r\n\r\n\"Cao Thị Tuyết Nhung -\r\n CV PLHĐ đã nghỉ ngày 06/10/2026\"\r\n=> Đag lưu tại Ban', '2026-10-23 10:57:19', '2026-10-23 10:57:19'),
-(134, 'TB054C195D61E9572922FB8044', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-23 10:58:19', '2026-10-23 10:58:19'),
-(135, 'TBB1458ECCB213FC72E8E52E00', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-23 10:58:54', '2026-10-23 10:58:54'),
-(136, 'TB584D79983F7586A8BF4969A2', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-23 11:00:30', '2026-10-23 11:00:30'),
-(137, 'TB620E8A5616C44DEC4BAD3B01', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-23 11:01:03', '2026-10-23 11:01:03'),
-(138, 'TB42F9402ADB177D159D9961D0', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-23 11:02:56', '2026-10-23 11:02:56'),
-(139, 'TB73E3CC6B197773F9F19C2608', 'PC', '', 'Không có ổ cứng', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-23 11:03:11', '2026-10-23 11:03:11'),
-(140, 'TBD9F3F5729703949B91FAE189', 'Laptop', 'HP', 'HP - PAVILION', NULL, '2026-10-23', NULL, 'used', 'allocated', 91, 13, 0, NULL, NULL, '2026-10-23 16:23:16', '2026-10-26 09:02:55'),
-(141, 'TB83604B9BFBF4AC4E3A262980', 'Laptop', '', 'HP - PROBOOK', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-23 16:56:59', '2026-10-23 16:56:59'),
-(142, 'TBA8458CCE399BF177E4E41296', 'MH', 'HKC', 'MB20S1 - 20 INCH', NULL, '2026-10-26', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-26 15:29:26', '2026-10-26 15:31:53'),
-(143, 'TB9F86737E86060A69578002BA', 'MH', 'AOC', 'E2270SWN - 21.5 INCH', NULL, '2026-10-26', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-26 15:30:59', '2026-10-26 15:30:59'),
-(144, 'TB9942A93D9AB63FD81F2922DE', 'MH', 'DELL', 'E2225H-21.5', NULL, '2026-10-26', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-26 15:31:39', '2026-10-26 15:31:39'),
-(145, 'TB2596EC025994ABA69887C302', 'MH', 'SPING', 'SGP195S - 19.5 INCH', NULL, '2026-10-26', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-26 15:32:25', '2026-10-26 15:33:25'),
-(146, 'TB2E0A4E24A06A22FC032115C6', 'MH', 'SAMSUNG', 'S22C310EAE - 22INCH', NULL, '2026-10-26', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-26 15:33:47', '2026-10-26 15:33:47'),
-(147, 'TB89763C13BFBB2B9830F60062', 'MH', 'SAMSUNG', 'S20D300NH - 20INCH', NULL, '2026-10-26', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-26 15:34:09', '2026-10-26 15:34:09'),
-(148, 'TB7E72EF419B9C3FECCF51CFA6', 'MH', 'ACER', 'V226HQL - 21.5 INCH', NULL, '2026-10-26', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-26 15:34:29', '2026-10-26 15:34:29'),
-(149, 'TB807C248DC000194F7CBA3410', 'MH', 'DAHUA', 'DHI-LM24-B221 - 21.5 INCH', NULL, '2026-10-26', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-26 15:34:57', '2026-10-26 15:34:57'),
-(150, 'TBA65DE7AC182CAA735EFF3055', 'MH', 'DELL', 'E2225HSM - 21.5 INCH', NULL, '2026-10-26', NULL, 'new', 'in_stock', NULL, NULL, 0, NULL, NULL, '2026-10-26 15:35:16', '2026-10-26 15:35:16'),
-(151, 'TB3D8DE4E1950D0C54E43E585A', 'PC', '', '', NULL, '2026-10-28', NULL, 'used', 'allocated', 25, 7, 0, NULL, NULL, '2026-10-28 09:03:15', '2026-10-28 09:04:28');
+INSERT INTO `devices` (`id`, `device_code`, `type`, `brand`, `model`, `serial_number`, `import_date`, `warranty_expiry`, `condition_state`, `status`, `current_employee_id`, `current_department_id`, `paired_pc_id`, `is_temporary`, `expected_return_date`, `notes`, `created_at`, `updated_at`) VALUES
+(1, '1', 'Laptop', 'Dell', 'Dell Latitude 3420', NULL, '2026-10-21', NULL, 'used', 'allocated', 1, 2, NULL, 0, NULL, NULL, '2026-10-21 08:06:25', '2026-10-21 08:06:57'),
+(16, 'TB87E959CBE9A2B7CEB75DDE5F', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 4, 1, NULL, 0, NULL, NULL, '2026-10-21 11:28:00', '2026-10-21 11:59:16'),
+(17, 'TB4D73EED24F927131286E3C1F', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 148, 1, NULL, 0, NULL, NULL, '2026-10-21 14:29:06', '2026-10-21 14:32:36'),
+(19, 'TB675FDD25E41C340D691BC167', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 6, 1, NULL, 0, NULL, NULL, '2026-10-21 14:36:38', '2026-10-21 14:36:59'),
+(20, 'TBE7265CD8E557ABD80AD9C456', 'Laptop', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 7, 1, NULL, 0, NULL, NULL, '2026-10-21 14:38:32', '2026-10-21 14:38:49'),
+(21, 'TB81DDFBD18CBC64C124E43900', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 8, 5, NULL, 0, NULL, NULL, '2026-10-21 14:40:29', '2026-10-21 14:43:50'),
+(22, 'TBCACB08E8CDC0A49EC1C9F66F', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 9, 5, NULL, 0, NULL, NULL, '2026-10-21 15:39:01', '2026-10-21 15:39:31'),
+(23, 'TB4E681EB525651A13071C696C', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 10, 5, NULL, 0, NULL, NULL, '2026-10-21 15:46:23', '2026-10-21 15:47:06'),
+(24, 'TBD786796B95B67F0992A10CB0', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 149, 5, NULL, 0, NULL, NULL, '2026-10-21 15:48:27', '2026-10-21 15:49:43'),
+(25, 'TB2D3A1C3ED1C7CF293F571617', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 11, 6, NULL, 0, NULL, NULL, '2026-10-21 15:50:47', '2026-10-21 15:51:29'),
+(26, 'TBFD09758F8FDC7A8124488DD1', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 12, 6, NULL, 0, NULL, NULL, '2026-10-21 15:52:24', '2026-10-21 15:52:42'),
+(27, 'TB43BB04A78190BFDD41E5176C', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 15, 7, NULL, 0, NULL, 'Vỏ case máy tính XIGMATEK XA- 20/XA-22 (ATX); Nguồn XIGMATEK 500W', '2026-10-21 15:54:50', '2026-10-21 15:55:15'),
+(28, 'TB6C9D2D725EF573C936608FE6', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 16, 7, NULL, 0, NULL, NULL, '2026-10-21 15:56:31', '2026-10-21 15:56:51'),
+(29, 'TBA98FC6820500E3B69E8F24A7', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 17, 7, NULL, 0, NULL, NULL, '2026-10-21 15:57:57', '2026-10-21 15:58:14'),
+(30, 'TB658A4EC15F206F8992816C5F', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 18, 7, NULL, 0, NULL, NULL, '2026-10-21 15:59:44', '2026-10-21 16:00:01'),
+(31, 'TB5CAD678DA8C4B346DE03229C', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 14, 7, NULL, 0, NULL, 'Vỏ cây máy tính Xigmatek XA-20 /22; Nguồn máy tính ATX500', '2026-10-21 16:02:18', '2026-10-21 16:02:53'),
+(32, 'TBFDE786614EADF65DC7FABDB4', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 20, 7, NULL, 0, NULL, NULL, '2026-10-21 16:05:12', '2026-10-21 16:05:29'),
+(33, 'TB7DA2BC2BFB6902BDA8AC56AD', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 21, 7, NULL, 0, NULL, NULL, '2026-10-21 16:06:38', '2026-10-21 16:08:28'),
+(34, 'TB3663D1F2F864AC51C72AEA01', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 13, 7, NULL, 0, NULL, NULL, '2026-10-21 16:11:01', '2026-10-21 16:11:31'),
+(35, 'TB50E4AEE119DFD4E944DB497C', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 23, 7, NULL, 0, NULL, NULL, '2026-10-21 16:13:12', '2026-10-21 16:13:28'),
+(37, 'TB8665CDD7EF9C1B66DB3AF3F0', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 24, 7, NULL, 0, NULL, NULL, '2026-10-21 16:18:29', '2026-10-21 16:18:46'),
+(38, 'TB82410AEAFC54E1B6783E24C1', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 26, 7, NULL, 0, NULL, NULL, '2026-10-21 16:20:02', '2026-10-21 16:20:15'),
+(39, 'TB89E0C8823C73C36B67901837', 'PC', '', '', NULL, '2026-10-21', NULL, 'new', 'in_stock', NULL, NULL, NULL, 0, NULL, NULL, '2026-10-21 16:22:06', '2026-10-21 16:22:06'),
+(40, 'TBE1270BABD2290463C248A06D', 'Ổ cứng di động', '', 'HDD Box adata AV320-2T-2.5', NULL, '2026-10-21', NULL, 'used', 'allocated', 151, 7, NULL, 0, NULL, 'Sử dụng chung trong công tác lưu chuyển dữ liệu thuộc phạm vi chuyên môn', '2026-10-21 16:23:22', '2026-10-21 16:23:43'),
+(41, 'TBAF19323B97B5C7572DA7A66D', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 68, 10, NULL, 0, NULL, NULL, '2026-10-21 16:46:19', '2026-10-21 16:46:47'),
+(42, 'TBEE29C8C9019FB675F619D14E', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 69, 10, NULL, 0, NULL, NULL, '2026-10-21 16:48:12', '2026-10-21 16:48:34'),
+(43, 'TB0E5B187903D221901ED904D8', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 70, 10, NULL, 0, NULL, 'Jonsbo CR-1000 RGB; Case Xigmatek  AERO 2F - 2 FAN; Nguồn Ximareck 450W', '2026-10-21 16:50:37', '2026-10-21 16:50:50'),
+(44, 'TBE28C323AB372DBD0DAFFB51F', 'PC', '', '', NULL, '2026-10-21', NULL, 'used', 'allocated', 155, 23, NULL, 0, NULL, NULL, '2026-10-21 16:51:47', '2026-11-02 10:15:17'),
+(45, 'TB093E732E7FFF9324726098AE', 'Laptop', '', 'Acer aspire A315-54K', NULL, '2026-10-21', NULL, 'used', 'allocated', 72, 10, NULL, 0, NULL, NULL, '2026-10-21 16:53:10', '2026-10-21 16:53:24'),
+(46, 'TB297576BE6D1BF2BD413D5E5F', 'Laptop', '', 'AMD Radeon Graphics/14 inch full HD/Windows  11 Home/bạc/Vỏ nhựa,', NULL, '2026-10-21', NULL, 'used', 'allocated', 73, 2, NULL, 0, NULL, NULL, '2026-10-21 17:11:01', '2026-10-21 17:11:14'),
+(47, 'TBF2A296668F6C25DB50929144', 'Laptop', '', 'HP-8B78', NULL, '2026-10-21', NULL, 'used', 'allocated', 83, 12, NULL, 0, NULL, NULL, '2026-10-21 17:14:34', '2026-10-27 16:23:54'),
+(48, 'TB82B064284F2F1E090D5C8A12', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 92, 13, NULL, 0, NULL, NULL, '2026-10-22 08:06:29', '2026-10-22 08:07:55'),
+(49, 'TBF3DFB66CEEA63FC6E3367246', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 93, 13, NULL, 0, NULL, NULL, '2026-10-22 08:09:18', '2026-10-22 08:09:35'),
+(50, 'TBCE83569BD7C6BCB56CDE7E21', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 92, 13, NULL, 0, NULL, NULL, '2026-10-22 08:11:04', '2026-10-22 08:14:50'),
+(51, 'TB5FFE9AC42A047BC80D69F951', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 95, 13, NULL, 0, NULL, NULL, '2026-10-22 08:12:51', '2026-10-22 08:13:06'),
+(52, 'TBBFD786E0BAB3E011DBBEC2A7', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 96, 14, NULL, 0, NULL, 'Vỏ case Xigmatek XS-29 mATX Office Black, Nguồn máy tính Xigmatek X-Power III 350 300W', '2026-10-22 08:16:40', '2026-10-22 08:16:57'),
+(53, 'TB26FBA5CD0A47223E44C9D8CB', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 97, 14, NULL, 0, NULL, NULL, '2026-10-22 08:20:04', '2026-10-22 08:20:29'),
+(54, 'TBD877AA9D86EC6DCB41FFBF87', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 98, 14, NULL, 0, NULL, NULL, '2026-10-22 08:21:21', '2026-10-22 08:21:34'),
+(55, 'TB5D6270C23E3C6E8D50300550', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 99, 14, NULL, 0, NULL, NULL, '2026-10-22 08:22:22', '2026-10-22 08:22:39'),
+(56, 'TB112A5E8404BA39B160776AD3', 'Laptop', '', 'Lenovo IdeaPad Gaming', NULL, '2026-10-22', NULL, 'used', 'allocated', 100, 14, NULL, 0, NULL, NULL, '2026-10-22 08:24:02', '2026-10-22 08:24:24'),
+(57, 'TB21C07A0EB6AAC652FEE3055D', 'Laptop', '', 'Laptop xách tay Dell Latitude 3520', NULL, '2026-10-22', NULL, 'used', 'allocated', 101, 14, NULL, 0, NULL, '\'Laptop xách tay Dell Latitude 3520, Intel Core i5-1135G7, 8GB Ram, 256GB SSD, 15.6\'\' FHD, WC, Wl+BT, Fedora, 1Y, chuột', '2026-10-22 08:25:56', '2026-10-22 08:26:12'),
+(58, 'TB70F034AE00BA73257D6ED98F', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 102, 14, NULL, 0, NULL, NULL, '2026-10-22 08:27:36', '2026-10-22 08:27:54'),
+(59, 'TB5450260DAE5D918B9DF294C8', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 103, 14, NULL, 0, NULL, NULL, '2026-10-22 08:28:42', '2026-10-22 08:29:11'),
+(60, 'TBB86E0EC09FCA69FF2EAEE3A6', 'PC', '', 'Dell Optiplex 7010', NULL, '2026-10-22', NULL, 'used', 'allocated', 104, 14, NULL, 0, NULL, NULL, '2026-10-22 08:30:11', '2026-10-22 08:30:27'),
+(61, 'TB3296896572B15567E4370016', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 105, 14, NULL, 0, NULL, NULL, '2026-10-22 08:31:24', '2026-10-22 08:31:36'),
+(62, 'TB0D8BB52C98FD0EE9CEC35263', 'Laptop', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 106, 14, NULL, 0, NULL, NULL, '2026-10-22 08:32:01', '2026-10-22 08:32:10'),
+(63, 'TB759B4AC7F18BA3DC38B81D27', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 27, 8, NULL, 0, NULL, NULL, '2026-10-22 08:52:21', '2026-10-22 08:54:27'),
+(64, 'TBF1EA30852F1768A2F8471433', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 28, 8, NULL, 0, NULL, NULL, '2026-10-22 08:55:51', '2026-10-22 08:56:07'),
+(65, 'TB3C1F2B89619E4F829FE4A794', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 29, 8, NULL, 0, NULL, 'Vỏ Cây Orien HP-T05', '2026-10-22 08:57:11', '2026-10-22 08:57:47'),
+(66, 'TBE890F9A14839543C30A3124F', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 30, 8, NULL, 0, NULL, NULL, '2026-10-22 08:59:57', '2026-10-22 09:00:15'),
+(67, 'TB0A4AC2C34442D0201481532A', 'PC', '', 'Dell OH4VK7', NULL, '2026-10-22', NULL, 'used', 'allocated', 31, 8, NULL, 0, NULL, NULL, '2026-10-22 09:01:11', '2026-10-22 09:01:28'),
+(68, 'TB1BEE25C470E9A9426D58A107', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 32, 8, NULL, 0, NULL, NULL, '2026-10-22 09:02:22', '2026-10-22 09:02:33'),
+(69, 'TB2D95A054702E24E4BCA89FA5', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 33, 8, NULL, 0, NULL, NULL, '2026-10-22 09:04:05', '2026-10-22 09:04:19'),
+(70, 'TB7693443262681BF8588C393B', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 34, 8, NULL, 0, NULL, 'Hdd Segate 1T ,Vỏ case máy tính Orient T05, VGA Nividia Geforce  GT730- 4G, Nguồn máy tính Orien 500w', '2026-10-22 09:09:35', '2026-10-22 09:09:54'),
+(71, 'TB1B45F8FF0841CCEC58C3DC63', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 35, 8, NULL, 0, NULL, '\"Ổ cứng HDD Seagate Barracuda\r\n1TB 3.5 inch 7200RPM, SATA; Chuột phím Rapoo USB; Vỏ Cây Orien T05; Nguồn Xigmatek X350\r\n\"', '2026-10-22 09:11:25', '2026-10-22 09:11:42'),
+(72, 'TB3AA36684C424D8ADA0C53CA9', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 36, 8, NULL, 0, NULL, NULL, '2026-10-22 09:13:20', '2026-10-22 09:13:51'),
+(73, 'TB3E2FD5FC1C5ECFA90A2FD823', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 35, 8, NULL, 0, NULL, NULL, '2026-10-22 09:14:50', '2026-10-22 09:15:08'),
+(74, 'TB7B2C1111FD1CA2FE99767C97', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 37, 8, NULL, 0, NULL, NULL, '2026-10-22 09:18:17', '2026-10-22 09:18:35'),
+(75, 'TBD39FE47AEB64D01CEB67979B', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 38, 8, NULL, 0, NULL, NULL, '2026-10-22 09:20:15', '2026-10-22 09:20:29'),
+(76, 'TB4E6345B09C872D1FB10F35CA', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 39, 8, NULL, 0, NULL, NULL, '2026-10-22 09:23:40', '2026-10-22 09:23:54'),
+(77, 'TB4802AC20CD19B80B7BA0F37B', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 40, 8, NULL, 0, NULL, NULL, '2026-10-22 09:24:40', '2026-10-22 09:24:51'),
+(78, 'TB7AA7DC5C2611C4CEE6C24653', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 41, 8, NULL, 0, NULL, NULL, '2026-10-22 09:31:14', '2026-10-22 09:31:54'),
+(80, 'TB5BF3A93F165D3E88224BCFDA', 'CASE', '', 'CASE MÁY CHỦ', NULL, '2026-10-22', NULL, 'used', 'allocated', 43, 8, NULL, 0, NULL, NULL, '2026-10-22 09:34:19', '2026-10-22 09:34:28'),
+(81, 'TB8ADB1FCBA646BF67890AB246', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 44, 8, NULL, 0, NULL, NULL, '2026-10-22 09:35:33', '2026-10-22 09:35:51'),
+(82, 'TB4146F39A12263779B09DF296', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 45, 8, NULL, 0, NULL, NULL, '2026-10-22 09:36:51', '2026-10-22 09:37:19'),
+(83, 'TBBD88D3FC65438E7F782E9C65', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 46, 8, NULL, 0, NULL, NULL, '2026-10-22 09:39:26', '2026-10-22 09:39:38'),
+(84, 'TB86A78695321E9CB7DB1054AE', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 47, 8, NULL, 0, NULL, NULL, '2026-10-22 09:40:30', '2026-10-22 09:40:43'),
+(85, 'TB78686C11259697B8BC7D193D', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 48, 8, NULL, 0, NULL, NULL, '2026-10-22 09:41:29', '2026-10-22 09:41:46'),
+(86, 'TB06E7C06C2B0047CC23D82A03', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 42, 8, NULL, 0, NULL, NULL, '2026-10-22 09:42:55', '2026-10-22 09:43:30'),
+(87, 'TB158950A2CC478B778C957E28', 'Laptop', '', 'Asus Expert P1503CVA _P1503CVA-i5SE16-50W Xám', NULL, '2026-10-22', NULL, 'used', 'allocated', 49, 8, NULL, 0, NULL, NULL, '2026-10-22 09:45:10', '2026-10-22 09:45:45'),
+(88, 'TBCF30FA6CB9252618C3EA8C0E', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 50, 8, NULL, 0, NULL, 'Vỏ máy tính Xigmatek XS-29, Nguồn máy tính Xigmatek X-Power III 350 (250W,230V)', '2026-10-22 09:47:07', '2026-10-22 09:47:34'),
+(89, 'TB4DFB9BC57BD976E5F9D6DF89', 'LK', '', '03 ổ cứng SSD Transcend 1TB', NULL, '2026-10-22', NULL, 'used', 'allocated', 34, 8, NULL, 0, NULL, NULL, '2026-10-22 09:47:55', '2026-10-22 09:48:36'),
+(90, 'TB09A501A27D9C6CF23D217FA1', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 52, 8, NULL, 0, NULL, NULL, '2026-10-22 09:49:22', '2026-10-22 09:49:34'),
+(91, 'TB4A68E0B03109E609BAA64F64', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 53, 8, NULL, 0, NULL, NULL, '2026-10-22 09:50:15', '2026-10-22 09:50:28'),
+(92, 'TBCB326475E59581D474485D7F', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 54, 8, NULL, 0, NULL, NULL, '2026-10-22 09:51:19', '2026-10-22 09:51:31'),
+(94, 'TBA47EB7674FDD9D0A1E759A06', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 75, 11, NULL, 0, NULL, 'vỏ SX29MATX, X-power III 350-300W,', '2026-10-22 09:54:52', '2026-10-22 09:55:06'),
+(95, 'TB453637D1B1F72AC6BE5A13EA', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 76, 11, NULL, 0, NULL, NULL, '2026-10-22 09:55:45', '2026-10-22 09:55:58'),
+(96, 'TB8DD4DA5A0ABAEBB5BDE2AE06', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 77, 11, NULL, 0, NULL, NULL, '2026-10-22 09:56:32', '2026-10-22 09:57:07'),
+(97, 'TBEDB7B33C51C37BD255003E94', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 78, 11, NULL, 0, NULL, NULL, '2026-10-22 09:57:59', '2026-10-22 09:58:15'),
+(98, 'TBF82602E1F5D6A7B36510C8B7', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 79, 11, NULL, 0, NULL, NULL, '2026-10-22 09:59:02', '2026-10-22 09:59:15'),
+(99, 'TBEB54E2C8727453EAD286D54D', 'Laptop', '', 'Lenovo', NULL, '2026-10-22', NULL, 'used', 'allocated', 80, 11, NULL, 0, NULL, NULL, '2026-10-22 09:59:59', '2026-10-22 10:00:12'),
+(100, 'TB87E895774218DBA0C819AAF7', 'Laptop', '', 'Dell 02MJVY,', NULL, '2026-10-22', NULL, 'used', 'allocated', 81, 11, NULL, 0, NULL, NULL, '2026-10-22 10:00:58', '2026-10-22 10:01:10'),
+(102, 'TB6BA7535D328F3DF8A308FF79', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 83, 12, NULL, 0, NULL, NULL, '2026-10-22 10:03:06', '2026-10-22 10:03:16'),
+(103, 'TB879663D9C5C0DC7AFB4F9EDB', 'Laptop', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 84, 12, NULL, 0, NULL, NULL, '2026-10-22 10:03:58', '2026-10-22 10:04:14'),
+(105, 'TB37162B2D191F459C3A4A829C', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 86, 12, NULL, 0, NULL, NULL, '2026-10-22 10:06:21', '2026-10-22 10:06:37'),
+(106, 'TB7D228C901C42DAA889F93510', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 87, 12, NULL, 0, NULL, 'Vỏ case máy tính Orient T03, Nguồn Orient ATX500', '2026-10-22 10:08:43', '2026-10-22 10:08:58'),
+(107, 'TB4618ED6C65CFC703B1801793', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 88, 12, NULL, 0, NULL, 'SSD 120Gb WD, Seagate 1T, Vỏ case máy tính Orient T03, Nguồn Orient ATX500', '2026-10-22 10:10:12', '2026-10-22 10:10:20'),
+(108, 'TB3AEE50E9CEFB9639AD883249', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 89, 12, NULL, 0, NULL, NULL, '2026-10-22 10:11:51', '2026-10-22 10:12:00'),
+(109, 'TBD5B39F4D740F8C9F196ED8CF', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 90, 12, NULL, 0, NULL, NULL, '2026-10-22 10:12:49', '2026-10-22 10:13:03'),
+(110, 'TB36AC7F300075392574B5CF8F', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 55, 9, NULL, 0, NULL, NULL, '2026-10-22 10:14:45', '2026-10-22 10:14:55'),
+(111, 'TB9E3CE970F2CBF80B6680B1AE', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 56, 9, NULL, 0, NULL, NULL, '2026-10-22 10:15:37', '2026-10-22 10:16:15'),
+(112, 'TBDC7E5A5C91AAC5F181B58347', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 57, 9, NULL, 0, NULL, NULL, '2026-10-22 10:19:48', '2026-10-22 10:20:03'),
+(113, 'TBB01C02D0E54FD9B6B5CCCE2B', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 58, 9, NULL, 0, NULL, 'Nguồn máy tính Ximateck 350W', '2026-10-22 10:39:49', '2026-10-22 10:40:04'),
+(114, 'TB733B563479BF6C136F3DE834', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 59, 9, NULL, 0, NULL, NULL, '2026-10-22 10:41:03', '2026-10-22 10:41:23'),
+(115, 'TB6AF68C6B469F82A11A19DF55', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 60, 9, NULL, 0, NULL, NULL, '2026-10-22 10:42:06', '2026-10-22 10:42:25'),
+(116, 'TB2AEF6778A86AE90538528088', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 61, 9, NULL, 0, NULL, NULL, '2026-10-22 10:43:07', '2026-10-22 10:43:21'),
+(117, 'TB89C2B3A029BDB59A25572F38', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 62, 9, NULL, 0, NULL, NULL, '2026-10-22 10:43:58', '2026-10-22 10:44:13'),
+(118, 'TB6D4F1EA5387F09BF4776B4BA', 'PC', '', 'CB xin dùng máy cá nhân - gửi đề xuất qua mail', NULL, '2026-10-22', NULL, 'used', 'allocated', 63, 9, NULL, 0, NULL, NULL, '2026-10-22 10:48:55', '2026-10-22 10:49:04'),
+(120, 'TBAC02D21FB92CE872D2FD6816', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 65, 9, NULL, 0, NULL, NULL, '2026-10-22 10:53:00', '2026-10-22 10:53:18'),
+(121, 'TB99B4599669F9A26C5C711F56', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 66, 9, NULL, 0, NULL, NULL, '2026-10-22 10:54:06', '2026-10-22 10:54:28'),
+(122, 'TB9DF9D6CED7517CFA1DC0D2AA', 'PC', '', '', NULL, '2026-10-22', NULL, 'used', 'allocated', 67, 9, NULL, 0, NULL, NULL, '2026-10-22 10:55:06', '2026-10-22 10:55:55'),
+(124, 'TB9C6BF0F40DA8505FBA6C0B47', 'PC', '', '', NULL, '2026-10-23', NULL, 'used', 'allocated', 155, 23, NULL, 0, NULL, NULL, '2026-10-23 10:47:46', '2026-11-02 10:16:12'),
+(125, 'TBD820BB55A79B9A262D218651', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, NULL, 0, NULL, NULL, '2026-10-23 10:48:36', '2026-10-23 10:48:36'),
+(126, 'TB9720104AA361D2F9E949A078', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, NULL, 0, NULL, NULL, '2026-10-23 10:49:48', '2026-10-23 10:49:48'),
+(127, 'TB00BEDB0EFFD0D0D7524D85B2', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, NULL, 0, NULL, NULL, '2026-10-23 10:50:36', '2026-10-23 10:50:36'),
+(128, 'TBF56E07316DEE13B4D866B6E4', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, NULL, 0, NULL, NULL, '2026-10-23 10:51:22', '2026-10-23 10:51:22'),
+(130, 'TB88074DE4443485607BC72B75', 'PC', '', 'Lưu bên Marcom', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, NULL, 0, NULL, 'Cạnh a Hưng', '2026-10-23 10:52:44', '2026-10-30 14:24:55'),
+(131, 'TB83B9FAD9CB23307230CCE1C4', 'PC', '', 'Lưu bên Marcom', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, NULL, 0, NULL, 'Cạnh a Hưng', '2026-10-23 10:53:36', '2026-10-30 14:24:46'),
+(132, 'TBF0EA33E790A85608EDF73DBF', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, NULL, 0, NULL, 'Máy cạnh chị Ngát KT', '2026-10-23 10:54:38', '2026-10-23 10:54:38'),
+(133, 'TBEF9E8754D06B01AA9F73BED9', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, NULL, 0, NULL, 'Seagate 1TB 3.5 inch 7200RPM, SATA; Nguồn máy tính Xigmatek X350; Vỏ Case Orient ATX T03/05;\r\n\r\n\r\n\"Cao Thị Tuyết Nhung -\r\n CV PLHĐ đã nghỉ ngày 06/10/2026\"\r\n=> Đag lưu tại Ban', '2026-10-23 10:57:19', '2026-10-23 10:57:19'),
+(134, 'TB054C195D61E9572922FB8044', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, NULL, 0, NULL, NULL, '2026-10-23 10:58:19', '2026-10-23 10:58:19'),
+(135, 'TBB1458ECCB213FC72E8E52E00', 'PC', '', '', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, NULL, 0, NULL, NULL, '2026-10-23 10:58:54', '2026-10-23 10:58:54'),
+(136, 'TB584D79983F7586A8BF4969A2', 'PC', '', '', NULL, '2026-10-23', NULL, 'used', 'allocated', 153, 23, NULL, 0, NULL, NULL, '2026-10-23 11:00:30', '2026-10-30 11:51:19'),
+(137, 'TB620E8A5616C44DEC4BAD3B01', 'PC', '', '', NULL, '2026-10-23', NULL, 'used', 'in_stock', NULL, NULL, NULL, 0, NULL, NULL, '2026-10-23 11:01:03', '2026-11-02 14:45:48'),
+(138, 'TB42F9402ADB177D159D9961D0', 'PC', '', '', NULL, '2026-10-23', NULL, 'used', 'allocated', 152, 23, NULL, 0, NULL, NULL, '2026-10-23 11:02:56', '2026-10-30 11:51:04'),
+(139, 'TB73E3CC6B197773F9F19C2608', 'HDD', '', 'Không có ổ cứng', NULL, '2026-10-23', NULL, 'broken', 'maintenance', NULL, NULL, NULL, 0, NULL, NULL, '2026-10-23 11:03:11', '2026-10-30 17:12:46'),
+(140, 'TBD9F3F5729703949B91FAE189', 'Laptop', 'HP', 'HP - PAVILION', NULL, '2026-10-23', NULL, 'used', 'allocated', 91, 13, NULL, 0, NULL, NULL, '2026-10-23 16:23:16', '2026-10-26 09:02:55'),
+(141, 'TB83604B9BFBF4AC4E3A262980', 'Laptop', '', 'HP - PROBOOK', NULL, '2026-10-23', NULL, 'new', 'in_stock', NULL, NULL, NULL, 0, NULL, NULL, '2026-10-23 16:56:59', '2026-10-23 16:56:59'),
+(142, 'TBA8458CCE399BF177E4E41296', 'MH', 'HKC', 'MB20S1 - 20 INCH', NULL, '2026-10-26', NULL, 'used', 'allocated', 155, 23, NULL, 0, NULL, NULL, '2026-10-26 15:29:26', '2026-11-02 10:42:56'),
+(143, 'TB9F86737E86060A69578002BA', 'MH', 'AOC', 'E2270SWN - 21.5 INCH', NULL, '2026-10-26', NULL, 'used', 'in_stock', NULL, NULL, NULL, 0, NULL, NULL, '2026-10-26 15:30:59', '2026-11-02 14:45:48'),
+(144, 'TB9942A93D9AB63FD81F2922DE', 'MH', 'DELL', 'E2225H-21.5', NULL, '2026-10-26', NULL, 'new', 'in_stock', NULL, NULL, NULL, 0, NULL, NULL, '2026-10-26 15:31:39', '2026-10-26 15:31:39'),
+(145, 'TB2596EC025994ABA69887C302', 'MH', 'SPING', 'SGP195S - 19.5 INCH', NULL, '2026-10-26', NULL, 'used', 'allocated', 155, 23, NULL, 0, NULL, NULL, '2026-10-26 15:32:25', '2026-11-02 10:40:46'),
+(146, 'TB2E0A4E24A06A22FC032115C6', 'MH', 'SAMSUNG', 'S22C310EAE - 22INCH', NULL, '2026-10-26', NULL, 'new', 'in_stock', NULL, NULL, NULL, 0, NULL, NULL, '2026-10-26 15:33:47', '2026-10-26 15:33:47'),
+(147, 'TB89763C13BFBB2B9830F60062', 'MH', 'SAMSUNG', 'S20D300NH - 20INCH', NULL, '2026-10-26', NULL, 'new', 'in_stock', NULL, NULL, NULL, 0, NULL, NULL, '2026-10-26 15:34:09', '2026-10-26 15:34:09'),
+(148, 'TB7E72EF419B9C3FECCF51CFA6', 'MH', 'ACER', 'V226HQL - 21.5 INCH', NULL, '2026-10-26', NULL, 'used', 'allocated', 155, 23, NULL, 0, NULL, NULL, '2026-10-26 15:34:29', '2026-11-02 10:42:30'),
+(149, 'TB807C248DC000194F7CBA3410', 'MH', 'DAHUA', 'DHI-LM24-B221 - 21.5 INCH', NULL, '2026-10-26', NULL, 'new', 'in_stock', NULL, NULL, NULL, 0, NULL, NULL, '2026-10-26 15:34:57', '2026-10-26 15:34:57'),
+(150, 'TBA65DE7AC182CAA735EFF3055', 'MH', 'DELL', 'E2225HSM - 21.5 INCH', NULL, '2026-10-26', NULL, 'used', 'allocated', 155, 23, NULL, 0, NULL, NULL, '2026-10-26 15:35:16', '2026-11-02 10:40:17'),
+(151, 'TB3D8DE4E1950D0C54E43E585A', 'PC', '', '', NULL, '2026-10-28', NULL, 'used', 'allocated', 25, 7, NULL, 0, NULL, NULL, '2026-10-28 09:03:15', '2026-10-28 09:04:28'),
+(152, 'TB5C221694763ED1DC1F583D60', 'PC', '', '', NULL, '2026-10-30', NULL, 'used', 'allocated', 154, 9, NULL, 0, NULL, NULL, '2026-10-30 15:18:34', '2026-10-30 15:19:59');
 
 -- --------------------------------------------------------
 
@@ -281,8 +281,6 @@ INSERT INTO `device_history` (`id`, `device_id`, `ticket_id`, `action_type`, `ac
 (53, 34, 19, 'allocate', '2026-10-21 16:11:31', 1, NULL, 13, NULL, 7, 'Cấp phát thiết bị theo phiếu PX-20261021-D43E (Phụ kiện: Chuột, phím). Lý do: '),
 (54, 35, NULL, 'import', '2026-10-21 16:13:12', 1, NULL, NULL, NULL, NULL, 'Nhập kho thiết bị mới STT 35: PC  '),
 (55, 35, 20, 'allocate', '2026-10-21 16:13:28', 1, NULL, 23, NULL, 7, 'Cấp phát thiết bị theo phiếu PX-20261021-AF15 (Phụ kiện: Chuột, phím). Lý do: '),
-(56, 36, NULL, 'import', '2026-10-21 16:16:02', 1, NULL, NULL, NULL, NULL, 'Nhập kho thiết bị mới STT 36: PC  '),
-(57, 36, 21, 'allocate', '2026-10-21 16:17:10', 1, NULL, 151, NULL, 7, 'Cấp phát thiết bị theo phiếu PX-20261021-E19B (Phụ kiện: Chuột, phím). Lý do: '),
 (58, 37, NULL, 'import', '2026-10-21 16:18:29', 1, NULL, NULL, NULL, NULL, 'Nhập kho thiết bị mới STT 37: PC  '),
 (59, 37, 22, 'allocate', '2026-10-21 16:18:46', 1, NULL, 24, NULL, 7, 'Cấp phát thiết bị theo phiếu PX-20261021-9A04 (Phụ kiện: Chuột, phím). Lý do: '),
 (60, 38, NULL, 'import', '2026-10-21 16:20:02', 1, NULL, NULL, NULL, NULL, 'Nhập kho thiết bị mới STT 38: PC  '),
@@ -445,13 +443,11 @@ INSERT INTO `device_history` (`id`, `device_id`, `ticket_id`, `action_type`, `ac
 (227, 121, 106, 'allocate', '2026-10-22 10:54:28', 1, NULL, 66, NULL, 9, 'Cấp phát thiết bị theo phiếu PX-20261022-B9F9 (Phụ kiện: Chuột, phím). Lý do: '),
 (228, 122, NULL, 'import', '2026-10-22 10:55:06', 1, NULL, NULL, NULL, NULL, 'Nhập kho thiết bị mới STT 122: PC  '),
 (229, 122, 107, 'allocate', '2026-10-22 10:55:55', 1, NULL, 67, NULL, 9, 'Cấp phát thiết bị theo phiếu PX-20261022-376F (Phụ kiện: Chuột, phím). Lý do: '),
-(230, 123, NULL, 'import', '2026-10-23 10:46:50', 1, NULL, NULL, NULL, NULL, 'Nhập kho thiết bị mới STT 123: PC  '),
 (231, 124, NULL, 'import', '2026-10-23 10:47:46', 1, NULL, NULL, NULL, NULL, 'Nhập kho thiết bị mới STT 124: PC  '),
 (232, 125, NULL, 'import', '2026-10-23 10:48:36', 1, NULL, NULL, NULL, NULL, 'Nhập kho thiết bị mới STT 125: PC  '),
 (233, 126, NULL, 'import', '2026-10-23 10:49:48', 1, NULL, NULL, NULL, NULL, 'Nhập kho thiết bị mới STT 126: PC  '),
 (234, 127, NULL, 'import', '2026-10-23 10:50:36', 1, NULL, NULL, NULL, NULL, 'Nhập kho thiết bị mới STT 127: PC  '),
 (235, 128, NULL, 'import', '2026-10-23 10:51:22', 1, NULL, NULL, NULL, NULL, 'Nhập kho thiết bị mới STT 128: PC  '),
-(236, 129, NULL, 'import', '2026-10-23 10:51:53', 1, NULL, NULL, NULL, NULL, 'Nhập kho thiết bị mới STT 129: PC  '),
 (237, 130, NULL, 'import', '2026-10-23 10:52:44', 1, NULL, NULL, NULL, NULL, 'Nhập kho thiết bị mới STT 130: PC  '),
 (238, 131, NULL, 'import', '2026-10-23 10:53:36', 1, NULL, NULL, NULL, NULL, 'Nhập kho thiết bị mới STT 131: PC  '),
 (239, 132, NULL, 'import', '2026-10-23 10:54:38', 1, NULL, NULL, NULL, NULL, 'Nhập kho thiết bị mới STT 132: PC  '),
@@ -477,7 +473,22 @@ INSERT INTO `device_history` (`id`, `device_id`, `ticket_id`, `action_type`, `ac
 (259, 150, NULL, 'import', '2026-10-26 15:35:16', 1, NULL, NULL, NULL, NULL, 'Nhập kho thiết bị mới STT 150: MH DELL E2225HSM - 21.5 INCH'),
 (263, 47, 113, 'transfer', '2026-10-27 16:23:54', 1, 91, 83, 13, 12, 'Chuyển giao thiết bị theo phiếu PCG-20261027-6949. Lý do: '),
 (264, 151, NULL, 'import', '2026-10-28 09:03:15', 1, NULL, NULL, NULL, NULL, 'Nhập kho thiết bị mới STT 151: PC  '),
-(265, 151, 114, 'allocate', '2026-10-28 09:04:28', 1, NULL, 25, NULL, 7, 'Cấp phát thiết bị theo phiếu PX-20261028-7B3A. Lý do: ');
+(265, 151, 114, 'allocate', '2026-10-28 09:04:28', 1, NULL, 25, NULL, 7, 'Cấp phát thiết bị theo phiếu PX-20261028-7B3A. Lý do: '),
+(266, 138, 115, 'allocate', '2026-10-30 11:51:04', 6, NULL, 152, NULL, 23, 'Cấp phát thiết bị theo phiếu PX-20261030-A035 (Phụ kiện: Chuột, phím). Lý do: '),
+(267, 136, 116, 'allocate', '2026-10-30 11:51:19', 6, NULL, 153, NULL, 23, 'Cấp phát thiết bị theo phiếu PX-20261030-B4EB (Phụ kiện: Chuột, phím). Lý do: '),
+(268, 152, NULL, 'import', '2026-10-30 15:18:34', 6, NULL, NULL, NULL, NULL, 'Nhập kho thiết bị mới STT 152: PC  '),
+(269, 152, 117, 'allocate', '2026-10-30 15:19:59', 6, NULL, 154, NULL, 9, 'Cấp phát thiết bị theo phiếu PX-20261030-D83D (Phụ kiện: Chuột, phím). Lý do: '),
+(270, 139, NULL, 'maintenance_start', '2026-10-30 17:12:46', 6, NULL, NULL, NULL, NULL, 'Bắt đầu Sửa chữa bảo hành: Máy tính hiện không có ổ cứng không chạy được. Đơn vị: Nội bộ. Chi phí dự kiến: 0 VNĐ'),
+(271, 44, 118, 'allocate', '2026-11-02 10:15:17', 6, NULL, 155, NULL, 23, 'Cấp phát thiết bị theo phiếu PX-20261102-D9A5. Lý do: '),
+(272, 124, 119, 'allocate', '2026-11-02 10:16:12', 6, NULL, 155, NULL, 23, 'Cấp phát thiết bị theo phiếu PX-20261102-E210 (Phụ kiện: Chuột, phím). Lý do: '),
+(273, 150, 120, 'allocate', '2026-11-02 10:40:17', 6, NULL, 155, NULL, 23, 'Cấp phát thiết bị theo phiếu PX-20261102-BB62. Lý do: '),
+(274, 145, 121, 'allocate', '2026-11-02 10:40:46', 6, NULL, 155, NULL, 23, 'Cấp phát thiết bị theo phiếu PX-20261102-E890. Lý do: '),
+(275, 148, 122, 'allocate', '2026-11-02 10:42:30', 6, NULL, 155, NULL, 23, 'Cấp phát thiết bị theo phiếu PX-20261102-8792. Lý do: '),
+(276, 142, 123, 'allocate', '2026-11-02 10:42:56', 6, NULL, 155, NULL, 23, 'Cấp phát thiết bị theo phiếu PX-20261102-8153. Lý do: '),
+(277, 137, 124, 'allocate', '2026-11-02 14:44:59', 6, NULL, 155, NULL, 23, 'Cấp phát thiết bị theo phiếu PX-20261102-D6FA. Lý do: '),
+(278, 143, 124, 'allocate', '2026-11-02 14:44:59', 6, NULL, 155, NULL, 23, 'Cấp phát thiết bị theo phiếu PX-20261102-D6FA. Lý do: '),
+(279, 137, 125, 'revoke', '2026-11-02 14:45:48', 6, 155, NULL, 23, NULL, 'Thu hồi thiết bị theo phiếu PTH-20261102-6A0A. Tình trạng lúc nhận: Tốt (trả về kho). Ghi chú: '),
+(280, 143, 125, 'revoke', '2026-11-02 14:45:48', 6, 155, NULL, 23, NULL, 'Thu hồi thiết bị theo phiếu PTH-20261102-6A0A. Tình trạng lúc nhận: Tốt (trả về kho). Ghi chú: Tự động đi cùng PC #137; tình trạng mặc định Tốt');
 
 -- --------------------------------------------------------
 
@@ -518,7 +529,6 @@ INSERT INTO `device_monitors` (`id`, `device_id`, `monitor_no`, `brand`, `model`
 (34, 35, 1, 'Acer', NULL, 21.5),
 (35, 34, 1, 'ASUS VY249HF-R', NULL, 23.8),
 (36, 33, 1, 'ASUS VY249HF-R', NULL, 23.8),
-(37, 36, 1, 'LCD_DELL', NULL, 21.5),
 (38, 37, 1, 'LCD_DELL', NULL, 21.5),
 (39, 38, 1, 'Asus', NULL, 23.7),
 (41, 41, 1, 'FHD-MSI', NULL, 23.6),
@@ -631,10 +641,9 @@ INSERT INTO `device_specs` (`id`, `device_id`, `cpu`, `mainboard`, `ram_gb`, `ra
 (32, 33, 'i7 12700 F', 'ASUS TUF B760M-E DDR4', 32, 'Kingston Fury Beast RGB (KF432C16BB12AK2/32) 32GB', '512GB SSD Zeus', 'HDD Seagate BarraCuda 2TB', 'Nividia Geforce-RTX3050-6G', NULL, 'phím, chuột'),
 (33, 34, 'i7 12700 F', 'ASUS TUF B760M-K DDR4', 32, 'Kingston Fury Beast RGB (KF432C16BB12AK2/32) 32GB', '512GB SSD Zeus', 'HDD Seagate BarraCuda 2TB', 'Nividia Geforce-RTX3050-6G', NULL, 'phím, chuột'),
 (34, 35, 'i5 10400F', 'Asus Prime H510M -K', 16, 'Lexar DDR4- 16G/3200', 'SSD Lexar 512G SATAIII', 'HDD2TB', 'Nividia Geforce GT710-2GB', NULL, 'phím, chuột'),
-(35, 36, 'i5-12400', 'Asus H610M -K DD4', 8, '8G-DDR4', '512GB SSD Zeus', NULL, 'Intel UHD730/128MB', NULL, 'phím, chuột'),
 (36, 37, 'i5-12400', 'Asus H610M -K', 16, '16GB-DDR4-3200', '512GB SSD Zeus', NULL, 'Nividia Geforce-RTX3050-8G', NULL, NULL),
 (37, 38, 'i5-12400', 'H610M -K', 16, '16G-DDR4-3200', 'SSD 512GB SSD Zeus', NULL, 'VGA Gigabyte 8GB GV- N3050WF2OC - V2-8GD)', NULL, 'phím, chuột'),
-(38, 39, 'i5-10400F', 'Asus H510M -K', 16, 'DDR4-16 GB- 3200', 'SSD Lexar NQ100 -512 GB', 'HDD OOS2000G 2 TB', 'NVIDIA Geforce GT 710- 2 GB - GDDR5', NULL, 'phím, chuột'),
+(38, 39, 'i5-10400F', 'Asus H510M -K', 16, 'DDR4-16 GB- 3200', 'SSD Lexar NQ100 -512 GB', 'HDD OOS2000G 2 TB', 'NVIDIA Geforce GT 710', NULL, 'phím, chuột'),
 (39, 40, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (40, 41, 'i5-10400', 'Prime H510M-K', 8, 'DDR4 - 8GB', 'SSD - 512GB', NULL, 'Intel UHD Graphics 630', NULL, 'phím SingPC, chuột'),
 (41, 42, 'i5-10400F', 'Giga B560M', 16, 'kington-16G/DDR4-3200', 'SSD   M2  256 GB', 'PCIe-HDD WD 1T GB', 'Nividia VGA GAINWARD GTX 1050Ti 4GB GDDR5 128 bít DVI HDMI', NULL, 'phím, chuột'),
@@ -713,13 +722,11 @@ INSERT INTO `device_specs` (`id`, `device_id`, `cpu`, `mainboard`, `ram_gb`, `ra
 (119, 120, 'i5-12400 Box', 'Asus H610M -K', 8, '8G-DDR4-3200', 'PQ3480 PCIe Gen3x4 M.2 512GB SSD Kingmax', NULL, 'Intel UHD Graphics 730', NULL, 'phím, chuột'),
 (120, 121, 'Intel Core i3-12100', 'Asus H610M -K', 8, 'Ram kingston  8G-DDR4-3200', 'SSD  Kingmax M2  256 GB  PCIe', NULL, 'Intel UHD Graphics 730', NULL, NULL),
 (121, 122, 'Core i5-10400', 'H510M-K', 8, '8G-DDR4-3200', 'SSD Giga 120GB', 'HDD 1TB', 'Geforce GT730', NULL, 'phím, chuột'),
-(122, 123, 'i5 - 10400F', 'Prime H510-F', 16, '\"DDR4 - 16GB (8GB*2)\"', NULL, 'HDD 2T', 'Nividia Geforce  GT710 - 1G', NULL, NULL),
-(123, 124, 'i5 - 9400F', 'Giga H310M', 16, 'DDR4 - 16GB', 'Apacer SSD 240GB', 'HDD 1T Toshiba', NULL, NULL, NULL),
-(124, 125, 'i5 10400F', 'Micro Star PRO H510M-B', 16, 'DDR4-16GB', 'NVME 512GB', NULL, 'NVIDIA - GeFore GT710 - GDDR5 - 2GB', NULL, NULL),
+(123, 124, 'i5 - 9400F', 'Giga H310M', 16, 'DDR4 - 16GB', 'Apacer SSD 240GB', 'HDD 1T Toshiba', 'GTX 1650', NULL, NULL),
+(124, 125, 'i5 10400F', 'Micro Star PRO H510M-B', 16, 'DDR4-16GB', 'NVME 512GB', NULL, 'NVIDIA - GeFore GT710', NULL, NULL),
 (125, 126, 'i3-3240', 'H61M-P20', 6, 'DDR3- 6GB-10700Hz', 'SSD 256GD', NULL, NULL, NULL, NULL),
 (126, 127, 'i5 14400F', 'Asus H610M -K DDR4', 32, 'DDR4- 32G/3200 (2 thanh 16GB)', 'Ổ cứng gắn trong/ SSD Kingston NV3 500GB M.2 2280 ', NULL, 'Asus DUAL-RTX3050-6G', NULL, NULL),
 (127, 128, 'i5-12400', 'Asus H610M -K DD4', 8, '8G-DDR4', '512GB SSD Zeus', NULL, 'Intel UHD730/128MB', NULL, NULL),
-(128, 129, 'Intel Core i3-12100', 'Asus H610M -K', 8, 'Ram kingston  8G-DDR4-3200', 'SSD  Kingmax M2  256 GB  PCIe', NULL, NULL, NULL, NULL),
 (129, 130, 'i7 14700F', 'VT_GIGABYTE_GA B760M D2H DDR4', 32, 'Kingston Fury 32GB D4-3200U C16 Beast Black (KF432', '1000GB Kingston SSD NV3 M2 2280 NVMe ( SNV3S/1000G', NULL, 'Nividia geforce RTX3060-GDDR5X-8GB', NULL, NULL),
 (130, 131, 'i7 - 10700F', 'Giga Byte B560M', 32, 'DDR4 - 32GB', 'NVME SSD - 256GB', 'HDD1TB WDC', 'Nividia geforce GTX1660-GDDR6-6GB', NULL, NULL),
 (131, 132, 'i3-12100', 'Asus H610M-K', 8, '8GB (DDR4)', 'SSDM.2 256GB', NULL, NULL, NULL, NULL),
@@ -741,7 +748,8 @@ INSERT INTO `device_specs` (`id`, `device_id`, `cpu`, `mainboard`, `ram_gb`, `ra
 (147, 148, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (148, 149, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 (149, 150, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(150, 151, 'i5-12400', NULL, 16, 'DDR4 - 16GB', '512', NULL, 'Nividia Geforce-RTX3050-6G', NULL, NULL);
+(150, 151, 'i5-12400', NULL, 16, 'DDR4 - 16GB', '512', NULL, 'Nividia Geforce-RTX3050-6G', NULL, NULL),
+(151, 152, 'i5-12400', NULL, 8, '8G-DDR4', '512', NULL, 'Intel UHD Graphics 730', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -868,7 +876,11 @@ INSERT INTO `employees` (`id`, `code`, `fullname`, `email`, `phone`, `department
 (106, 'NVA5358280311DB799A9', 'Trần Thị Mai Thu', '', '', 14, 'KT EIG', 'working', '2026-10-21 10:26:51'),
 (148, 'NV4AB8247E931A97F331', 'Chu Văn Khanh', '', '', 1, 'PTGĐ', 'working', '2026-10-21 14:30:17'),
 (149, 'NVFA3818D0106A63E57A', 'Lưu tại Ban', '', '', 5, '', 'working', '2026-10-21 15:49:17'),
-(151, 'NV35150A9D31EC3914E7', 'Lưu tại Ban', '', '', 7, '', 'working', '2026-10-21 16:16:50');
+(151, 'NV35150A9D31EC3914E7', 'Lưu tại Ban', '', '', 7, '', 'working', '2026-10-21 16:16:50'),
+(152, 'NV70C3310C7627D3003E', 'Lê Ngọc Thụy', '', '', 23, '', 'working', '2026-10-30 11:49:38'),
+(153, 'NV047059D84CC82CF6EB', 'Nguyễn Duy Thao', '', '', 23, '', 'working', '2026-10-30 11:49:45'),
+(154, 'NVD2012625F9D59AF6FF', 'Đinh Quốc Cường', '', '', 9, '', 'working', '2026-10-30 15:17:57'),
+(155, 'NVCEC1F7C048749D672A', 'Lưu tại Ban', '', '', 23, '', 'working', '2026-11-02 10:14:54');
 
 -- --------------------------------------------------------
 
@@ -889,6 +901,13 @@ CREATE TABLE `maintenances` (
   `created_by` int(11) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `maintenances`
+--
+
+INSERT INTO `maintenances` (`id`, `device_id`, `maintenance_type`, `start_date`, `end_date`, `cost`, `provider`, `description`, `status`, `created_by`, `created_at`) VALUES
+(2, 139, 'repair', '2026-10-30', NULL, 0.00, NULL, 'Máy tính hiện không có ổ cứng không chạy được', 'in_progress', 6, '2026-10-30 17:12:46');
 
 -- --------------------------------------------------------
 
@@ -995,7 +1014,6 @@ INSERT INTO `role_permissions` (`role_id`, `permission_id`) VALUES
 (2, 1),
 (2, 2),
 (2, 3),
-(2, 4),
 (2, 6),
 (2, 7),
 (2, 8),
@@ -1162,7 +1180,18 @@ INSERT INTO `tickets` (`id`, `ticket_code`, `ticket_type`, `ticket_date`, `creat
 (111, 'PTH-20261027-D06A', 'revocation', '2026-10-27', 1, 85, 12, NULL, NULL, 0, NULL, 'completed', 'Thu hồi thiết bị khi nhân viên bàn giao/nghỉ việc', NULL, '2026-10-27 15:49:58'),
 (112, 'PTH-20261027-07F9', 'revocation', '2026-10-27', 1, 42, 8, NULL, NULL, 0, NULL, 'completed', NULL, NULL, '2026-10-27 15:52:41'),
 (113, 'PCG-20261027-6949', 'transfer', '2026-10-27', 1, 91, 13, 83, 12, 0, NULL, 'completed', NULL, NULL, '2026-10-27 16:23:54'),
-(114, 'PX-20261028-7B3A', 'allocation', '2026-10-28', 1, NULL, NULL, 25, 7, 0, NULL, 'completed', NULL, NULL, '2026-10-28 09:04:28');
+(114, 'PX-20261028-7B3A', 'allocation', '2026-10-28', 1, NULL, NULL, 25, 7, 0, NULL, 'completed', NULL, NULL, '2026-10-28 09:04:28'),
+(115, 'PX-20261030-A035', 'allocation', '2026-10-30', 6, NULL, NULL, 152, 23, 0, NULL, 'completed', NULL, NULL, '2026-10-30 11:51:04'),
+(116, 'PX-20261030-B4EB', 'allocation', '2026-10-30', 6, NULL, NULL, 153, 23, 0, NULL, 'completed', NULL, NULL, '2026-10-30 11:51:19'),
+(117, 'PX-20261030-D83D', 'allocation', '2026-10-30', 6, NULL, NULL, 154, 9, 0, NULL, 'completed', NULL, NULL, '2026-10-30 15:19:59'),
+(118, 'PX-20261102-D9A5', 'allocation', '2026-11-02', 6, NULL, NULL, 155, 23, 0, NULL, 'completed', NULL, NULL, '2026-11-02 10:15:17'),
+(119, 'PX-20261102-E210', 'allocation', '2026-11-02', 6, NULL, NULL, 155, 23, 0, NULL, 'completed', NULL, NULL, '2026-11-02 10:16:12'),
+(120, 'PX-20261102-BB62', 'allocation', '2026-11-02', 6, NULL, NULL, 155, 23, 0, NULL, 'completed', NULL, NULL, '2026-11-02 10:40:17'),
+(121, 'PX-20261102-E890', 'allocation', '2026-11-02', 6, NULL, NULL, 155, 23, 0, NULL, 'completed', NULL, NULL, '2026-11-02 10:40:46'),
+(122, 'PX-20261102-8792', 'allocation', '2026-11-02', 6, NULL, NULL, 155, 23, 0, NULL, 'completed', NULL, NULL, '2026-11-02 10:42:30'),
+(123, 'PX-20261102-8153', 'allocation', '2026-11-02', 6, NULL, NULL, 155, 23, 0, NULL, 'completed', NULL, NULL, '2026-11-02 10:42:56'),
+(124, 'PX-20261102-D6FA', 'allocation', '2026-11-02', 6, NULL, NULL, 155, 23, 0, NULL, 'completed', NULL, NULL, '2026-11-02 14:44:59'),
+(125, 'PTH-20261102-6A0A', 'revocation', '2026-11-02', 6, 155, 23, NULL, NULL, 0, NULL, 'completed', NULL, NULL, '2026-11-02 14:45:48');
 
 -- --------------------------------------------------------
 
@@ -1204,7 +1233,6 @@ INSERT INTO `ticket_details` (`id`, `ticket_id`, `device_id`, `accessories`, `re
 (18, 18, 33, 'Chuột, phím', NULL, NULL),
 (19, 19, 34, 'Chuột, phím', NULL, NULL),
 (20, 20, 35, 'Chuột, phím', NULL, NULL),
-(21, 21, 36, 'Chuột, phím', NULL, NULL),
 (22, 22, 37, 'Chuột, phím', NULL, NULL),
 (23, 23, 38, 'Chuột, phím', NULL, NULL),
 (24, 24, 40, NULL, NULL, NULL),
@@ -1289,7 +1317,20 @@ INSERT INTO `ticket_details` (`id`, `ticket_id`, `device_id`, `accessories`, `re
 (108, 108, 44, 'Chuột, phím, màn', 'good', NULL),
 (109, 109, 140, 'chuột', NULL, NULL),
 (113, 113, 47, NULL, NULL, NULL),
-(114, 114, 151, NULL, NULL, NULL);
+(114, 114, 151, NULL, NULL, NULL),
+(115, 115, 138, 'Chuột, phím', NULL, NULL),
+(116, 116, 136, 'Chuột, phím', NULL, NULL),
+(117, 117, 152, 'Chuột, phím', NULL, NULL),
+(118, 118, 44, NULL, NULL, NULL),
+(119, 119, 124, 'Chuột, phím', NULL, NULL),
+(120, 120, 150, NULL, NULL, NULL),
+(121, 121, 145, NULL, NULL, NULL),
+(122, 122, 148, NULL, NULL, NULL),
+(123, 123, 142, NULL, NULL, NULL),
+(124, 124, 137, NULL, NULL, NULL),
+(125, 124, 143, NULL, NULL, 'Màn hình cấp kèm PC #137'),
+(126, 125, 137, NULL, 'good', NULL),
+(127, 125, 143, NULL, 'good', 'Tự động đi cùng PC #137; tình trạng mặc định Tốt');
 
 -- --------------------------------------------------------
 
@@ -1313,11 +1354,11 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `password`, `fullname`, `email`, `role`, `status`, `created_at`) VALUES
-(1, 'admin', '$2y$10$8s8zT5sT54YPiIFjETta0uq7ym4deKCjjjLbr.fXKw0hPigRaI7OC', 'Quản trị viên Hệ thống', 'admin@warehouse.local', 'warehouse', 1, '2026-10-20 15:58:11'),
+(1, 'admin', '$2y$10$8s8zT5sT54YPiIFjETta0uq7ym4deKCjjjLbr.fXKw0hPigRaI7OC', 'Quản trị viên Hệ thống', 'admin@warehouse.local', 'admin', 1, '2026-10-20 15:58:11'),
 (2, 'thukho', '$2y$10$2yKvpupzQNm41o.MhNcV4OWwIt1OQkIRphDPOmewPgLhs35TdBxqK', 'Thủ Kho', 'thukho@warehouse.local', 'warehouse', 1, '2026-10-20 15:58:11'),
 (3, 'ducvm', '$2y$10$o9pmZEGLAuNz03Kgkx9QXOP4KgIixRwD9mBalS4cutoJ/TAnHTXXS', 'Vũ Minh Đức', 'duc.vm@everland.vn', 'admin', 1, '2026-10-23 11:02:22'),
 (4, 'username', '$2y$10$oZSfzP0scs26y1hnblfe/eAwV9ohB3TKw5guDCDm5Dx55SvtvoiU6', 'Khách hàng', '', 'customer', 1, '2026-10-28 10:40:11'),
-(6, 'thuanpt', '$2y$10$tYYmvSpVvepzWDKCWjmnC.nXcKp93gH8p7OGKgUn325v00n6hjJa2', 'Phạm Trần Thuận', 'phamtranthuan2003@gmail.com', 'admin', 1, '2026-10-28 10:45:07');
+(6, 'thuanpt', '$2y$12$Wk0lzvROCZGqZdF8NIkfLO8lJWOAITHKFoXU0R9NZN84dmNv3ttqK', 'Phạm Trần Thuận', 'thuan.pt@everland.vn', 'admin', 1, '2026-10-28 10:45:07');
 
 --
 -- Chỉ mục cho các bảng đã đổ
@@ -1337,7 +1378,8 @@ ALTER TABLE `devices`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `device_code` (`device_code`),
   ADD KEY `fk_dev_employee` (`current_employee_id`),
-  ADD KEY `fk_dev_department` (`current_department_id`);
+  ADD KEY `fk_dev_department` (`current_department_id`),
+  ADD KEY `idx_dev_paired_pc` (`paired_pc_id`);
 
 --
 -- Chỉ mục cho bảng `device_history`
@@ -1434,19 +1476,19 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT cho bảng `departments`
 --
 ALTER TABLE `departments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT cho bảng `devices`
 --
 ALTER TABLE `devices`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=152;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=153;
 
 --
 -- AUTO_INCREMENT cho bảng `device_history`
 --
 ALTER TABLE `device_history`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=266;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=281;
 
 --
 -- AUTO_INCREMENT cho bảng `device_monitors`
@@ -1458,43 +1500,43 @@ ALTER TABLE `device_monitors`
 -- AUTO_INCREMENT cho bảng `device_specs`
 --
 ALTER TABLE `device_specs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=151;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=152;
 
 --
 -- AUTO_INCREMENT cho bảng `employees`
 --
 ALTER TABLE `employees`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=152;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=156;
 
 --
 -- AUTO_INCREMENT cho bảng `maintenances`
 --
 ALTER TABLE `maintenances`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT cho bảng `permissions`
 --
 ALTER TABLE `permissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT cho bảng `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT cho bảng `tickets`
 --
 ALTER TABLE `tickets`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=115;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=126;
 
 --
 -- AUTO_INCREMENT cho bảng `ticket_details`
 --
 ALTER TABLE `ticket_details`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=115;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=128;
 
 --
 -- AUTO_INCREMENT cho bảng `users`
@@ -1511,7 +1553,8 @@ ALTER TABLE `users`
 --
 ALTER TABLE `devices`
   ADD CONSTRAINT `fk_dev_department` FOREIGN KEY (`current_department_id`) REFERENCES `departments` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_dev_employee` FOREIGN KEY (`current_employee_id`) REFERENCES `employees` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_dev_employee` FOREIGN KEY (`current_employee_id`) REFERENCES `employees` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_dev_paired_pc` FOREIGN KEY (`paired_pc_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Các ràng buộc cho bảng `device_history`
