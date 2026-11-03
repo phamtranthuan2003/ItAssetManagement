@@ -23,7 +23,7 @@ if ($ticket['ticket_type'] === 'allocation') {
     $fromDepartment = $fromDepartment ?: 'Phòng Công nghệ Thông tin';
 } elseif ($ticket['ticket_type'] === 'revocation') {
     $toName = $toName ?: 'Phòng Công nghệ Thông tin';
-    $toPosition = $toPosition ?: 'Bộ phận tiếp nhận tài sản';
+    $toPosition = $toPosition ?: 'Thủ Kho Thiết bị CNTT';
     $toDepartment = $toDepartment ?: 'Phòng Công nghệ Thông tin';
 }
 
@@ -210,7 +210,7 @@ $conditionLabels = [
         .party-table th,
         .party-table td {
             border: 1px solid #111;
-            padding: 5px 6px;
+            padding: 15px 6px;
             vertical-align: top;
         }
 
@@ -365,9 +365,9 @@ $conditionLabels = [
             </thead>
             <tbody>
                 <tr>
-                    <td><?= e($fromName ?: 'Phạm Trần Thuận') ?></td>
-                    <td><?= e($fromPosition ?: 'CV IT Helpdesk') ?></td>
-                    <td><?= e($fromContact) ?></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
                 </tr>
             </tbody>
         </table>
