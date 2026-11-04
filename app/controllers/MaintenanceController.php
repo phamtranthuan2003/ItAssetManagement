@@ -55,6 +55,21 @@ class MaintenanceController extends Controller {
     public function create(): void {
         $deviceId = (int)$this->get('device_id', 0);
         $devices = $this->deviceModel->getList([], 1, 100);
+        if ($deviceId > 0) {
+            $selectedDevice = $this->deviceModel->findByIdWithSpec($deviceId);
+            if ($selectedDevice !== null) {
+                $deviceIsListed = false;
+                foreach ($devices as $device) {
+                    if ((int)$device['id'] === $deviceId) {
+                        $deviceIsListed = true;
+                        break;
+                    }
+                }
+                if (!$deviceIsListed) {
+                    array_unshift($devices, $selectedDevice);
+                }
+            }
+        }
 
         $this->render('maintenance/create', [
             'pageTitle'       => 'Tạo phiếu sửa chữa / nâng cấp',

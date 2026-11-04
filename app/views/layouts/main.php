@@ -146,7 +146,7 @@
 <!-- Bootstrap 5 Bundle JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Main Custom JS -->
-<script src="<?= asset('js/main.js') ?>"></script>
+<script src="<?= asset('js/main.js?v=2') ?>"></script>
 <script src="<?= asset('js/employee-department-select.js?v=2') ?>"></script>
 <script src="<?= asset('js/filter-controls.js?v=2') ?>"></script>
 </body>

@@ -476,6 +476,37 @@ class Device extends Model {
         return $this->fetchAll($sql, $params);
     }
 
+    public function getTypeCounts(array $filters = []): array {
+        [$whereClause, $params] = $this->buildFilterConditions($filters);
+        $rows = $this->fetchAll(
+            "SELECT d.type, COUNT(*) AS total
+             FROM {$this->table} d
+             LEFT JOIN device_specs s ON d.id = s.device_id
+             {$whereClause}
+             GROUP BY d.type",
+            $params
+        );
+
+        $counts = ['total' => 0, 'pc' => 0, 'laptop' => 0, 'monitor' => 0, 'other' => 0];
+        foreach ($rows as $row) {
+            $type = (string)($row['type'] ?? '');
+            $count = (int)$row['total'];
+            $counts['total'] += $count;
+
+            if (self::isPcType($type)) {
+                $counts['pc'] += $count;
+            } elseif (strcasecmp(trim($type), 'Laptop') === 0) {
+                $counts['laptop'] += $count;
+            } elseif (self::isMonitorType($type)) {
+                $counts['monitor'] += $count;
+            } else {
+                $counts['other'] += $count;
+            }
+        }
+
+        return $counts;
+    }
+
     /**
      * Thống kê tổng quan cho Dashboard
      */

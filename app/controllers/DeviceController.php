@@ -54,6 +54,7 @@ class DeviceController extends Controller {
         $totalPages = (int)ceil($totalDevices / $perPage);
         $page = min($page, max(1, $totalPages));
         $devices = $this->deviceModel->getList($filters, $page, $perPage);
+        $deviceTypeCounts = $this->deviceModel->getTypeCounts($filters);
 
         $departments = $this->deptModel->getAll();
         $employees = $this->empModel->getForSelect();
@@ -65,6 +66,7 @@ class DeviceController extends Controller {
             'page'         => $page,
             'totalPages'   => $totalPages,
             'totalDevices' => $totalDevices,
+            'deviceTypeCounts' => $deviceTypeCounts,
             'departments'  => $departments,
             'employees'    => $employees,
             'returnTo'     => 'devices?' . http_build_query(array_merge($filters, ['page' => $page]))

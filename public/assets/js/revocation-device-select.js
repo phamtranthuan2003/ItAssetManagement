@@ -48,14 +48,14 @@ document.addEventListener('DOMContentLoaded', function () {
         wrapper.querySelector('[data-device-search-input]').focus();
     }
 
-    function initializeRow(wrapper) {
+    function initializeRow(wrapper, preserveSelection) {
         const employeeId = employeeSelect.value;
         const select = wrapper.querySelector('[data-device-select]');
         const toggle = wrapper.querySelector('[data-device-select-toggle]');
         const searchInput = wrapper.querySelector('[data-device-search-input]');
+        const selectedDeviceId = preserveSelection ? select.value : '';
 
         select.value = '';
-        toggle.textContent = employeeId ? '-- Chọn thiết bị --' : '-- Chọn nhân viên trước --';
         searchInput.value = '';
         searchInput.setCustomValidity('');
 
@@ -63,12 +63,24 @@ document.addEventListener('DOMContentLoaded', function () {
             option.hidden = !employeeId || option.dataset.employeeId !== employeeId;
         });
 
+        const selectedOption = Array.from(select.options).find(function (option) {
+            return option.value === selectedDeviceId && !option.hidden;
+        });
+        if (selectedOption) {
+            select.value = selectedOption.value;
+            toggle.textContent = selectedOption.textContent.trim();
+        } else {
+            toggle.textContent = employeeId ? '-- Chọn thiết bị --' : '-- Chọn nhân viên trước --';
+        }
+
         renderOptions(wrapper);
         closeMenu(wrapper);
     }
 
     function filterDevicesForEmployee() {
-        container.querySelectorAll('[data-revocation-device-select]').forEach(initializeRow);
+        container.querySelectorAll('[data-revocation-device-select]').forEach(function (wrapper) {
+            initializeRow(wrapper, false);
+        });
     }
 
     container.addEventListener('click', function (event) {
@@ -146,5 +158,7 @@ document.addEventListener('DOMContentLoaded', function () {
         searchInput.reportValidity();
     });
 
-    filterDevicesForEmployee();
+    container.querySelectorAll('[data-revocation-device-select]').forEach(function (wrapper) {
+        initializeRow(wrapper, true);
+    });
 });

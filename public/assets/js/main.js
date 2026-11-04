@@ -46,4 +46,104 @@ document.addEventListener('DOMContentLoaded', function () {
         isTemporaryCheck.addEventListener('change', toggleReturnDate);
         toggleReturnDate();
     }
+
+    // Search and select devices from the maintenance dropdown.
+    document.querySelectorAll('[data-maintenance-device-picker]').forEach(function (picker) {
+        const deviceSelect = picker.querySelector('[data-maintenance-device-select]');
+        const toggle = picker.querySelector('[data-maintenance-device-toggle]');
+        const menu = picker.querySelector('[data-maintenance-device-menu]');
+        const searchInput = picker.querySelector('[data-maintenance-device-search]');
+        const optionsContainer = picker.querySelector('[data-maintenance-device-options]');
+        const noResults = picker.querySelector('[data-maintenance-device-no-results]');
+
+        if (!deviceSelect || !toggle || !menu || !searchInput || !optionsContainer || !noResults) {
+            return;
+        }
+
+        const options = Array.from(deviceSelect.options).slice(1);
+        const placeholder = deviceSelect.options[0].textContent.trim();
+        deviceSelect.classList.add('d-none');
+        deviceSelect.required = false;
+        toggle.classList.remove('d-none');
+
+        function renderOptions() {
+            optionsContainer.replaceChildren();
+            const query = searchInput.value.trim().toLocaleLowerCase();
+            let visibleCount = 0;
+
+            options.forEach(function (option) {
+                if (!option.textContent.toLocaleLowerCase().includes(query)) {
+                    return;
+                }
+
+                visibleCount += 1;
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'dropdown-item text-wrap';
+                item.setAttribute('role', 'option');
+                item.setAttribute('aria-selected', deviceSelect.value === option.value ? 'true' : 'false');
+                item.textContent = option.textContent.trim();
+                item.addEventListener('click', function () {
+                    deviceSelect.value = option.value;
+                    deviceSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                    toggle.textContent = option.textContent.trim();
+                    searchInput.setCustomValidity('');
+                    closeMenu();
+                    toggle.focus();
+                });
+                optionsContainer.appendChild(item);
+            });
+
+            noResults.classList.toggle('d-none', visibleCount > 0);
+        }
+
+        function openMenu() {
+            menu.classList.add('show');
+            toggle.setAttribute('aria-expanded', 'true');
+            renderOptions();
+            searchInput.focus();
+        }
+
+        function closeMenu() {
+            menu.classList.remove('show');
+            toggle.setAttribute('aria-expanded', 'false');
+        }
+
+        toggle.textContent = deviceSelect.selectedOptions[0].value
+            ? deviceSelect.selectedOptions[0].textContent.trim()
+            : placeholder;
+        toggle.addEventListener('click', function () {
+            if (menu.classList.contains('show')) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        });
+        searchInput.addEventListener('input', renderOptions);
+        searchInput.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeMenu();
+                toggle.focus();
+            }
+        });
+        document.addEventListener('click', function (event) {
+            if (!picker.contains(event.target)) {
+                closeMenu();
+            }
+        });
+
+        const form = deviceSelect.closest('form');
+        if (form) {
+            form.addEventListener('submit', function (event) {
+                if (deviceSelect.value) {
+                    return;
+                }
+
+                event.preventDefault();
+                searchInput.setCustomValidity('Vui lòng chọn thiết bị.');
+                openMenu();
+                searchInput.reportValidity();
+            });
+        }
+    });
 });

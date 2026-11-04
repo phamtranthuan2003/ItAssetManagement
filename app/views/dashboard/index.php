@@ -40,9 +40,10 @@
                         <span class="text-muted small fw-semibold text-uppercase">Tổng thiết bị</span>
                         <h3 class="fw-bold mb-0 text-dark"><?= number_format($stats['total']) ?></h3>
                         <div class="small text-muted mt-1">
-                            <i class="bi bi-pc me-1"></i>PC: <strong><?= $stats['pc_count'] ?></strong> |
-                            <i class="bi bi-laptop me-1"></i>Laptop: <strong><?= $stats['laptop_count'] ?></strong> |
-                            <i class="bi bi-box me-1"></i>Khác: <strong><?= $stats['other_count'] ?></strong>
+                            <i class="bi bi-pc me-1"></i>PC: <strong><?= $deviceTypeCounts['pc'] ?></strong> |
+                            <i class="bi bi-laptop me-1"></i>Laptop: <strong><?= $deviceTypeCounts['laptop'] ?></strong> |
+                            <i class="bi bi-display me-1"></i>MH: <strong><?= $deviceTypeCounts['monitor'] ?></strong> |
+                            <i class="bi bi-box me-1"></i>Khác: <strong><?= $deviceTypeCounts['other'] ?></strong>
                         </div>
                     </div>
                     <div class="stat-icon bg-primary-subtle text-primary">
@@ -61,7 +62,12 @@
                     <div>
                         <span class="text-muted small fw-semibold text-uppercase">Trong kho (Sẵn sàng)</span>
                         <h3 class="fw-bold mb-0 text-success"><?= number_format($stats['in_stock']) ?></h3>
-                        <div class="small text-muted mt-1">Có thể cấp phát ngay</div>
+                        <div class="small text-muted mt-1">
+                            <i class="bi bi-pc me-1"></i>PC: <strong><?= $inStockTypeCounts['pc'] ?></strong> |
+                            <i class="bi bi-laptop me-1"></i>Laptop: <strong><?= $inStockTypeCounts['laptop'] ?></strong> |
+                            <i class="bi bi-display me-1"></i>MH: <strong><?= $inStockTypeCounts['monitor'] ?></strong> |
+                            <i class="bi bi-box me-1"></i>Khác: <strong><?= $inStockTypeCounts['other'] ?></strong>
+                        </div>
                     </div>
                     <div class="stat-icon bg-success-subtle text-success">
                         <i class="bi bi-box-seam"></i>

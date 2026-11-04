@@ -89,6 +89,24 @@ class TicketController extends Controller {
         $allocatedDevices = $this->deviceModel->getAllocatedDevices();
         $departments = $this->deptModel->getAll();
         $employees = $this->empModel->getForSelect($type === 'revocation' ? null : 'working');
+        $selectedEmployeeId = null;
+        $selectedDepartmentId = null;
+
+        if ($type === 'revocation' && $selectedDeviceId !== null) {
+            foreach ($allocatedDevices as $device) {
+                if ((int)$device['id'] === $selectedDeviceId) {
+                    $selectedEmployeeId = (int)$device['current_employee_id'];
+                    break;
+                }
+            }
+
+            foreach ($employees as $employee) {
+                if ((int)$employee['id'] === $selectedEmployeeId) {
+                    $selectedDepartmentId = (int)$employee['department_id'];
+                    break;
+                }
+            }
+        }
 
         $this->render('tickets/create', [
             'pageTitle'        => 'Lập phiếu mới',
@@ -98,7 +116,9 @@ class TicketController extends Controller {
             'allocatedDevices' => $allocatedDevices,
             'departments'      => $departments,
             'employees'        => $employees,
-            'selectedDeviceId' => $selectedDeviceId
+            'selectedDeviceId' => $selectedDeviceId,
+            'selectedEmployeeId' => $selectedEmployeeId,
+            'selectedDepartmentId' => $selectedDepartmentId
         ]);
     }
 

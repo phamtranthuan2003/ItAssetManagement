@@ -159,7 +159,7 @@
                                 <select name="from_department_id" id="fromDepartmentSelect" data-employee-department-filter class="form-select" required>
                                     <option value="">-- Chọn phòng ban --</option>
                                     <?php foreach ($departments as $dept): ?>
-                                        <option value="<?= $dept['id'] ?>"><?= e($dept['name']) ?></option>
+                                        <option value="<?= $dept['id'] ?>" <?= isset($selectedDepartmentId) && (int)$selectedDepartmentId === (int)$dept['id'] ? 'selected' : '' ?>><?= e($dept['name']) ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -211,7 +211,7 @@
                                             <select name="device_id[]" class="d-none" data-device-select tabindex="-1" aria-hidden="true">
                                                 <option value="">-- Chọn thiết bị --</option>
                                                 <?php foreach ($allocatedDevices as $dev): ?>
-                                                    <option value="<?= (int)$dev['id'] ?>" data-employee-id="<?= (int)$dev['current_employee_id'] ?>">
+                                                    <option value="<?= (int)$dev['id'] ?>" data-employee-id="<?= (int)$dev['current_employee_id'] ?>" <?= (int)$selectedDeviceId === (int)$dev['id'] ? 'selected' : '' ?>>
                                                         STT <?= (int)$dev['id'] ?> - <?= e($dev['type']) ?><?= trim(($dev['brand'] ?? '') . ' ' . ($dev['model'] ?? '')) !== '' ? ' ' . e(trim($dev['brand'] . ' ' . $dev['model'])) : '' ?><?= !empty($dev['paired_pc_id']) ? ' - Ghép PC #' . (int)$dev['paired_pc_id'] : '' ?> - Đang cấp: <?= e($dev['employee_name'] ?? 'Chưa rõ') ?>
                                                     </option>
                                                 <?php endforeach; ?>

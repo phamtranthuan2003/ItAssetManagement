@@ -11,14 +11,44 @@
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Chọn thiết bị <span class="text-danger">*</span></label>
-                        <select name="device_id" class="form-select" required>
-                            <option value="">-- Chọn thiết bị cần bảo trì / nâng cấp --</option>
-                            <?php foreach ($devices as $dev): ?>
-                                <option value="<?= $dev['id'] ?>" <?= $defaultDeviceId == $dev['id'] ? 'selected' : '' ?>>
-                                    STT <?= (int)$dev['id'] ?> - <?= e($dev['type']) ?> <?= e(trim(($dev['brand'] ?? '') . ' ' . ($dev['model'] ?? ''))) ?> (Hiện trạng: <?= e($dev['status']) ?>)
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="dropdown position-relative" data-maintenance-device-picker>
+                            <button
+                                type="button"
+                                class="form-select text-start d-none"
+                                data-maintenance-device-toggle
+                                aria-haspopup="listbox"
+                                aria-expanded="false">
+                                -- Chọn thiết bị cần bảo trì / nâng cấp --
+                            </button>
+                            <select name="device_id" id="maintenanceDeviceSelect" class="form-select" required data-maintenance-device-select>
+                                <option value="">-- Chọn thiết bị cần bảo trì / nâng cấp --</option>
+                                <?php foreach ($devices as $dev): ?>
+                                    <?php
+                                    $statusLabel = match ($dev['status']) {
+                                        'in_stock' => 'Trong kho',
+                                        'allocated' => 'Đang cấp phát',
+                                        'maintenance' => 'Bảo trì',
+                                        'liquidated' => 'Thanh lý',
+                                        default => $dev['status'],
+                                    };
+                                    ?>
+                                    <option value="<?= $dev['id'] ?>" <?= $defaultDeviceId == $dev['id'] ? 'selected' : '' ?>>
+                                        STT <?= (int)$dev['id'] ?> - <?= e($dev['type']) ?> <?= e(trim(($dev['brand'] ?? '') . ' ' . ($dev['model'] ?? ''))) ?> (Hiện trạng: <?= e($statusLabel) ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <div class="dropdown-menu w-100 p-2" data-maintenance-device-menu>
+                                <input
+                                    type="search"
+                                    class="form-control form-control-sm mb-2"
+                                    data-maintenance-device-search
+                                    aria-label="Tìm thiết bị"
+                                    placeholder="Tìm theo STT, loại, hãng hoặc model..."
+                                    autocomplete="off">
+                                <div data-maintenance-device-options role="listbox"></div>
+                                <div class="small text-muted px-2 py-1 d-none" data-maintenance-device-no-results>Không tìm thấy thiết bị phù hợp.</div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="row g-3 mb-3">

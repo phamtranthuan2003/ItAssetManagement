@@ -193,7 +193,7 @@
                         </a>
                         <?php endif; ?>
                         <?php if (Auth::hasPermission('tickets.create')): ?>
-                        <a href="<?= url('tickets/create?type=revocation') ?>" class="btn btn-outline-danger">
+                        <a href="<?= url('tickets/create?' . http_build_query(['type' => 'revocation', 'device_id' => (int)$device['id']])) ?>" class="btn btn-outline-danger">
                             <i class="bi bi-box-arrow-in-left me-1"></i> Lập phiếu thu hồi về kho
                         </a>
                         <?php endif; ?>

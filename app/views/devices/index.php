@@ -109,6 +109,41 @@
     </div>
 </div>
 
+<div class="row g-3 mb-4">
+    <div class="col-6 col-xl-3">
+        <div class="card h-100 border-primary-subtle">
+            <div class="card-body py-3">
+                <div class="small text-muted">Tổng thiết bị</div>
+                <div class="fs-4 fw-bold text-primary"><?= number_format($deviceTypeCounts['total']) ?></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body py-3">
+                <div class="small text-muted"><i class="bi bi-pc me-1"></i>PC</div>
+                <div class="fs-4 fw-bold"><?= number_format($deviceTypeCounts['pc']) ?></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body py-3">
+                <div class="small text-muted"><i class="bi bi-laptop me-1"></i>Laptop</div>
+                <div class="fs-4 fw-bold"><?= number_format($deviceTypeCounts['laptop']) ?></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body py-3">
+                <div class="small text-muted"><i class="bi bi-display me-1"></i>Màn hình</div>
+                <div class="fs-4 fw-bold"><?= number_format($deviceTypeCounts['monitor']) ?></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- THANH CÔNG CỤ: THÊM MỚI & XUẤT EXCEL -->
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div class="text-muted small">

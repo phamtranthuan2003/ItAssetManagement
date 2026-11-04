@@ -20,7 +20,8 @@
         <?php foreach ($employeeSelectOptions as $employeeOption): ?>
             <option
                 value="<?= (int)$employeeOption['id'] ?>"
-                data-department-id="<?= (int)$employeeOption['department_id'] ?>">
+                data-department-id="<?= (int)$employeeOption['department_id'] ?>"
+                <?= isset($selectedEmployeeId) && (int)$selectedEmployeeId === (int)$employeeOption['id'] ? 'selected' : '' ?>>
                 <?= e($employeeOption['fullname']) ?> (<?= e($employeeOption['code']) ?> - <?= e($employeeOption['department_name']) ?>)
             </option>
         <?php endforeach; ?>

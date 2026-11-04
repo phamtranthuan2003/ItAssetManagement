@@ -27,6 +27,8 @@ class DashboardController extends Controller {
      */
     public function index(): void {
         $stats = $this->deviceModel->getDashboardStats();
+        $deviceTypeCounts = $this->deviceModel->getTypeCounts();
+        $inStockTypeCounts = $this->deviceModel->getTypeCounts(['status' => 'in_stock']);
         $deptStats = $this->deviceModel->getDevicesByDepartment();
         $overdueDevices = $this->deviceModel->getOverdueDevices();
         $expiringDevices = $this->deviceModel->getExpiringWarrantyDevices(30);
@@ -36,6 +38,8 @@ class DashboardController extends Controller {
         $this->render('dashboard/index', [
             'pageTitle'          => 'Bảng Điều Khiển Tổng Quan',
             'stats'              => $stats,
+            'deviceTypeCounts'   => $deviceTypeCounts,
+            'inStockTypeCounts'  => $inStockTypeCounts,
             'deptStats'          => $deptStats,
             'overdueDevices'     => $overdueDevices,
             'expiringDevices'    => $expiringDevices,
