@@ -139,7 +139,7 @@
 
     <!-- FOOTER -->
     <footer class="bg-white border-top py-3 text-center text-muted small mt-auto">
-        &copy; <?= date('Y') ?> <?= APP_NAME ?> - Phiên bản <?= APP_VERSION ?> | PHP Pure MVC + MySQL
+        &copy; <?= date('Y') ?> <?= APP_NAME ?>
     </footer>
 </div>
 
