@@ -1,6 +1,6 @@
 <div class="card mb-4">
     <div class="card-body">
-        <!-- BỘ LỌC NHANH THEO LOẠI PHIẾU VÀ SỐ ĐẾM -->
+        <!-- HEADER: BỘ LỌC NHANH THEO LOẠI + NÚT LẬP PHIẾU -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-3 border-bottom gap-2">
             <div class="btn-group btn-group-sm shadow-sm flex-wrap">
                 <a href="<?= url('tickets' . (!empty($status) ? '?status=' . urlencode($status) : '')) ?>" 
@@ -24,13 +24,29 @@
                     <span class="badge <?= $type === 'revocation' ? 'bg-white text-danger' : 'bg-danger-subtle text-danger' ?> ms-1"><?= $typeCounts['revocation'] ?? 0 ?></span>
                 </a>
             </div>
-            <div class="small text-muted">
-                <i class="bi bi-info-circle me-1"></i>Tổng phiếu kho: <strong><?= number_format($typeCounts['all'] ?? 0) ?></strong> (Gồm <strong><?= number_format($typeCounts['allocation'] ?? 0) ?></strong> cấp phát)
+
+            <div class="d-flex align-items-center gap-3">
+                <span class="small text-muted">
+                    <i class="bi bi-info-circle me-1"></i>Tổng: <strong><?= number_format($typeCounts['all'] ?? 0) ?></strong> phiếu
+                </span>
+                <?php if (Auth::hasPermission('tickets.create')): ?>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="bi bi-plus-lg me-1"></i> Lập phiếu mới
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                        <li><a class="dropdown-item" href="<?= url('tickets/create?type=allocation') ?>"><i class="bi bi-box-arrow-right text-primary me-2"></i> Phiếu cấp phát</a></li>
+                        <li><a class="dropdown-item" href="<?= url('tickets/create?type=transfer') ?>"><i class="bi bi-arrow-left-right text-info me-2"></i> Phiếu chuyển giao</a></li>
+                        <li><a class="dropdown-item" href="<?= url('tickets/create?type=revocation') ?>"><i class="bi bi-box-arrow-in-left text-danger me-2"></i> Phiếu thu hồi</a></li>
+                    </ul>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
 
-        <form action="<?= url('tickets') ?>" method="GET" class="row g-3 align-items-end" data-auto-filter>
-            <div class="col-lg-2">
+        <!-- BỘ LỌC -->
+        <form action="<?= url('tickets') ?>" method="GET" class="row g-2 align-items-end" data-auto-filter>
+            <div class="col-sm-6 col-lg-2">
                 <label class="form-label small fw-semibold">Loại nghiệp vụ</label>
                 <select name="type" class="form-select form-select-sm">
                     <option value="">-- Tất cả loại phiếu --</option>
@@ -40,7 +56,7 @@
                 </select>
             </div>
 
-            <div class="col-lg-2">
+            <div class="col-sm-6 col-lg-2">
                 <label class="form-label small fw-semibold">Trạng thái phiếu</label>
                 <select name="status" class="form-select form-select-sm">
                     <option value="">-- Tất cả trạng thái --</option>
@@ -51,7 +67,7 @@
                 </select>
             </div>
 
-            <div class="col-lg-3">
+            <div class="col-sm-6 col-lg-3">
                 <label class="form-label small fw-semibold">Người nhận</label>
                 <div class="employee-department-select dropdown position-relative" data-employee-search-select>
                     <button type="button" class="form-select form-select-sm text-start" data-employee-select-toggle aria-haspopup="listbox" aria-expanded="false">
@@ -73,7 +89,7 @@
                 </div>
             </div>
 
-            <div class="col-lg-3">
+            <div class="col-sm-6 col-lg-3">
                 <label class="form-label small fw-semibold">Người tạo phiếu</label>
                 <select name="created_by" class="form-select form-select-sm">
                     <option value="">-- Tất cả người tạo --</option>
@@ -85,24 +101,13 @@
                 </select>
             </div>
 
-            <div class="col-lg-2">
-                <button type="submit" class="btn btn-primary btn-sm px-3"><i class="bi bi-funnel me-1"></i> Lọc phiếu</button>
-                <a href="<?= url('tickets') ?>" class="btn btn-light btn-sm border">Đặt lại</a>
-            </div>
-
-            <div class="col-12 text-end">
-                <?php if (Auth::hasPermission('tickets.create')): ?>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="bi bi-plus-lg me-1"></i> Lập phiếu mới
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                        <li><a class="dropdown-item" href="<?= url('tickets/create?type=allocation') ?>"><i class="bi bi-box-arrow-right text-primary me-2"></i> Phiếu cấp phát</a></li>
-                        <li><a class="dropdown-item" href="<?= url('tickets/create?type=transfer') ?>"><i class="bi bi-arrow-left-right text-info me-2"></i> Phiếu chuyển giao</a></li>
-                        <li><a class="dropdown-item" href="<?= url('tickets/create?type=revocation') ?>"><i class="bi bi-box-arrow-in-left text-danger me-2"></i> Phiếu thu hồi</a></li>
-                    </ul>
-                </div>
-                <?php endif; ?>
+            <div class="col-sm-12 col-lg-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm flex-fill">
+                    <i class="bi bi-funnel me-1"></i> Lọc
+                </button>
+                <a href="<?= url('tickets') ?>" class="btn btn-outline-secondary btn-sm" title="Đặt lại bộ lọc">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
             </div>
         </form>
     </div>
