@@ -188,9 +188,12 @@
                     <!-- Nút thao tác nhanh khi đang cấp phát -->
                     <div class="d-grid gap-2">
                         <?php if (Auth::hasPermission('tickets.create')): ?>
-                        <a href="<?= url('tickets/create?type=transfer') ?>" class="btn btn-outline-info">
-                            <i class="bi bi-arrow-left-right me-1"></i> Chuyển giao sang người khác
-                        </a>
+                            <a href="<?= url('tickets/create?' . http_build_query([
+                                    'type'      => 'transfer',
+                                    'device_id' => (int)$device['id'],
+                                ])) ?>" class="btn btn-outline-info">
+                                <i class="bi bi-arrow-left-right me-1"></i> Chuyển giao sang người khác
+                            </a>
                         <?php endif; ?>
                         <?php if (Auth::hasPermission('tickets.create')): ?>
                         <a href="<?= url('tickets/create?' . http_build_query(['type' => 'revocation', 'device_id' => (int)$device['id']])) ?>" class="btn btn-outline-danger">

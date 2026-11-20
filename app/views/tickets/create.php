@@ -95,7 +95,12 @@
                                         $employeeSelectPlaceholder = '-- Chọn nhân viên đang giữ --';
                                         $employeeSelectOptions = $employees;
                                         $employeeSelectRequired = true;
+                                        // Lưu tạm để dùng cho fromDepartmentSelect bên dưới, rồi unset
+                                        $_fromDepartmentId = $selectedDepartmentId ?? null;
                                         require __DIR__ . '/../components/employee_department_select.php';
+                                        // Unset để không ảnh hưởng sang toEmployeeSelect bên dưới
+                                        $selectedEmployeeId = null;
+                                        $selectedDepartmentId = null;
                                         ?>
                                     </div>
                                     <div>
@@ -103,7 +108,7 @@
                                         <select name="from_department_id" id="fromDepartmentSelect" data-employee-department-filter class="form-select form-select-sm">
                                             <option value="">-- Chọn phòng ban --</option>
                                             <?php foreach ($departments as $dept): ?>
-                                                <option value="<?= $dept['id'] ?>"><?= e($dept['name']) ?></option>
+                                                <option value="<?= $dept['id'] ?>" <?= isset($_fromDepartmentId) && (int)$_fromDepartmentId === (int)$dept['id'] ? 'selected' : '' ?>><?= e($dept['name']) ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
@@ -233,7 +238,7 @@
                                                 <?php endforeach; ?>
                                             <?php elseif ($type === 'transfer'): ?>
                                                 <?php foreach ($allocatedDevices as $dev): ?>
-                                                    <option value="<?= (int)$dev['id'] ?>" data-employee-id="<?= (int)$dev['current_employee_id'] ?>">
+                                                    <option value="<?= (int)$dev['id'] ?>" data-employee-id="<?= (int)$dev['current_employee_id'] ?>" data-department-id="<?= (int)$dev['current_department_id'] ?>" <?= isset($selectedDeviceId) && (int)$selectedDeviceId === (int)$dev['id'] ? 'selected' : '' ?>>
                                                         STT <?= (int)$dev['id'] ?> - <?= e($dev['type']) ?><?= trim(($dev['brand'] ?? '') . ' ' . ($dev['model'] ?? '')) !== '' ? ' ' . e(trim($dev['brand'] . ' ' . $dev['model'])) : '' ?><?= !empty($dev['paired_pc_id']) ? ' - Ghép PC #' . (int)$dev['paired_pc_id'] : '' ?> - Đang cấp: <?= e($dev['employee_name'] ?? 'Chưa rõ') ?>
                                                     </option>
                                                 <?php endforeach; ?>
@@ -435,7 +440,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!select) return;
 
         const employeeId = fromEmployeeSelect ? fromEmployeeSelect.value : '';
-        select.value = '';
+        const currentValue = select.value; // Giữ lại value đang chọn
         select.options[0].textContent = employeeId
             ? '-- Chọn thiết bị --'
             : '-- Chọn nhân viên bàn giao trước --';
@@ -443,6 +448,16 @@ document.addEventListener('DOMContentLoaded', function () {
         Array.from(select.options).slice(1).forEach(function (option) {
             option.hidden = !employeeId || option.dataset.employeeId !== employeeId;
         });
+
+        // Nếu option đang chọn bị ẩn thì reset, ngược lại giữ nguyên
+        if (currentValue) {
+            const selectedOpt = Array.from(select.options).find(o => o.value === currentValue);
+            if (!selectedOpt || selectedOpt.hidden) {
+                select.value = '';
+            } else {
+                select.value = currentValue;
+            }
+        }
     }
 
     if (fromEmployeeSelect) {
@@ -457,6 +472,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }, 0);
             });
         }
+        // Khi load trang: lọc thiết bị theo nhân viên đã được pre-select (nếu có)
         container.querySelectorAll('[data-transfer-device-select]').forEach(filterTransferDeviceSelect);
     }
 });

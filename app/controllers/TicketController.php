@@ -92,17 +92,11 @@ class TicketController extends Controller {
         $selectedEmployeeId = null;
         $selectedDepartmentId = null;
 
-        if ($type === 'revocation' && $selectedDeviceId !== null) {
+        if (($type === 'revocation' || $type === 'transfer') && $selectedDeviceId !== null) {
             foreach ($allocatedDevices as $device) {
                 if ((int)$device['id'] === $selectedDeviceId) {
                     $selectedEmployeeId = (int)$device['current_employee_id'];
-                    break;
-                }
-            }
-
-            foreach ($employees as $employee) {
-                if ((int)$employee['id'] === $selectedEmployeeId) {
-                    $selectedDepartmentId = (int)$employee['department_id'];
+                    $selectedDepartmentId = (int)$device['current_department_id'];
                     break;
                 }
             }
